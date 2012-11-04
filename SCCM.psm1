@@ -62,16 +62,22 @@ Returns a computer object from SCCM.
 .DESCRIPTION
 Takes in information about a specific site, along with a computer name and will attempt to retrieve a WMI object for the computer.  This function
 intentionally ignores obsolete computers.
+
+When invoked without specifying a computer name, this function returns a list of all computers found on the specified SCCM site.
 #>
 Function Get-SCCMComputer {
     [CmdletBinding()]
     param (
         [parameter(Mandatory=$true)][string]$siteServer,
         [parameter(Mandatory=$true)][string]$siteCode,
-        [parameter(Mandatory=$true)][string]$computerName
+        [string]$computerName
     )
 
-    return Get-WMIObject -ComputerName $siteServer -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System" | where { ($_.Name -eq $computerName) -and ($_.Obsolete -ne 1) }
+    if($computerName) {
+        return Get-WMIObject -ComputerName $siteServer -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System" | where { ($_.Name -eq $computerName) -and ($_.Obsolete -ne 1) }
+    } else {
+        return Get-WMIObject -ComputerName $siteServer -Namespace "root\sms\site_$siteCode" -Query "select * from SMS_R_System"
+    }
 }
 
 <#
