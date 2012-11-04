@@ -48,17 +48,33 @@ Function New-SCCMComputer {
 Removes a computer account in SCCM.
 
 .DESCRIPTION
-Takes in information about a specific site, along with a computer name and will attempt to delete it from the SCCM server.
+Takes in information about a specific site, along with a computer resource ID and will attempt to delete it from the SCCM server.
+
+.PARAMETER siteServer
+The name of the site server to be queried.
+
+.PARAMETER siteCode
+The 3-character site code for the site to be queried.
+
+.PARAMETER resourceId
+Resource ID of the computer that needs to be deleted.
+
+.EXAMPLE
+Remove-SCCMComputer -siteServer MYSITESERVER -siteCode SIT -resourceId 1293
+
+Description
+-----------
+Removes the computer with resource ID 1293 from the specified site.
 #>
 Function Remove-SCCMComputer {
     [CmdletBinding()]
     param (
         [parameter(Mandatory=$true)][string]$siteServer,
         [parameter(Mandatory=$true)][string]$siteCode,
-        [parameter(Mandatory=$true)][string]$computerName
+        [parameter(Mandatory=$true)][string]$resourceId
     )
 
-    $computer = Get-SCCMComputer $siteServer $siteCode $computerName
+    $computer =  Get-WMIObject -ComputerName $siteServer -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System" | where { $_.ResourceID -eq $resourceId }
     return $computer.psbase.Delete()
 }
 
