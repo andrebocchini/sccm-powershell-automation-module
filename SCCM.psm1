@@ -552,6 +552,23 @@ Function Set-SCCMClientAssignedSite {
     return $sccmClient.SetAssignedSite($siteCode)
 }
 
+<#
+.SYNOPSIS
+Utility function to convert SCCM date strings into something readable.
+
+.DESCRIPTION
+This function exists for convenience so users of the module do not have to try to figure out, if they are not familiar with it, ways
+to convert SCCM date strings into something readable.
+#>
+Function Convert-SCCMDate {
+    [CmdletBinding()]
+    param (
+        [parameter(Mandatory=$true)][string]$date
+    )
+
+    [System.Management.ManagementDateTimeconverter]::ToDateTime($date);
+}
+
 Export-ModuleMember New-SCCMComputer
 Export-ModuleMember Remove-SCCMComputer
 Export-ModuleMember Get-SCCMComputer
@@ -571,3 +588,4 @@ Export-ModuleMember Get-SCCMClientAdvertisementHistoryForComputer
 Export-ModuleMember Get-SCCMClientAdvertisementScheduleId
 Export-ModuleMember Get-SCCMClientAssignedSite
 Export-ModuleMember Set-SCCMClientAssignedSite
+Export-ModuleMember Convert-SCCMDate
