@@ -669,6 +669,58 @@ Function Get-SCCMPackage {
     }
 }
 
+<#
+.SYNOPSIS
+Retrieves SCCM programs from the site server.
+
+.DESCRIPTION
+Takes in information about a specific site and a package ID and returns all programs that match the specified package ID.  If no package ID is specified, it returns all programs found on the site server.
+
+.PARAMETER siteServer
+The name of the site server to be queried.
+
+.PARAMETER siteCode
+The 3-character site code for the site to be queried.
+
+.PARAMETER packageId
+Optional parameter.  If specified, the function returns programs that match the specified package ID.  If absent, the function returns all programs for the site.
+
+.EXAMPLE
+Get-SCCMProgram -siteServer MYSITESERVER -siteCode SIT -packageId PACKAGEID
+
+Description
+-----------
+Retrieve all programs with package ID PACKAGEID from site SIT on MYSITESERVER
+
+.EXAMPLE
+Get-SCCMProgram -siteServer MYSITESERVER -siteCode SIT
+
+Description
+-----------
+Retrieve all programs from site SIT on MYSITESERVER
+
+.EXAMPLE
+Get-SCCMProgram -siteServer MYSITESERVER -siteCode SIT | Select-Object ProgramName,PackageID
+
+Description
+-----------
+Retrieve all programs from site SIT on MYSITESERVER and filter out only their names and IDs
+#>
+Function Get-SCCMProgram {
+    [CmdletBinding()]
+    param (
+        [parameter(Mandatory=$true)][string]$siteServer,
+        [parameter(Mandatory=$true)][string]$siteCode,
+        [string]$programId
+    )
+
+    if($programId) {
+        return Get-WMIObject -ComputerName $siteServer -Namespace "root\sms\site_$siteCode" -Class "SMS_Package" | where { ($_.PackageID -eq $programId) }
+    } else { 
+        return Get-WMIObject -ComputerName $siteServer -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_Program"
+    }
+}
+
 Export-ModuleMember New-SCCMComputer
 Export-ModuleMember Remove-SCCMComputer
 Export-ModuleMember Get-SCCMComputer
@@ -690,3 +742,4 @@ Export-ModuleMember Get-SCCMClientAssignedSite
 Export-ModuleMember Set-SCCMClientAssignedSite
 Export-ModuleMember Convert-SCCMDate
 Export-ModuleMember Get-SCCMPackage
+Export-ModuleMember Get-SCCMProgram
