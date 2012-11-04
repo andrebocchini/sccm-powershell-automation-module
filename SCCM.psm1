@@ -750,7 +750,7 @@ The name of the site server to be queried.
 The 3-character site code for the site to be queried.
 
 .PARAMETER packageId
-Optional parameter.  If specified, the function returns programs that match the specified package ID.  If absent, the function returns all programs for the site.
+Optional parameter.  If specified, the function returns programs that belong to the package specified by ID.  If absent, the function returns all programs for the site.
 
 .EXAMPLE
 Get-SCCMProgram -siteServer MYSITESERVER -siteCode SIT -packageId PACKAGEID
@@ -771,18 +771,18 @@ Get-SCCMProgram -siteServer MYSITESERVER -siteCode SIT | Select-Object ProgramNa
 
 Description
 -----------
-Retrieve all programs from site SIT on MYSITESERVER and filter out only their names and IDs
+Retrieve all programs from site SIT on MYSITESERVER and filter out only their names and package IDs
 #>
 Function Get-SCCMProgram {
     [CmdletBinding()]
     param (
         [parameter(Mandatory=$true)][string]$siteServer,
         [parameter(Mandatory=$true)][string]$siteCode,
-        [string]$programId
+        [string]$packageId
     )
 
-    if($programId) {
-        return Get-WMIObject -ComputerName $siteServer -Namespace "root\sms\site_$siteCode" -Class "SMS_Package" | where { ($_.PackageID -eq $programId) }
+    if($packageId) {
+        return Get-WMIObject -ComputerName $siteServer -Namespace "root\sms\site_$siteCode" -Class "SMS_Program" | where { ($_.PackageID -eq $packageId) }
     } else { 
         return Get-WMIObject -ComputerName $siteServer -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_Program"
     }
