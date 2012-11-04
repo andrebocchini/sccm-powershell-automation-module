@@ -1,7 +1,9 @@
 About
 =====
 
-This Powershell module contains a collection of functions gathered from an assortment of scripts I use to automate SCCM management.  It does not encompass a large part of client management functions in SCCM, but it can perform a number of common operations such as creating new computer records, deleting them, and manipulating collection membership rules.  It has only been tested with SCCM 2007.  Please conduct your own independent testing before trusting this code in a production environment.
+This Powershell module contains a collection of functions gathered from an assortment of scripts I use to automate SCCM 2007 management.  I realized that every time I needed to automate something I ended up digging through a pile of old scripts to cut and paste code into a new one, so eventually I decided I needed to aggregate all of the bits of code I had created into a single script.  This module does not encompass a large part of client management functions in SCCM, but it can perform a number of common operations such as creating new computer records, deleting them, and manipulating collection membership rules.
+
+This code has only been tested with SCCM 2007.  Please conduct your own independent testing before trusting this code in a production environment.
 
 Installation
 ============
