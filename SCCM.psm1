@@ -64,24 +64,55 @@ Function Remove-SCCMComputer {
 
 <#
 .SYNOPSIS
-Returns a computer object from SCCM.
+Returns computers from SCCM.
 
 .DESCRIPTION
-Takes in information about a specific site, along with a computer name and will attempt to retrieve a WMI object for the computer.  This function
-intentionally ignores obsolete computers.
+Takes in information about a specific site, along with a computer name and will attempt to retrieve an object for the computer.  This function
+intentionally ignores obsolete computers by default, but you can specify a parameter to include them.
 
 When invoked without specifying a computer name, this function returns a list of all computers found on the specified SCCM site.
+
+.PARAMETER siteServer
+The name of the site server to be queried.
+
+.PARAMETER siteCode
+The 3-character site code for the site to be queried.
+
+.PARAMETER computerName
+The name of the computer to be retrieved. 
+
+.PARAMETER includeObsolete
+This switch defaults to false.  If you want your results to include obsolete computers, set this to true when calling this function.
+
+.EXAMPLE
+Get-SCCMComputer -siteServer MYSITESERVER -siteCode SIT -computerName MYCOMPUTER -includeObsolete:true
+
+Description
+-----------
+Returns any computer whose name matches MYCOMPUTER found site server MYSITESERVER for site SIT.
+
+.EXAMPLE
+Get-SCCMComputer -siteServer MYSITESERVER -siteCode SIT
+
+Description
+-----------
+Returns all computers (excluding obsolete ones) found on site server MYSITESERVER for site SIT.
 #>
 Function Get-SCCMComputer {
     [CmdletBinding()]
     param (
         [parameter(Mandatory=$true)][string]$siteServer,
         [parameter(Mandatory=$true)][string]$siteCode,
-        [string]$computerName
+        [string]$computerName,
+        [switch]$includeObsolete=$false
     )
 
-    if($computerName) {
+    if($computerName -and $includeObsolete) {
+        return Get-WMIObject -ComputerName $siteServer -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System" | where { $_.Name -eq $computerName }
+    } elseif($computerName -and !$includeObsolete) {
         return Get-WMIObject -ComputerName $siteServer -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System" | where { ($_.Name -eq $computerName) -and ($_.Obsolete -ne 1) }
+    } elseif(!$computerName -and !$includeObsolete) {
+        return Get-WMIObject -ComputerName $siteServer -Namespace "root\sms\site_$siteCode" -Query "select * from SMS_R_System" | where { $_.Obsolete -ne 1 }
     } else {
         return Get-WMIObject -ComputerName $siteServer -Namespace "root\sms\site_$siteCode" -Query "select * from SMS_R_System"
     }
