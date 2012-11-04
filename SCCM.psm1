@@ -235,7 +235,7 @@ Function Get-SCCMCollectionsForComputer {
 Retrieves SCCM advertisements from the site server.
 
 .DESCRIPTION
-Takes in information about a specific site and an advertisement name and returns advertisements matching the specified name.  If no advertisement name is specified, it returns all advertisements found on the site server.
+Takes in information about a specific site and an advertisement name and/or and advertisement ID and returns advertisements matching the specified parameters.  If no advertisement name or ID is specified, it returns all advertisements found on the site server.
 
 .PARAMETER siteServer
 The name of the site server to be queried.
@@ -244,7 +244,10 @@ The name of the site server to be queried.
 The 3-character site code for the site to be queried.
 
 .PARAMETER advertisementName
-Optional parameter.  If specified, the function returns advertisements matching the specified name.  If absent, the function returns all advertisements for the site.
+Optional parameter.  If specified, the function will try to find advertisements that match the specified name.
+
+.PARAMETER advertisementId
+Optional parameter.  If specified, the function will try to find advertisements that match the specified ID.
 
 .EXAMPLE
 Get-SCCMAdvertisement -siteServer MYSITESERVER -siteCode SIT -advertisementName MYADVERTISEMENT
@@ -252,6 +255,13 @@ Get-SCCMAdvertisement -siteServer MYSITESERVER -siteCode SIT -advertisementName 
 Description
 -----------
 Retrieve the advertisement named MYADVERTISEMENT from site SIT on MYSITESERVER
+
+.EXAMPLE
+Get-SCCMAdvertisement -siteServer MYSITESERVER -siteCode SIT -advertisementName MYADVERTISEMENT -advertisementId MYADVERTISEMENTID
+
+Description
+-----------
+Retrieve the advertisement named MYADVERTISEMENT with ID MYADVERTISEMENTID from site SIT on MYSITESERVER
 
 .EXAMPLE
 Get-SCCMAdvertisement -siteServer MYSITESERVER -siteCode SIT
@@ -272,11 +282,16 @@ Function Get-SCCMAdvertisement {
     param (
         [parameter(Mandatory=$true)][string]$siteServer,
         [parameter(Mandatory=$true)][string]$siteCode,
-        [string]$advertisementName
+        [string]$advertisementName,
+        [string]$advertisementId
     )
 
-    if($advertisementName) {
+    if($advertisementName -and $advertisementID) {
+        return Get-WMIObject -ComputerName $siteServer -Namespace "root\sms\site_$siteCode" -Class "SMS_Advertisement" | where { ($_.AdvertisementName -eq $advertisementName) -and ($_.AdvertisementID -eq $advertisementId) }
+    } elseif($advertisementName -and !$advertisementId) {
         return Get-WMIObject -ComputerName $siteServer -Namespace "root\sms\site_$siteCode" -Class "SMS_Advertisement" | where { ($_.AdvertisementName -eq $advertisementName) }
+    } elseif(!$advertisementName -and $advertisementId) {
+        return Get-WMIObject -ComputerName $siteServer -Namespace "root\sms\site_$siteCode" -Class "SMS_Advertisement" | where { ($_.AdvertisementID -eq $advertisementId) }
     } else { 
         return Get-WMIObject -ComputerName $siteServer -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_Advertisement"
     }
