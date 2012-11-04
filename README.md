@@ -12,6 +12,7 @@ These are the functions currently present in the module:
 * Remove-SCCMComputerFromCollection
 * Get-SCCMCollection
 * Get-SCCMCollectionsForComputer
+* Get-SCCMAdvertisement
 * Get-SCCMAdvertisementsForCollection
 * Get-SCCMAdvertisementsForComputer
 * Get-SCCMAdvertisementStatusForComputer

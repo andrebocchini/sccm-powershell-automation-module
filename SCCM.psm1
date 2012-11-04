@@ -232,6 +232,58 @@ Function Get-SCCMCollectionsForComputer {
 
 <#
 .SYNOPSIS
+Retrieves SCCM advertisements from the site server.
+
+.DESCRIPTION
+Takes in information about a specific site and an advertisement name and returns advertisements matching the specified name.  If no advertisement name is specified, it returns all advertisements found on the site server.
+
+.PARAMETER siteServer
+The name of the site server to be queried.
+
+.PARAMETER siteCode
+The 3-character site code for the site to be queried.
+
+.PARAMETER advertisementName
+Optional parameter.  If specified, the function returns advertisements matching the specified name.  If absent, the function returns all advertisements for the site.
+
+.EXAMPLE
+Get-SCCMAdvertisement -siteServer MYSITESERVER -siteCode SIT -advertisementName MYADVERTISEMENT
+
+Description
+-----------
+Retrieve the advertisement named MYADVERTISEMENT from site SIT on MYSITESERVER
+
+.EXAMPLE
+Get-SCCMAdvertisement -siteServer MYSITESERVER -siteCode SIT
+
+Description
+-----------
+Retrieve all advertisements from site SIT on MYSITESERVER
+
+.EXAMPLE
+Get-SCCMAdvertisement -siteServer MYSITESERVER -siteCode SIT | Select-Object Name,AdvertisementID
+
+Description
+-----------
+Retrieve all advertisements from site SIT on MYSITESERVER and filter out only their names and IDs
+#>
+Function Get-SCCMAdvertisement {
+    [CmdletBinding()]
+    param (
+        [parameter(Mandatory=$true)][string]$siteServer,
+        [parameter(Mandatory=$true)][string]$siteCode,
+        [string]$advertisementName
+    )
+
+    if($advertisementName) {
+        return Get-WMIObject -ComputerName $siteServer -Namespace "root\sms\site_$siteCode" -Class "SMS_Advertisement" | where { ($_.AdvertisementName -eq $advertisementName) }
+    } else { 
+        return Get-WMIObject -ComputerName $siteServer -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_Advertisement"
+    }
+}
+
+<#
+.SYNOPSIS
 Returns a list of advertisements assigned to a collection.
 
 .DESCRIPTION
@@ -611,7 +663,7 @@ to convert SCCM date strings into something readable.
 Function Convert-SCCMDate {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$date
+        [parameter(Mandatory=$true, ValueFromPipeline=$true)][string]$date
     )
 
     [System.Management.ManagementDateTimeconverter]::ToDateTime($date);
@@ -728,6 +780,7 @@ Export-ModuleMember Add-SCCMComputerToCollection
 Export-ModuleMember Remove-SCCMComputerFromCollection
 Export-ModuleMember Get-SCCMCollection
 Export-ModuleMember Get-SCCMCollectionsForComputer
+Export-ModuleMember Get-SCCMAdvertisement
 Export-ModuleMember Get-SCCMAdvertisementsForCollection
 Export-ModuleMember Get-SCCMAdvertisementsForComputer 
 Export-ModuleMember Get-SCCMAdvertisementStatusForComputer
