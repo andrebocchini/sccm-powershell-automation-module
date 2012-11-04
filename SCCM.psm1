@@ -1,13 +1,20 @@
-# Author: Andre Bocchini <andrebocchini@gmail.com> - http://www.github.com/andrebocchini
-
 <#
 .SYNOPSIS
-Assortment of useful functions for automating SCCM management tasks.
+Command line interface for an assortment of SCCM 2007 operations.
 
 .DESCRIPTION
-The functions in this module are used for automating management of SCCM environments.
+The functions in this module provide a command line and scripting interface for automating management of SCCM 2007 environments.
+
+.NOTES  
+File Name  : SCCM.ps1  
+Author     : Andre Bocchini <andrebocchini@gmail.com>  
+Requires   : PowerShell V2
+
+.LINK
+https://github.com/andrebocchini/SCCM-Powershell-Automation-Module
 #>
 
+#Requires -version 2
 
 <#
 .SYNOPSIS
@@ -127,7 +134,7 @@ Function Remove-SCCMComputerFromCollection {
     )
 
     $computer = Get-SCCMComputer $siteServer $siteCode $computerName
-    $collection = Get-WmiObject -ComputerName $siteServer -Namespace "root\sms\site_$siteCode" -Class "SMS_Collection" | where { $_.Name -eq $collectionName }
+    $collection = Get-SCCMCollection $siteServer $siteCode $collectionName
     $collectionRule = ([WMIClass]("\\$siteServer\root\sms\site_" + "$siteCode" + ":SMS_CollectionRuleDirect")).CreateInstance()
     $collectionRule.ResourceID = $computer.ResourceID
     
@@ -136,19 +143,54 @@ Function Remove-SCCMComputerFromCollection {
 
 <#
 .SYNOPSIS
-Returns a list of all collection names from SCCM.
+Retrieves SCCM collection objects from the site server.
 
 .DESCRIPTION
-Takes in information about a specific site and returns a list of all collection found in that site.
+Takes in information about a specific site and a collection name and returns an object representing that collection.  If no computer name is specified, it returns all collections found on the site server.
+
+.PARAMETER siteServer
+The name of the site server to be queried.
+
+.PARAMETER siteCode
+The 3-character site code for the site to be queried.
+
+.PARAMETER collectionName
+Optional parameter.  If specified, the function returns an object representing the collection specified.  If absent, the function returns all collections for the site.
+
+.EXAMPLE
+Get-SCCMCollection -siteServer MYSITESERVER -siteCode SIT -collectionName MYCOLLECTION
+
+Description
+-----------
+Retrieve the collection named MYCOLLECTION from site SIT on MYSITESERVER
+
+.EXAMPLE
+Get-SCCMCollection -siteServer MYSITESERVER -siteCode SIT
+
+Description
+-----------
+Retrieve all collections from site SIT on MYSITESERVER
+
+.EXAMPLE
+Get-SCCMCollection -siteServer MYSITESERVER -siteCode SIT | Select-Object Name,CollectionID
+
+Description
+-----------
+Retrieve all collections from site SIT on MYSITESERVER and filter out only their names and IDs
 #>
-Function Get-SCCMCollections {
+Function Get-SCCMCollection {
     [CmdletBinding()]
     param (
         [parameter(Mandatory=$true)][string]$siteServer,
-        [parameter(Mandatory=$true)][string]$siteCode
+        [parameter(Mandatory=$true)][string]$siteCode,
+        [string]$collectionName
     )
 
-    return Get-WMIObject -Computer $siteServer -Namespace "root\sms\site_$siteCode" -Query "Select * from SMS_Collection"    
+    if($collectionName) {
+        return Get-WMIObject -Computer $siteServer -Namespace "root\sms\site_$siteCode" -Query "Select * from SMS_Collection" | Where { $_.Name -eq $collectionName }  
+    } else {
+        return Get-WMIObject -Computer $siteServer -Namespace "root\sms\site_$siteCode" -Query "Select * from SMS_Collection"
+    }
 }
 
 <#
@@ -175,7 +217,7 @@ Function Get-SCCMCollectionsForComputer {
     }
 
     # Now that we have a list of collection IDs, we want to retrieve and return some rich collection objects
-    $allServerCollections = Get-SCCMCollections $siteServer $siteCode
+    $allServerCollections = Get-SCCMCollection $siteServer $siteCode
     $computerCollections = @()
     foreach($collectionId in $computerCollectionIds) {
         foreach($collection in $allServerCollections) {
@@ -580,7 +622,7 @@ Export-ModuleMember Remove-SCCMComputer
 Export-ModuleMember Get-SCCMComputer
 Export-ModuleMember Add-SCCMComputerToCollection
 Export-ModuleMember Remove-SCCMComputerFromCollection
-Export-ModuleMember Get-SCCMCollections
+Export-ModuleMember Get-SCCMCollection
 Export-ModuleMember Get-SCCMCollectionsForComputer
 Export-ModuleMember Get-SCCMAdvertisementsForCollection
 Export-ModuleMember Get-SCCMAdvertisementsForComputer 
