@@ -202,7 +202,10 @@ The name of the site server to be queried.
 The 3-character site code for the site to be queried.
 
 .PARAMETER collectionName
-Optional parameter.  If specified, the function returns an object representing the collection specified.  If absent, the function returns all collections for the site.
+Optional parameter.  If specified, the function will try to find a collection that matches the name provided.
+
+.PARAMETER collectionId
+Optional parameter.  If specified, the function will try to find a collection that matches the id provided.
 
 .EXAMPLE
 Get-SCCMCollection -siteServer MYSITESERVER -siteCode SIT -collectionName MYCOLLECTION
@@ -210,6 +213,13 @@ Get-SCCMCollection -siteServer MYSITESERVER -siteCode SIT -collectionName MYCOLL
 Description
 -----------
 Retrieve the collection named MYCOLLECTION from site SIT on MYSITESERVER
+
+.EXAMPLE
+Get-SCCMCollection -siteServer MYSITESERVER -siteCode SIT -collectionName MYCOLLECTION -collectionId MYCOLLECTIONID
+
+Description
+-----------
+Retrieve the collection named MYCOLLECTION with id MYCOLLECTIONID from site SIT on MYSITESERVER
 
 .EXAMPLE
 Get-SCCMCollection -siteServer MYSITESERVER -siteCode SIT
@@ -230,11 +240,16 @@ Function Get-SCCMCollection {
     param (
         [parameter(Mandatory=$true)][string]$siteServer,
         [parameter(Mandatory=$true)][string]$siteCode,
-        [string]$collectionName
+        [string]$collectionName,
+        [string]$collectionId
     )
 
-    if($collectionName) {
-        return Get-WMIObject -Computer $siteServer -Namespace "root\sms\site_$siteCode" -Query "Select * from SMS_Collection" | Where { $_.Name -eq $collectionName }  
+    if($collectionName -and $collectionId) {
+        return Get-WMIObject -Computer $siteServer -Namespace "root\sms\site_$siteCode" -Query "Select * from SMS_Collection" | Where { ($_.Name -eq $collectionName) -and ($_.CollectionID -eq $collectionId) } 
+    } elseif($collectionName -and !$collectionId) {
+        return Get-WMIObject -Computer $siteServer -Namespace "root\sms\site_$siteCode" -Query "Select * from SMS_Collection" | Where { $_.Name -eq $collectionName } 
+    } elseif(!$collectionName -and $collectionId) {
+        return Get-WMIObject -Computer $siteServer -Namespace "root\sms\site_$siteCode" -Query "Select * from SMS_Collection" | Where { $_.CollectionID -eq $collectionId }
     } else {
         return Get-WMIObject -Computer $siteServer -Namespace "root\sms\site_$siteCode" -Query "Select * from SMS_Collection"
     }
