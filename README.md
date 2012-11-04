@@ -15,6 +15,7 @@ These are the functions currently present in the module:
 * Get-SCCMAdvertisement
 * Get-SCCMAdvertisementsForCollection
 * Get-SCCMAdvertisementsForComputer
+* Get-SCCMAdvertisementsForPackage
 * Get-SCCMAdvertisementStatusForComputer
 * Set-SCCMComputerVariable
 * Get-SCCMComputerVariables

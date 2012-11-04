@@ -89,7 +89,7 @@ Get-SCCMComputer -siteServer MYSITESERVER -siteCode SIT -computerName MYCOMPUTER
 
 Description
 -----------
-Returns any computer whose name matches MYCOMPUTER found site server MYSITESERVER for site SIT.
+Returns any computer whose name matches MYCOMPUTER found on site server MYSITESERVER for site SIT.
 
 .EXAMPLE
 Get-SCCMComputer -siteServer MYSITESERVER -siteCode SIT
@@ -371,6 +371,40 @@ Function Get-SCCMAdvertisementsForComputer {
     }
     
     return $computerAdvertisements
+}
+
+<#
+.SYNOPSIS
+Returns a list of advertisements for a specific package.
+
+.DESCRIPTION
+Takes in information about a specific site, along with a package ID and returns all advertisements for that package.
+
+.PARAMETER siteServer
+The name of the site server to be queried.
+
+.PARAMETER siteCode
+The 3-character site code for the site to be queried.
+
+.PARAMETER packageId
+The ID of the package whose advertisements the function should retrieve.
+
+.EXAMPLE
+Get-SCCMAdvertisementForPackage -siteServer MYSITESERVER -siteCode SIT -packageId MYPACKAGEID
+
+Description
+-----------
+Retrieve all advertisements from site SIT on MYSITESERVER for package with ID equal to MYPACKAGEID
+#>
+Function Get-SCCMAdvertisementsForPackage {
+    [CmdletBinding()]
+    param (
+        [parameter(Mandatory=$true)][string]$siteServer,
+        [parameter(Mandatory=$true)][string]$siteCode,
+        [parameter(Mandatory=$true)][string]$packageId
+    )
+
+    return Get-WMIObject -ComputerName $siteServer -Namespace "root\sms\site_$siteCode" -Class "SMS_Advertisement" | where { $_.PackageID -eq $packageId }
 }
 
 <#
@@ -843,7 +877,8 @@ Export-ModuleMember Get-SCCMCollection
 Export-ModuleMember Get-SCCMCollectionsForComputer
 Export-ModuleMember Get-SCCMAdvertisement
 Export-ModuleMember Get-SCCMAdvertisementsForCollection
-Export-ModuleMember Get-SCCMAdvertisementsForComputer 
+Export-ModuleMember Get-SCCMAdvertisementsForComputer
+Export-ModuleMember Get-SCCMAdvertisementsForPackage
 Export-ModuleMember Get-SCCMAdvertisementStatusForComputer
 Export-ModuleMember Set-SCCMComputerVariable
 Export-ModuleMember Get-SCCMComputerVariables
