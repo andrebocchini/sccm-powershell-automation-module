@@ -146,7 +146,7 @@ Function Remove-SCCMComputerFromCollection {
 Retrieves SCCM collection objects from the site server.
 
 .DESCRIPTION
-Takes in information about a specific site and a collection name and returns an object representing that collection.  If no computer name is specified, it returns all collections found on the site server.
+Takes in information about a specific site and a collection name and returns an object representing that collection.  If no collection name is specified, it returns all collections found on the site server.
 
 .PARAMETER siteServer
 The name of the site server to be queried.
@@ -617,6 +617,58 @@ Function Convert-SCCMDate {
     [System.Management.ManagementDateTimeconverter]::ToDateTime($date);
 }
 
+<#
+.SYNOPSIS
+Retrieves SCCM packages from the site server.
+
+.DESCRIPTION
+Takes in information about a specific site and a package name and returns all packages that match the specified name.  If no package name is specified, it returns all packages found on the site server.
+
+.PARAMETER siteServer
+The name of the site server to be queried.
+
+.PARAMETER siteCode
+The 3-character site code for the site to be queried.
+
+.PARAMETER packageName
+Optional parameter.  If specified, the function returns packages that match the specified name.  If absent, the function returns all packages for the site.
+
+.EXAMPLE
+Get-SCCMPackage -siteServer MYSITESERVER -siteCode SIT -packageName MYPACKAGE
+
+Description
+-----------
+Retrieve the package named MYPACKAGE from site SIT on MYSITESERVER
+
+.EXAMPLE
+Get-SCCMPackage -siteServer MYSITESERVER -siteCode SIT
+
+Description
+-----------
+Retrieve all packages from site SIT on MYSITESERVER
+
+.EXAMPLE
+Get-SCCMPackage -siteServer MYSITESERVER -siteCode SIT | Select-Object Name,PackageID
+
+Description
+-----------
+Retrieve all packages from site SIT on MYSITESERVER and filter out only their names and IDs
+#>
+Function Get-SCCMPackage {
+    [CmdletBinding()]
+    param (
+        [parameter(Mandatory=$true)][string]$siteServer,
+        [parameter(Mandatory=$true)][string]$siteCode,
+        [string]$packageName
+    )
+
+    if($packageName) {
+        return Get-WMIObject -ComputerName $siteServer -Namespace "root\sms\site_$siteCode" -Class "SMS_Package" | where { ($_.Name -eq $packageName) }
+    } else { 
+        return Get-WMIObject -ComputerName $siteServer -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_Package"
+    }
+}
+
 Export-ModuleMember New-SCCMComputer
 Export-ModuleMember Remove-SCCMComputer
 Export-ModuleMember Get-SCCMComputer
@@ -637,3 +689,4 @@ Export-ModuleMember Get-SCCMClientAdvertisementScheduleId
 Export-ModuleMember Get-SCCMClientAssignedSite
 Export-ModuleMember Set-SCCMClientAssignedSite
 Export-ModuleMember Convert-SCCMDate
+Export-ModuleMember Get-SCCMPackage
