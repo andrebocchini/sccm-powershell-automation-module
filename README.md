@@ -9,6 +9,7 @@ These are the functions currently present in the module:
 * Remove-SCCMComputer
 * Get-SCCMComputer
 * Add-SCCMComputerToCollection
+* Remove-SCCMCollection
 * Remove-SCCMComputerFromCollection
 * Get-SCCMCollection
 * Get-SCCMCollectionsForComputer
@@ -27,6 +28,7 @@ These are the functions currently present in the module:
 * Get-SCCMClientAssignedSite
 * Set-SCCMClientAssignedSite
 * Convert-SCCMDate
+* Remove-SCCMPackage
 * Get-SCCMPackage
 * Get-SCCMProgram
 

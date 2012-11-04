@@ -817,6 +817,41 @@ Function Convert-SCCMDate {
 
 <#
 .SYNOPSIS
+Removes SCCM packages from the site server.
+
+.DESCRIPTION
+Takes in information about a specific site and a package ID and deletes the package.
+
+.PARAMETER siteServer
+The name of the site server where the package exists.
+
+.PARAMETER siteCode
+The 3-character site code for the site where the package exists.
+
+.PARAMETER packageId
+The ID of the package to be deleted.
+
+.EXAMPLE
+Remove-SCCMPackage -siteServer MYSITESERVER -siteCode SIT -packageId MYID
+
+Description
+-----------
+Deletes the package with ID MYID from SIT on MYSITESERVER
+#>
+Function Remove-SCCMPackage {
+    [CmdletBinding()]
+    param (
+        [parameter(Mandatory=$true)][string]$siteServer,
+        [parameter(Mandatory=$true)][string]$siteCode,
+        [parameter(Mandatory=$true)][string]$packageId
+    )    
+
+    $package = Get-SCCMPackage $siteServer $siteCode -packageId $packageId
+    return $package.psbase.Delete()
+}
+
+<#
+.SYNOPSIS
 Retrieves SCCM packages from the site server.
 
 .DESCRIPTION
@@ -957,5 +992,6 @@ Export-ModuleMember Get-SCCMClientAdvertisementScheduleId
 Export-ModuleMember Get-SCCMClientAssignedSite
 Export-ModuleMember Set-SCCMClientAssignedSite
 Export-ModuleMember Convert-SCCMDate
+Export-ModuleMember Remove-SCCMPackage
 Export-ModuleMember Get-SCCMPackage
 Export-ModuleMember Get-SCCMProgram
