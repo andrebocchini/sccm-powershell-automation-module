@@ -190,6 +190,41 @@ Function Remove-SCCMComputerFromCollection {
 
 <#
 .SYNOPSIS
+Deletes SCCM collections
+
+.DESCRIPTION
+Takes in information about a specific site, along with a collection ID and deletes it.
+
+.PARAMETER siteServer
+The name of the site server to be queried.
+
+.PARAMETER siteCode
+The 3-character site code for the site to be queried.
+
+.PARAMETER collectionId
+The id of the collection to be deleted.
+
+.EXAMPLE
+Remove-SCCMCollection -siteServer MYSISTESERVER -siteCode SIT -collectionId MYID
+
+Description
+-----------
+Deletes the collection with id MYID from site SIT on MYSITESERVER.
+#>
+Function Remove-SCCMCollection {
+    [CmdletBinding()]
+    param (
+        [parameter(Mandatory=$true)][string]$siteServer,
+        [parameter(Mandatory=$true)][string]$siteCode,
+        [parameter(Mandatory=$true)][string]$collectionId
+    )
+
+    $collection = Get-SCCMCollection $siteServer $siteCode -collectionId $collectionId
+    return $collection.psbase.Delete()
+}
+
+<#
+.SYNOPSIS
 Retrieves SCCM collection objects from the site server.
 
 .DESCRIPTION
@@ -904,6 +939,7 @@ Export-ModuleMember Remove-SCCMComputer
 Export-ModuleMember Get-SCCMComputer
 Export-ModuleMember Add-SCCMComputerToCollection
 Export-ModuleMember Remove-SCCMComputerFromCollection
+Export-ModuleMember Remove-SCCMCollection
 Export-ModuleMember Get-SCCMCollection
 Export-ModuleMember Get-SCCMCollectionsForComputer
 Export-ModuleMember Get-SCCMAdvertisement
