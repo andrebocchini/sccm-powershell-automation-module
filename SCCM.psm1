@@ -190,6 +190,66 @@ Function Remove-SCCMComputerFromCollection {
 
 <#
 .SYNOPSIS
+Creates static SCCM collections
+
+.DESCRIPTION
+Allows the creation of static collections.
+
+.PARAMETER siteServer
+The name of the site server where the collection is to be created.
+
+.PARAMETER siteCode
+The 3-character site code where the collection is to be created.
+
+.PARAMETER collectionName
+The name of the new collection.
+
+.PARAMETER parentCollectionId
+If the static collection is not bound to a parent, it will not show up in the console.  This parameter is mandatory and must be valid.
+
+.PARAMETER collectionComment
+Optional parameter.  Attaches a comment to the collection.
+
+.EXAMPLE
+New-SCCMStaticCollection -siteServer MYSISTESERVER -siteCode SIT -collectionName MYCOLLECTIONNAME -parentCollectionId SIT00012 -collectionComment "This is a comment"
+#>
+Function New-SCCMStaticCollection {
+    [CmdletBinding()]
+    param (
+        [parameter(Mandatory=$true)][string]$siteServer,
+        [parameter(Mandatory=$true)][string]$siteCode,
+        [parameter(Mandatory=$true)][string]$collectionName,
+        [parameter(Mandatory=$true)][string]$parentCollectionId,
+        [string]$collectionComment
+    )
+
+    if(Get-SCCMCollection $siteServer $siteCode -collectionId $parentCollectionId) {
+        if(!(Get-SCCMCollection $siteServer $siteCode -collectionName $collectionName)) {
+            $newCollection = ([WMIClass]("\\$siteServer\root\sms\site_" + "$siteCode" + ":SMS_Collection")).CreateInstance()
+            $newCollection.Name = $collectionName
+            $newCollection.Comment = $collectionComment
+            $newCollection.OwnedByThisSite = $true
+
+            $newCollection.Put()
+
+            # Now we establish the parent to child relationship of the two collections. If we create a collection without
+            # establishing the relationship, the new collection will not be visible in the console.
+            $newCollectionId = (Get-SCCMCollection $siteServer $siteCode $collectionName).CollectionID
+            $newCollectionRelationship = ([WMIClass]("\\$siteServer\root\sms\site_" + "$siteCode" + ":SMS_CollectToSubCollect")).CreateInstance()
+            $newCollectionRelationship.parentCollectionID = $parentCollectionId
+            $newCollectionRelationship.subCollectionID = $newCollectionId
+
+            $newCollectionRelationship.Put()
+        } else {
+            Throw "A collection named $collectionName already exists"
+        }
+    } else {
+        Throw "Invalid parent collection"
+    }
+}
+
+<#
+.SYNOPSIS
 Deletes SCCM collections
 
 .DESCRIPTION
@@ -974,6 +1034,7 @@ Export-ModuleMember Remove-SCCMComputer
 Export-ModuleMember Get-SCCMComputer
 Export-ModuleMember Add-SCCMComputerToCollection
 Export-ModuleMember Remove-SCCMComputerFromCollection
+Export-ModuleMember New-SCCMStaticCollection
 Export-ModuleMember Remove-SCCMCollection
 Export-ModuleMember Get-SCCMCollection
 Export-ModuleMember Get-SCCMCollectionsForComputer

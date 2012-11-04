@@ -9,6 +9,7 @@ These are the functions currently present in the module:
 * Remove-SCCMComputer
 * Get-SCCMComputer
 * Add-SCCMComputerToCollection
+* New-SCCMStaticCollection
 * Remove-SCCMCollection
 * Remove-SCCMComputerFromCollection
 * Get-SCCMCollection
