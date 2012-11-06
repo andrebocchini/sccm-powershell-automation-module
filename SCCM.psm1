@@ -785,12 +785,25 @@ Function Invoke-SCCMClientSchedule {
 
 <#
 .SYNOPSIS
-Contacts a client computer to obtain its advertisement history.
+Contacts a client computer to obtain its software distribution history.
 
 .DESCRIPTION
-Takes in a computer name in order to contact a computer and obtain its advertisement history containing active, disabled, and expired advertisements.
+Takes in a computer name and attempts to contact it to obtain information about its software distribution history.
+
+The information comes from the CCM_SoftwareDistribution WMI class which according to the Microsoft documentation is a "class
+that stores information specific to a software distribution, a combination of the properties for the package, program, and advertisement 
+that were created to distribute the software."
+
+.PARAMETER computerName
+The name of the client to be contacted in order to retrieve the advertisement history.
+
+.EXAMPLE
+Get-SCCMSoftwareDistributionHistory -computerName MYCOMPUTER
+
+.NOTES
+http://msdn.microsoft.com/en-us/library/cc145304.aspx
 #>
-Function Get-SCCMClientAdvertisementHistoryForComputer {
+Function Get-SCCMClientSoftwareDistributionHistory {
     [CmdletBinding()]
     param (
         [parameter(Mandatory=$true)][string]$computerName
@@ -1048,7 +1061,7 @@ Export-ModuleMember Get-SCCMComputerVariables
 Export-ModuleMember Remove-SCCMComputerVariable
 Export-ModuleMember Invoke-SCCMClientAction
 Export-ModuleMember Invoke-SCCMClientSchedule
-Export-ModuleMember Get-SCCMClientAdvertisementHistoryForComputer
+Export-ModuleMember Get-SCCMClientSoftwareDistributionHistory 
 Export-ModuleMember Get-SCCMClientAdvertisementScheduleId
 Export-ModuleMember Get-SCCMClientAssignedSite
 Export-ModuleMember Set-SCCMClientAssignedSite

@@ -24,7 +24,7 @@ These are the functions currently present in the module:
 * Remove-SCCMComputerVariable
 * Invoke-SCCMClientAction
 * Invoke-SCCMClientSchedule
-* Get-SCCMClientAdvertisementHistoryForComputer
+* Get-SCCMClientSoftwareDistributionHistory
 * Get-SCCMClientAdvertisementScheduleId
 * Get-SCCMClientAssignedSite
 * Set-SCCMClientAssignedSite
