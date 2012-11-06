@@ -22,7 +22,22 @@ Creates a new computer account in SCCM.
 
 .DESCRIPTION
 Takes in information about a specific site, along with a computer name and a MAC address in order to create a new 
-account in SCCM.  This function will not overwrite existing computers with a matching name or MAC.
+account in SCCM.
+
+.PARAMETER siteServer
+The name of the site server where the new computer account is to be created.
+
+.PARAMETER siteCode
+The 3-character site code for the site where the new computer account is to be created.
+
+.PARAMETER computerName
+Name of the computer to be created.
+
+.PARAMETER macAddress
+MAC address of the computer account to be created in the format 00:00:00:00:00:00.
+
+.EXAMPLE
+New-SCCMComputer -siteServer MYSITESERVER -siteCode SIT -computerName MYCOMPUTER -macAddress "00:00:00:00:00:00"
 #>
 Function New-SCCMComputer {
     [CmdletBinding()]
@@ -40,7 +55,15 @@ Function New-SCCMComputer {
     $methodParameters.NetbiosName = $computerName
     $methodParameters.OverwriteExistingRecord = $false
 
-    return $site.psbase.InvokeMethod("ImportMachineEntry", $methodParameters, $null)
+    $computerCreationResult = $site.psbase.InvokeMethod("ImportMachineEntry", $methodParameters, $null)
+    
+    if($computerCreationResult.MachineExists -eq $true) {
+        Throw "Computer already exists with resource ID $($result.ResourceID)"
+    } elseif($computerCreationResult.ReturnValue -eq 0) {
+        return Get-SCCMComputer $siteServer $siteCode $computerName
+    } else {
+        Throw "Computer account creation failed"
+    }
 }
 
 <#
