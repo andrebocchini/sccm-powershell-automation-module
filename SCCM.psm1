@@ -873,6 +873,70 @@ Function Set-SCCMClientAssignedSite {
 
 <#
 .SYNOPSIS
+Retrieves a client computer's cache size.
+
+.DESCRIPTION
+Contacts a client computer to retrieve information about its cache size.  The value returned represents the cache size in MB.
+
+.PARAMETER computerName
+Name of the computer to be contacted.
+
+.EXAMPLE
+Get-SCCMClientCacheSize -computerName MYCOMPUTER
+
+Description
+-----------
+Returns the client computer's cache size in MB.
+#>
+Function Get-SCCMClientCacheSize {
+    [CmdletBinding()]
+    param (
+        [parameter(Mandatory=$true)][string]$computerName
+    )
+
+    $cacheConfig = Get-WMIObject -Computer $computerName -Namespace "root\CCM\SoftMgmtAgent" -Query "Select * From CacheConfig"  
+    return $cacheConfig.Size
+}
+
+<#
+.SYNOPSIS
+Changes the cache size for a client computer.
+
+.DESCRIPTION
+Contacts a client computer to change its cache size.  The value won't be picked up by the SCCM client on the target computer
+until the CcmExec service is restarted.  This function does not attempt to restart the service.
+
+.PARAMETER computerName
+Name of the computer to be contacted.
+
+.PARAMETER cacheSize
+The new size of the computer's cache in MB.  This value must be greater than 0.
+
+.EXAMPLE
+Set-SCCMClientCacheSize -computerName MYCOMPUTER -cacheSize 1000
+
+Description
+-----------
+Sets the client computer's cache size to 1000MB.
+#>
+Function Set-SCCMClientCacheSize {
+    [CmdletBinding()]
+    param (
+        [parameter(Mandatory=$true)][string]$computerName,
+        [parameter(Mandatory=$true)][int]$cacheSize
+    )
+
+    if($cacheSize -gt 0) {
+        $cacheConfig = Get-WMIObject -Computer $computerName -Namespace "root\CCM\SoftMgmtAgent" -Query "Select * From CacheConfig"  
+        $cacheConfig.Size = $cacheSize
+        $cacheConfig.Put()
+    } else {
+        Throw "Cache size needs to be greater than 0"
+    }
+}
+
+<#
+.SYNOPSIS
 Utility function to convert SCCM date strings into something readable.
 
 .DESCRIPTION
@@ -1065,6 +1129,8 @@ Export-ModuleMember Get-SCCMClientSoftwareDistributionHistory
 Export-ModuleMember Get-SCCMClientAdvertisementScheduleId
 Export-ModuleMember Get-SCCMClientAssignedSite
 Export-ModuleMember Set-SCCMClientAssignedSite
+Export-ModuleMember Get-SCCMClientCacheSize
+Export-ModuleMember Set-SCCMClientCacheSize
 Export-ModuleMember Convert-SCCMDate
 Export-ModuleMember Remove-SCCMPackage
 Export-ModuleMember Get-SCCMPackage

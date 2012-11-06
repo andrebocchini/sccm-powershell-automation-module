@@ -28,6 +28,8 @@ These are the functions currently present in the module:
 * Get-SCCMClientAdvertisementScheduleId
 * Get-SCCMClientAssignedSite
 * Set-SCCMClientAssignedSite
+* Get-SCCMClientCacheSize
+* Set-SCCMClientCacheSize
 * Convert-SCCMDate
 * Remove-SCCMPackage
 * Get-SCCMPackage
