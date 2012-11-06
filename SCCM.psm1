@@ -352,6 +352,43 @@ Function Get-SCCMCollection {
 
 <#
 .SYNOPSIS
+Retrieves the list of members of a collection.
+
+.DESCRIPTION
+Takes in information about an SCCM site along with a collection ID and returns a list of all members of the target collection.
+
+.PARAMETER siteServer
+Site server containing the collection.
+
+.PARAMETER siteCode
+Site code for the site containing the collection.
+
+.PARAMETER collectionId
+The ID of the collection whose members are being retrieved.
+
+.EXAMPLE
+Get-SCCMCollectionMembers -siteServer MYSITESERVER -siteCode SIT -collectionId SIT00012
+
+.EXAMPLE
+Get-SCCMCollectionMembers -siteServer MYSITESERVER -siteCode SIT -collectionId SIT00012 | Select-Object -ExpandProperty Name
+
+Description
+-----------
+Retrieves all members of collection SIT00012 and lists only their names
+#>
+Function Get-SCCMCollectionMembers {
+    [CmdletBinding()]
+    param (
+        [parameter(Mandatory=$true)][string]$siteServer,
+        [parameter(Mandatory=$true)][string]$siteCode,
+        [parameter(Mandatory=$true)][string]$collectionId
+    )
+
+    return Get-WMIObject -Computer $siteServer -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_CollectionMember_a" | Where { $_.CollectionID -eq $collectionId }
+}
+
+<#
+.SYNOPSIS
 Returns a list of collection IDs that a computer belongs to.
 
 .DESCRIPTION
@@ -1114,6 +1151,7 @@ Export-ModuleMember Remove-SCCMComputerFromCollection
 Export-ModuleMember New-SCCMStaticCollection
 Export-ModuleMember Remove-SCCMCollection
 Export-ModuleMember Get-SCCMCollection
+Export-ModuleMember Get-SCCMCollectionMembers
 Export-ModuleMember Get-SCCMCollectionsForComputer
 Export-ModuleMember Get-SCCMAdvertisement
 Export-ModuleMember Get-SCCMAdvertisementsForCollection
