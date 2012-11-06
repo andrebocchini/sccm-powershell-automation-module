@@ -230,7 +230,7 @@ Function New-SCCMStaticCollection {
             $newCollection.Comment = $collectionComment
             $newCollection.OwnedByThisSite = $true
 
-            $newCollection.Put()
+            $newCollection.Put() | Out-Null
 
             # Now we establish the parent to child relationship of the two collections. If we create a collection without
             # establishing the relationship, the new collection will not be visible in the console.
@@ -239,7 +239,9 @@ Function New-SCCMStaticCollection {
             $newCollectionRelationship.parentCollectionID = $parentCollectionId
             $newCollectionRelationship.subCollectionID = $newCollectionId
 
-            $newCollectionRelationship.Put()
+            $newCollectionRelationship.Put() | Out-Null
+
+            return Get-SCCMCollection $siteServer $siteCode -collectionId $newCollectionId
         } else {
             Throw "A collection named $collectionName already exists"
         }
