@@ -1189,10 +1189,70 @@ Function Get-SCCMPackage {
 
 <#
 .SYNOPSIS
+Creates a new SCCM program.
+
+.DESCRIPTION
+Creates a new SCCM program and associates it with a software distribution package.  This function currently only allows
+for little customization and creates the program with most default settings.
+
+.PARAMETER siteServer
+Site server where the package containing the new program resides.
+
+.PARAMETER siteCode
+Site code for the site where the package containing the new program resides.
+
+.PARAMETER packageId
+ID of the package that will contain the new program.
+
+.PARAMETER programName
+A unique name for the program.  If this name matches the name for an existing program in the same package,
+the program will be overwritten.
+
+.PARAMETER programComment
+A comment for the program.
+
+.PARAMETER programCommandLine
+The command line that will be executed when this program runs.
+#>
+Function New-SCCMProgram {
+    [CmdletBinding()]
+    param (
+        [parameter(Mandatory=$true)][string]$siteServer,
+        [parameter(Mandatory=$true)][string]$siteCode,
+        [parameter(Mandatory=$true)][string]$packageId,
+        [parameter(Mandatory=$true)][string]$programName,
+        [parameter(Mandatory=$true)][string]$programComment,
+        [parameter(Mandatory=$true)][string]$programCommandLine
+    )
+
+    if(Get-SCCMPackage $siteServer $siteCode -packageId $packageId) { 
+        $newProgram = ([WMIClass]("\\$siteServer\root\sms\site_" + "$siteCode" + ":SMS_Program")).CreateInstance()
+        $newProgram.ProgramName = $programName
+        $newProgram.PackageID = $packageId
+        $newProgram.Comment = $programComment
+        $newProgram.CommandLine = $programCommandLine
+
+        $programCreationResult = $newProgram.Put()
+        if($programCreationResult) {
+            $newProgramId = $($programCreationResult.RelativePath).TrimStart('SMS_Program.PackageID=')
+            $newProgramId = $newProgramId.Substring(1,8)
+
+            return Get-SCCMProgram $siteServer $siteCode $packageId $programName
+        } else {
+            Throw "Program creation failed"
+        }
+    } else {
+        Throw "Invalid package ID $packageId"
+    }
+}
+
+<#
+.SYNOPSIS
 Retrieves SCCM programs from the site server.
 
 .DESCRIPTION
-Takes in information about a specific site and a package ID and returns all programs that match the specified package ID.  If no package ID is specified, it returns all programs found on the site server.
+Takes in information about a specific site and a package ID and returns a program matching the package ID and program name
+passed as parameters.
 
 .PARAMETER siteServer
 The name of the site server to be queried.
@@ -1201,7 +1261,11 @@ The name of the site server to be queried.
 The 3-character site code for the site to be queried.
 
 .PARAMETER packageId
-Optional parameter.  If specified, the function returns programs that belong to the package specified by ID.  If absent, the function returns all programs for the site.
+Optional parameter.  If specified along with a program name, the function returns a program matching the and the package ID specified.
+If only a package ID is specified, the function returns all programs that belong to the package.  If absent, the function returns all programs for the site.
+
+.PARAMETER programName
+Name of the program to be returned.  If specified, a package ID must also be specified.
 
 .EXAMPLE
 Get-SCCMProgram -siteServer MYSITESERVER -siteCode SIT -packageId PACKAGEID
@@ -1229,11 +1293,16 @@ Function Get-SCCMProgram {
     param (
         [parameter(Mandatory=$true)][string]$siteServer,
         [parameter(Mandatory=$true)][string]$siteCode,
-        [string]$packageId
+        [string]$packageId,
+        [string]$programName
     )
 
-    if($packageId) {
+    if($packageId -and $programName) {
+        return Get-WMIObject -ComputerName $siteServer -Namespace "root\sms\site_$siteCode" -Class "SMS_Program" | where { ($_.PackageID -eq $packageId) -and ($_.ProgramName -eq $programName) }
+    } elseif($packageId -and !$programName) {
         return Get-WMIObject -ComputerName $siteServer -Namespace "root\sms\site_$siteCode" -Class "SMS_Program" | where { ($_.PackageID -eq $packageId) }
+    } elseif(!$packageId -and $programName) {
+        Throw "If a program name is specified, a package ID must also be specified"
     } else { 
         return Get-WMIObject -ComputerName $siteServer -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_Program"
     }
@@ -1269,4 +1338,5 @@ Export-ModuleMember Convert-SCCMDate
 Export-ModuleMember New-SCCMPackage
 Export-ModuleMember Remove-SCCMPackage
 Export-ModuleMember Get-SCCMPackage
+Export-ModuleMember New-SCCMProgram 
 Export-ModuleMember Get-SCCMProgram
