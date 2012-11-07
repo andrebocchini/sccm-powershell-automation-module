@@ -32,6 +32,7 @@ These are the functions currently present in the module:
 * Get-SCCMClientCacheSize
 * Set-SCCMClientCacheSize
 * Convert-SCCMDate
+* New-SCCMPackage
 * Remove-SCCMPackage
 * Get-SCCMPackage
 * Get-SCCMProgram

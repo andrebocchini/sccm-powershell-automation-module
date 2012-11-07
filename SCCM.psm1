@@ -1016,6 +1016,77 @@ Function Convert-SCCMDate {
 
 <#
 .SYNOPSIS
+Creates SCCM software distribution packages.
+
+.DESCRIPTION
+Takes in information about a specific site along with package details and creates a new software distribution package.  IF
+successful, the function return a WMI object for the new package.
+
+.PARAMETER siteServer
+The name of the site server where the package will be created.
+
+.PARAMETER siteCode
+The 3-character site code for the site where the package will be created.
+
+.PARAMETER packageName
+Name of the new package.
+
+.PARAMETER packageDescription
+A description for the new package.
+
+.PARAMETER packageVersion
+The new package's version.
+
+.PARAMETER packageManufacturer
+The name of the developer of the package being created.
+
+.PARAMETER packageLanguage
+The language of the softwre being packaged.
+
+.PARAMETER packageSource
+Optional parameter.  If not specified, the package will be created without source files.  This parameter can take
+the value of a local path on the site server, or a UNC path for a network share.
+#>
+Function New-SCCMPackage {
+    [CmdletBinding()]
+    param (
+        [parameter(Mandatory=$true)][string]$siteServer,
+        [parameter(Mandatory=$true)][string]$siteCode,
+        [parameter(Mandatory=$true)][string]$packageName,
+        [parameter(Mandatory=$true)][string]$packageDescription,
+        [parameter(Mandatory=$true)][string]$packageVersion,
+        [parameter(Mandatory=$true)][string]$packageManufacturer,
+        [parameter(Mandatory=$true)][string]$packageLanguage,
+        [string]$packageSource   
+    )
+
+    $newPackage = ([WMIClass]("\\$siteServer\root\sms\site_" + "$siteCode" + ":SMS_Package")).CreateInstance()
+    $newPackage.Name = $packageName
+    $newPackage.Description = $packageDescription
+    $newPackage.Version = $packageVersion
+    $newPackage.Manufacturer = $packageManufacturer
+    $newPackage.Language = $packageLanguage
+    if($packageSource) {
+        $newPackage.PkgSourceFlag = 2
+        $newPackage.PkgSourcePath = $packageSource
+    } else {
+        $newPackage.PkgSourceFlag = 1
+    }
+    $packageCreationResult = $newPackage.Put()
+
+    if($packageCreationResult) {
+        $newPackageIdTokens = $($packageCreationResult.RelativePath).Split("=")
+        $newPackageId = $($newPackageIdTokens[1]).TrimStart("`"")
+        $newPackageId = $($newPackageId).TrimEnd("`"")
+
+        return Get-SCCMPackage $siteServer $siteCode $packageId $newPackageId
+    } else {
+        Throw "Package creation failed"
+    }
+}
+
+<#
+.SYNOPSIS
 Removes SCCM packages from the site server.
 
 .DESCRIPTION
@@ -1195,6 +1266,7 @@ Export-ModuleMember Set-SCCMClientAssignedSite
 Export-ModuleMember Get-SCCMClientCacheSize
 Export-ModuleMember Set-SCCMClientCacheSize
 Export-ModuleMember Convert-SCCMDate
+Export-ModuleMember New-SCCMPackage
 Export-ModuleMember Remove-SCCMPackage
 Export-ModuleMember Get-SCCMPackage
 Export-ModuleMember Get-SCCMProgram
