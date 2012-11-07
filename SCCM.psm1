@@ -1346,6 +1346,57 @@ Function Get-SCCMProgram {
 
 <#
 .SYNOPSIS
+Adds a package to one or more distribution points.
+
+.DESCRIPTION
+Adds a package to one or more distribution points.
+
+.PARAMETER siteServer
+Name of the site server.
+
+.PARAMETER siteCode
+The 3-character code for the site containing the disribution points.
+
+.PARAMETER packageId
+The ID of the package that needs to be added to a distribution point.
+
+.PARAMETER distributionPointList
+A list of one or more distribution points that will have the package added to them.  These are WMI
+objects with information about distribution points.  The easiest way to obtain them is to use Get-SCCMDistributionPoints.
+
+.EXAMPLE
+$dpList = Get-SCCMDistributionPoint -siteServer MYSITESERVER -siteCode SIT
+Add-SCCMPackageToDistributionPoint -siteServer MYSITESERVEr -siteCode SIT -packageId SIT00000 -distributionPointList $dpList
+
+Description
+-----------
+This will add the package SIT00000 to every distribution point on the site SIT.
+#>
+Function Add-SCCMPackageToDistributionPoint {
+    [CmdletBinding()]
+    param (
+        [parameter(Mandatory=$true)][string]$siteServer,
+        [parameter(Mandatory=$true)][string]$siteCode,
+        [parameter(Mandatory=$true)][string]$packageId,
+        [parameter(Mandatory=$true)]$distributionPointList
+    )
+
+    if(Get-SCCMPackage $siteServer $siteCode -packageId $packageId) {
+        foreach($distributionPoint in $distributionPointList) {
+            $newDistributionPoint = ([WMIClass]("\\$siteServer\root\sms\site_" + "$siteCode" + ":SMS_DistributionPoint")).CreateInstance()
+            $newDistributionPoint.ServerNALPath = $distributionPoint.NALPath
+            $newDistributionPoint.PackageID = $packageId
+            $newDistributionPoint.SiteCode = $distributionPoint.SiteCode
+            $newDistributionPoint.SiteName = $distributionPoint.SiteCode
+            $newDistributionPoint.psbase.Put() | Out-Null
+        }
+    } else {
+        Throw "Invalid package ID $packageId"
+    }
+}
+
+<#
+.SYNOPSIS
 Returns a list of distribution points for a particular site.
 
 .DESCRIPTION
@@ -1404,3 +1455,4 @@ Export-ModuleMember New-SCCMProgram
 Export-ModuleMember Remove-SCCMProgram
 Export-ModuleMember Get-SCCMProgram
 Export-ModuleMember Get-SCCMDistributionPoints
+Export-ModuleMember Add-SCCMPackageToDistributionPoint
