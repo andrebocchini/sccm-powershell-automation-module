@@ -39,6 +39,7 @@ These are the functions currently present in the module:
 * Remove-SCCMProgram
 * Get-SCCMProgram
 * Add-SCCMPackageToDistributionPoint
+* Remove-SCCMPackageFromDistributionPoint
 * Get-SCCMDistributionPoints
 
 This code has only been tested with SCCM 2007.  Please conduct your own independent testing before trusting this code in a production environment.

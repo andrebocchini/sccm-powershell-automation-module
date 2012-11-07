@@ -1397,6 +1397,55 @@ Function Add-SCCMPackageToDistributionPoint {
 
 <#
 .SYNOPSIS
+Removes a package from one or more distribution points.
+
+.DESCRIPTION
+Removes a package from one or more distribution points.
+
+.PARAMETER siteServer
+Name of the site server.
+
+.PARAMETER siteCode
+The 3-character code for the site containing the disribution points.
+
+.PARAMETER packageId
+The ID of the package to be removed from distribution points.
+
+.PARAMETER distributionPointList
+A list of one or more distribution points that will have the package removed from them.  These are WMI
+objects with information about distribution points.  The easiest way to obtain them is to use Get-SCCMDistributionPoints.
+
+.EXAMPLE
+$dpList = Get-SCCMDistributionPoint -siteServer MYSITESERVER -siteCode SIT
+Remove-SCCMPackageFromDistributionPoint -siteServer MYSITESERVEr -siteCode SIT -packageId SIT00000 -distributionPointList $dpList
+
+Description
+-----------
+This will remove the package SIT00000 from every distribution point on the site SIT.
+#>
+Function Remove-SCCMPackageFromDistributionPoint {
+    [CmdletBinding()]
+    param (
+        [parameter(Mandatory=$true)][string]$siteServer,
+        [parameter(Mandatory=$true)][string]$siteCode,
+        [parameter(Mandatory=$true)][string]$packageId,
+        [parameter(Mandatory=$true)]$distributionPointList
+    )
+
+    if(Get-SCCMPackage $siteServer $siteCode -packageId $packageId) {
+        foreach($distributionPoint in $distributionPointList) {
+            $distributionPointToBeDeleted = Get-WmiObject -ComputerName $siteServer -Namespace "root\sms\site_$siteCode" -Class "SMS_DistributionPoint" | Where { ($_.ServerNALPath -eq $distributionPoint.NALPath) -and ($_.PackageID -eq $packageId) }
+            if($distributionPointToBeDeleted) {
+                $distributionPointToBeDeleted.psbase.Delete()
+            }
+        }
+    } else {
+        Throw "Invalid package ID $packageId"
+    } 
+}
+
+<#
+.SYNOPSIS
 Returns a list of distribution points for a particular site.
 
 .DESCRIPTION
@@ -1454,5 +1503,6 @@ Export-ModuleMember Get-SCCMPackage
 Export-ModuleMember New-SCCMProgram 
 Export-ModuleMember Remove-SCCMProgram
 Export-ModuleMember Get-SCCMProgram
-Export-ModuleMember Get-SCCMDistributionPoints
 Export-ModuleMember Add-SCCMPackageToDistributionPoint
+Export-ModuleMember Remove-SCCMPackageFromDistributionPoint
+Export-ModuleMember Get-SCCMDistributionPoints
