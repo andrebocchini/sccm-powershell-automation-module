@@ -451,6 +451,112 @@ Function Get-SCCMCollectionsForComputer {
 
 <#
 .SYNOPSIS
+Creates a new SCCM advertisement.
+
+.DESCRIPTION
+Creates a new SCCM advertisement for a software distribution program and assigns it to a collection.
+
+.PARAMETER siteServer
+Site provider for the site where the advertisement will be created.
+
+.PARAMETER siteCode
+The 3-character code for the site where the advertisement will be created.
+
+.PARAMETER advertisementName
+Name of the new advertisement.
+
+.PARAMETER collectionId
+Collection ID of the collection where the advertisement will be assigned.
+
+.PARAMETER packageId
+ID of the package to be advertised.
+
+.PARAMETER programName
+Named of the program to be advertised that is part of the package definied by the parameter packageId.
+
+.PARAMETER startTime
+Date and time when the package will be available.
+
+.PARAMETER expirationTime
+Expiration date and time for the advertisement.
+#>
+Function New-SCCMAdvertisement {
+    [CmdletBinding()]
+    param (
+        [parameter(Mandatory=$true)][string]$siteServer,
+        [parameter(Mandatory=$true)][string]$siteCode,
+        [parameter(Mandatory=$true)][string]$advertisementName,
+        [parameter(Mandatory=$true)][string]$collectionId,
+        [parameter(Mandatory=$true)][string]$packageId,
+        [parameter(Mandatory=$true)][string]$programName,
+        [parameter(Mandatory=$true)][string]$startTime,
+        [parameter(Mandatory=$true)][string]$expirationTime
+    )
+
+    if(!(Get-SCCMCollection $siteServer $siteCode -collectionId $collectionId)) {
+        Throw "Invalid collection with ID $collectionId"
+    } elseif(!(Get-SCCMPackage $siteServer $siteCode -packageId $packageId)) {
+        Throw "Invalid package with ID $packageId"
+    } elseif(!(Get-SCCMProgram $siteServer $siteCode $packageId $programName)) {
+        Throw "Invalid program with name `"$programName`""
+    } else {
+        $newAdvertisement = ([WMIClass]("\\$siteServer\root\sms\site_" + "$siteCode" + ":SMS_Advertisement")).CreateInstance()
+        $newAdvertisement.AdvertisementName = $advertisementName
+        # For some reason, if you try to pass the collection ID with lowercase characters, the SCCM console will crash when you right-click it and
+        # visit the Advertisements tab.  So just to be safe, we convert it to upper case.
+        $newAdvertisement.CollectionID = $collectionId.ToUpper()
+        $newAdvertisement.Comment = ""
+        $newAdvertisement.PackageID = $packageId
+        $newAdvertisement.ProgramName = $programName
+        $newAdvertisement.PresentTime = Convert-DateToSCCMDate $startTime
+        $newAdvertisement.ExpirationTime = Convert-DateToSCCMDate $expirationTime
+        $newAdvertisement.PresentTimeEnabled = $true
+        $newAdvertisement.AdvertFlags = 33554464
+        $newAdvertisement.RemoteClientFlags = 8240
+        $newAdvertisement.Priority = 2
+        $advertisementCreationResult = $newAdvertisement.Put()
+
+        $newAdvertisementId = $($advertisementCreationResult.RelativePath).TrimStart('SMS_Advertisement.AdvertisementID=')
+        $newAdvertisementId = $newAdvertisementId.Substring(1,8)
+
+        return Get-SCCMAdvertisement $siteServer $siteCode -advertisementId $newAdvertisementId
+    }
+}
+
+<#
+.SYNOPSIS
+Deletes an SCCM advertisement.
+
+.DESCRIPTION
+Deletes an SCCM advertisement based on an advertisement ID.
+
+.PARAMETER siteServer
+The site server for the site where the advertisement exists.
+
+.PARAMETER siteCode
+The 3-character code for the site where the advertisement exists.
+
+.PARAMETER advertisementId
+The ID of the advertisement to be deleted.
+#>
+Function Remove-SCCMAdvertisement {
+    [CmdletBinding()]
+    param (
+        [parameter(Mandatory=$true)][string]$siteServer,
+        [parameter(Mandatory=$true)][string]$siteCode,
+        [parameter(Mandatory=$true)][string]$advertisementId
+    )
+
+    $advertisement = Get-SCCMAdvertisement $siteServer $siteCode -advertisementId $advertisementId
+    if($advertisement) {
+        $advertisement.psbase.Delete()
+    } else {
+        Throw "Invalid advertisement with ID $advertisementId"
+    }
+}
+
+<#
+.SYNOPSIS
 Retrieves SCCM advertisements from the site server.
 
 .DESCRIPTION
@@ -999,23 +1105,6 @@ Function Set-SCCMClientCacheSize {
 
 <#
 .SYNOPSIS
-Utility function to convert SCCM date strings into something readable.
-
-.DESCRIPTION
-This function exists for convenience so users of the module do not have to try to figure out, if they are not familiar with it, ways
-to convert SCCM date strings into something readable.
-#>
-Function Convert-SCCMDate {
-    [CmdletBinding()]
-    param (
-        [parameter(Mandatory=$true, ValueFromPipeline=$true)][string]$date
-    )
-
-    [System.Management.ManagementDateTimeconverter]::ToDateTime($date);
-}
-
-<#
-.SYNOPSIS
 Creates SCCM software distribution packages.
 
 .DESCRIPTION
@@ -1117,7 +1206,11 @@ Function Remove-SCCMPackage {
     )    
 
     $package = Get-SCCMPackage $siteServer $siteCode -packageId $packageId
-    return $package.psbase.Delete()
+    if($package) {
+        return $package.psbase.Delete()
+    } else {
+        Throw "Invalid package with ID $packageId"
+    }
 }
 
 <#
@@ -1441,7 +1534,7 @@ Function Remove-SCCMPackageFromDistributionPoint {
         }
     } else {
         Throw "Invalid package ID $packageId"
-    } 
+    }
 }
 
 <#
@@ -1470,6 +1563,50 @@ Function Get-SCCMDistributionPoints {
     return Get-WmiObject -ComputerName $siteServer -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_SystemResourceList" | Where { ($_.RoleName -eq "SMS Distribution Point") -and  ($_.SiteCode -eq $siteCode) }
 }
 
+<#
+.SYNOPSIS
+Utility function to convert DMTF date strings into something readable and usable by PowerShell.
+
+.DESCRIPTION
+This function exists for convenience so users of the module do not have to try to figure out, if they are not familiar with it, ways
+to convert DMTF date strings into something readable.
+#>
+Function Convert-SCCMDateToDate {
+    [CmdletBinding()]
+    param (
+        [parameter(Mandatory=$true, ValueFromPipeline=$true)][string]$date
+    )
+
+    [System.Management.ManagementDateTimeconverter]::ToDateTime($date);
+}
+
+<#
+.SYNOPSIS
+Utility function to convert PowerShell date strings into DMTF dates.
+
+.DESCRIPTION
+This function exists for convenience so users of the module do not have to try to figure out, if they are not familiar with it, ways
+to convert PowerShell date strings into DMTF dates.
+
+.PARAMETER date
+The date string to be converted to a DMTF date.
+
+.EXAMPLE
+Convert-DateToSCCMDate $(Get-Date)
+
+Description
+-----------
+This will convert the current date and time into a DMTF date string that SCCM understands.
+#>
+Function Convert-DateToSCCMDate {
+    [CmdletBinding()]
+    param (
+        [parameter(Mandatory=$true, ValueFromPipeline=$true)][string]$date
+    )
+
+    [System.Management.ManagementDateTimeconverter]::ToDMTFDateTime($date)
+}
+
 Export-ModuleMember New-SCCMComputer
 Export-ModuleMember Remove-SCCMComputer
 Export-ModuleMember Get-SCCMComputer
@@ -1480,6 +1617,8 @@ Export-ModuleMember Remove-SCCMCollection
 Export-ModuleMember Get-SCCMCollection
 Export-ModuleMember Get-SCCMCollectionMembers
 Export-ModuleMember Get-SCCMCollectionsForComputer
+Export-ModuleMember New-SCCMAdvertisement
+Export-ModuleMember Remove-SCCMAdvertisement
 Export-ModuleMember Get-SCCMAdvertisement
 Export-ModuleMember Get-SCCMAdvertisementsForCollection
 Export-ModuleMember Get-SCCMAdvertisementsForComputer
@@ -1496,7 +1635,6 @@ Export-ModuleMember Get-SCCMClientAssignedSite
 Export-ModuleMember Set-SCCMClientAssignedSite
 Export-ModuleMember Get-SCCMClientCacheSize
 Export-ModuleMember Set-SCCMClientCacheSize
-Export-ModuleMember Convert-SCCMDate
 Export-ModuleMember New-SCCMPackage
 Export-ModuleMember Remove-SCCMPackage
 Export-ModuleMember Get-SCCMPackage
@@ -1506,3 +1644,5 @@ Export-ModuleMember Get-SCCMProgram
 Export-ModuleMember Add-SCCMPackageToDistributionPoint
 Export-ModuleMember Remove-SCCMPackageFromDistributionPoint
 Export-ModuleMember Get-SCCMDistributionPoints
+Export-ModuleMember Convert-SCCMDateToDate
+Export-ModuleMember Convert-DateToSCCMDate

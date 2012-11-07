@@ -15,6 +15,8 @@ These are the functions currently present in the module:
 * Get-SCCMCollection
 * Get-SCCMCollectionMembers
 * Get-SCCMCollectionsForComputer
+* New-SCCMAdvertisement
+* Remove-SCCMAdvertisement
 * Get-SCCMAdvertisement
 * Get-SCCMAdvertisementsForCollection
 * Get-SCCMAdvertisementsForComputer
@@ -25,22 +27,23 @@ These are the functions currently present in the module:
 * Remove-SCCMComputerVariable
 * Invoke-SCCMClientAction
 * Invoke-SCCMClientSchedule
-* Get-SCCMClientSoftwareDistributionHistory
+* Get-SCCMClientSoftwareDistributionHistory 
 * Get-SCCMClientAdvertisementScheduleId
 * Get-SCCMClientAssignedSite
 * Set-SCCMClientAssignedSite
 * Get-SCCMClientCacheSize
 * Set-SCCMClientCacheSize
-* Convert-SCCMDate
 * New-SCCMPackage
 * Remove-SCCMPackage
 * Get-SCCMPackage
-* New-SCCMProgram
+* New-SCCMProgram 
 * Remove-SCCMProgram
 * Get-SCCMProgram
 * Add-SCCMPackageToDistributionPoint
 * Remove-SCCMPackageFromDistributionPoint
 * Get-SCCMDistributionPoints
+* Convert-SCCMDateToDate
+* Convert-DateToSCCMDate
 
 This code has only been tested with SCCM 2007.  Please conduct your own independent testing before trusting this code in a production environment.
 
