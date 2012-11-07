@@ -1248,6 +1248,42 @@ Function New-SCCMProgram {
 
 <#
 .SYNOPSIS
+Deletes a SCCM program.
+
+.DESCRIPTION
+Deletes a specific program belonging to specific software distribution package.
+
+.PARAMETER siteServer
+Site server where the package containing the program resides.
+
+.PARAMETER siteCode
+Site code for the site where the package containing the program resides.
+
+.PARAMETER packageId
+ID of the package that will contains the program to be removed.
+
+.PARAMETER programName
+Name of the program to be deleted.
+#>
+Function Remove-SCCMProgram {
+    [CmdletBinding()]
+    param (
+        [parameter(Mandatory=$true)][string]$siteServer,
+        [parameter(Mandatory=$true)][string]$siteCode,
+        [parameter(Mandatory=$true)][string]$packageId,
+        [parameter(Mandatory=$true)][string]$programName
+    )
+
+    $program = Get-SCCMProgram $siteServer $siteCode $packageId $programName
+    if($program) {
+        return $program.psbase.Delete()
+    } else {
+        Throw "Invalid program ID or program name"
+    }
+}
+
+<#
+.SYNOPSIS
 Retrieves SCCM programs from the site server.
 
 .DESCRIPTION
@@ -1339,4 +1375,5 @@ Export-ModuleMember New-SCCMPackage
 Export-ModuleMember Remove-SCCMPackage
 Export-ModuleMember Get-SCCMPackage
 Export-ModuleMember New-SCCMProgram 
+Export-ModuleMember Remove-SCCMProgram
 Export-ModuleMember Get-SCCMProgram

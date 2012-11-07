@@ -36,6 +36,7 @@ These are the functions currently present in the module:
 * Remove-SCCMPackage
 * Get-SCCMPackage
 * New-SCCMProgram
+* Remove-SCCMProgram
 * Get-SCCMProgram
 
 This code has only been tested with SCCM 2007.  Please conduct your own independent testing before trusting this code in a production environment.
