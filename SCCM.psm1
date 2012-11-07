@@ -1344,6 +1344,32 @@ Function Get-SCCMProgram {
     }
 }
 
+<#
+.SYNOPSIS
+Returns a list of distribution points for a particular site.
+
+.DESCRIPTION
+Takes in information about a particular site and returns WMI objects for each distribution point it finds.
+
+.PARAMETER siteServer
+The site server to be queried.
+
+.PARAMETER siteCode
+The 3-character code for the site that holds the distribution points to be returned.
+
+.EXAMPLE
+Get-SCCMDistributionPoints -siteServer MYSITESERVER -siteCode SIT
+#>
+Function Get-SCCMDistributionPoints {
+    [CmdletBinding()]
+    param (
+        [parameter(Mandatory=$true)][string]$siteServer,
+        [parameter(Mandatory=$true)][string]$siteCode
+    )    
+
+    return Get-WmiObject -ComputerName $siteServer -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_SystemResourceList" | Where { ($_.RoleName -eq "SMS Distribution Point") -and  ($_.SiteCode -eq $siteCode) }
+}
+
 Export-ModuleMember New-SCCMComputer
 Export-ModuleMember Remove-SCCMComputer
 Export-ModuleMember Get-SCCMComputer
@@ -1377,3 +1403,4 @@ Export-ModuleMember Get-SCCMPackage
 Export-ModuleMember New-SCCMProgram 
 Export-ModuleMember Remove-SCCMProgram
 Export-ModuleMember Get-SCCMProgram
+Export-ModuleMember Get-SCCMDistributionPoints
