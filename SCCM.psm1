@@ -184,7 +184,10 @@ Function Add-SCCMComputerToCollection {
     $addToCollectionParameters = $collection.psbase.GetmethodParameters("AddMembershipRule")
     $addToCollectionParameters.collectionRule = $collectionRule  
 
-    return $collection.psbase.InvokeMethod("AddMembershipRule", $addToCollectionParameters, $null)
+    $status = $collection.psbase.InvokeMethod("AddMembershipRule", $addToCollectionParameters, $null)
+    if($status.ReturnValue -ne 0) {
+        Throw "Failed to add computer $computerName to collection $collectionName"
+    }
 }
 
 <#
@@ -208,7 +211,10 @@ Function Remove-SCCMComputerFromCollection {
     $collectionRule = ([WMIClass]("\\$siteServer\root\sms\site_" + "$siteCode" + ":SMS_CollectionRuleDirect")).CreateInstance()
     $collectionRule.ResourceID = $computer.ResourceID
     
-    return $collection.DeleteMembershipRule($collectionRule)
+    $status = $collection.DeleteMembershipRule($collectionRule)
+    if($status.ReturnValue -ne 0) {
+        Throw "Failed to remove computer $computerName from collection $collectionName"
+    }
 }
 
 <#
