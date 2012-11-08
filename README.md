@@ -103,7 +103,7 @@ Here's how this can be accomplished:
                             -packageLanguage $packageLanguage `
                             -packageSource $packageSourcePath
 
-The package will be created with default settings, but you can customize it further if you wish.  Look at this link for some help http://msdn.microsoft.com/en-us/library/cc144959.aspx.  If you do make changes to the package, make sure to use Save-SCCMPackage when you're finished.
+    The package will be created with default settings, but you can customize it further if you wish.  Look at this link for some help http://msdn.microsoft.com/en-us/library/cc144959.aspx.  If you do make changes to the package, make sure to use Save-SCCMPackage when you're finished.
 
 2. Create an installation program for the new package
 
@@ -114,7 +114,7 @@ The package will be created with default settings, but you can customize it furt
                             -programName $programName `
                             -programCommandLine $programCommandLine
 
-The program will be created with default settings, but you can customize it further if you wish.  Look at this link for some help http://msdn.microsoft.com/en-us/library/cc144361.aspx. If you do make changes to the program, make sure to use Save-SCCMProgram when you're finished.
+    The program will be created with default settings, but you can customize it further if you wish.  Look at this link for some help http://msdn.microsoft.com/en-us/library/cc144361.aspx. If you do make changes to the program, make sure to use Save-SCCMProgram when you're finished.
 
 3. Distribute it to distribution points
     
@@ -152,7 +152,7 @@ The program will be created with default settings, but you can customize it furt
                             -packageId $newPackage.PackageID `
                             -programName $newProgram.ProgramName
 
-The advertisement will be created with default settings, but you can customize it further if you wish.  Look at this link for some help http://msdn.microsoft.com/en-us/library/cc146108.aspx.  If you do make changes to the advertisement, make sure to use Save-SCCMAdvertisement when you're finished.
+    The advertisement will be created with default settings, but you can customize it further if you wish.  Look at this link for some help http://msdn.microsoft.com/en-us/library/cc146108.aspx.  If you do make changes to the advertisement, make sure to use Save-SCCMAdvertisement when you're finished.
 
 7. Instruct the test computer to retrieve new machine policies
 
