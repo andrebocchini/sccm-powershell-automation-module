@@ -454,7 +454,12 @@ Function Get-SCCMCollectionsForComputer {
 Creates a new SCCM advertisement.
 
 .DESCRIPTION
-Creates a new SCCM advertisement for a software distribution program and assigns it to a collection.
+Creates a new SCCM advertisement for a software distribution program and assigns it to a collection.  
+
+This function provides a limited set of parameters so it can create a basic package.  It will create the object, save it to the 
+database and return a copy of it so you can finish customizing it.  Once you finish customizing the properties of the object, save 
+it back using Save-SCCMAdvertisement.  Follow the link in the LINK section of this documentation block to find out the options available 
+for customizing an advertisement.
 
 .PARAMETER siteServer
 Site provider for the site where the advertisement will be created.
@@ -474,11 +479,8 @@ ID of the package to be advertised.
 .PARAMETER programName
 Named of the program to be advertised that is part of the package definied by the parameter packageId.
 
-.PARAMETER startTime
-Date and time when the package will be available.
-
-.PARAMETER expirationTime
-Expiration date and time for the advertisement.
+.LINK
+http://msdn.microsoft.com/en-us/library/cc146108.aspx
 #>
 Function New-SCCMAdvertisement {
     [CmdletBinding()]
@@ -488,9 +490,7 @@ Function New-SCCMAdvertisement {
         [parameter(Mandatory=$true)][string]$advertisementName,
         [parameter(Mandatory=$true)][string]$collectionId,
         [parameter(Mandatory=$true)][string]$packageId,
-        [parameter(Mandatory=$true)][string]$programName,
-        [parameter(Mandatory=$true)][string]$startTime,
-        [parameter(Mandatory=$true)][string]$expirationTime
+        [parameter(Mandatory=$true)][string]$programName
     )
 
     if(!(Get-SCCMCollection $siteServer $siteCode -collectionId $collectionId)) {
@@ -508,9 +508,7 @@ Function New-SCCMAdvertisement {
         $newAdvertisement.Comment = ""
         $newAdvertisement.PackageID = $packageId
         $newAdvertisement.ProgramName = $programName
-        $newAdvertisement.PresentTime = Convert-DateToSCCMDate $startTime
-        $newAdvertisement.ExpirationTime = Convert-DateToSCCMDate $expirationTime
-        $newAdvertisement.PresentTimeEnabled = $true
+        $newAdvertisement.PresentTime = Convert-DateToSCCMDate $(Get-Date)
         $newAdvertisement.AdvertFlags = 33554464
         $newAdvertisement.RemoteClientFlags = 8240
         $newAdvertisement.Priority = 2
@@ -521,6 +519,27 @@ Function New-SCCMAdvertisement {
 
         return Get-SCCMAdvertisement $siteServer $siteCode -advertisementId $newAdvertisementId
     }
+}
+
+<#
+.SYNOPSIS
+Saves an advertisement back into the SCCM database.
+
+.DESCRIPTION
+The functions in this module that are used to create advertisements only have a limited number of supported parameters, but 
+SCCM advertisements are objects with a large number of settings.  When you create an advertisement, it is likely that you will
+want to edit some of those settings.  Once you are finished editing the properties of the advertisement, you need to save it back
+into the SCCM database by using this method.
+
+.PARAMETER advertisement
+The advertisement object to be put back into the database.
+#>
+Function Save-SCCMAdvertisement {
+    param (
+        [parameter(Mandatory=$true)]$advertisement
+    )
+
+    $advertisement.Put()
 }
 
 <#
@@ -1111,6 +1130,11 @@ Creates SCCM software distribution packages.
 Takes in information about a specific site along with package details and creates a new software distribution package.  IF
 successful, the function return a WMI object for the new package.
 
+This function provides a limited set of parameters so it can create a basic package.  It will create the object, save it to the 
+database and return a copy of it so you can finish customizing it.  Once you finish customizing the properties of the object, save 
+it back using Save-SCCMPackage.  Follow the link in the LINK section of this documentation block to find out the options available 
+for customizing a package.
+
 .PARAMETER siteServer
 The name of the site server where the package will be created.
 
@@ -1135,6 +1159,9 @@ The language of the softwre being packaged.
 .PARAMETER packageSource
 Optional parameter.  If not specified, the package will be created without source files.  This parameter can take
 the value of a local path on the site server, or a UNC path for a network share.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc144959.aspx
 #>
 Function New-SCCMPackage {
     [CmdletBinding()]
@@ -1172,6 +1199,27 @@ Function New-SCCMPackage {
     } else {
         Throw "Package creation failed"
     }
+}
+
+<#
+.SYNOPSIS
+Saves a package back into the SCCM database.
+
+.DESCRIPTION
+The functions in this module that are used to create packages only have a limited number of supported parameters, but 
+SCCM packages are objects with a large number of settings.  When you create a package, it is likely that you will
+want to edit some of those settings.  Once you are finished editing the properties of the package, you need to save it back
+into the SCCM database by using this method.
+
+.PARAMETER package
+The package object to be put back into the database.
+#>
+Function Save-SCCMPackage {
+    param (
+        [parameter(Mandatory=$true)]$package
+    )
+
+    $package.Put() | Out-Null
 }
 
 <#
@@ -1288,6 +1336,11 @@ Creates a new SCCM program.
 Creates a new SCCM program and associates it with a software distribution package.  This function currently only allows
 for little customization and creates the program with most default settings.
 
+This function provides a limited set of parameters so it can create a basic program.  It will create the object, save it to the 
+database and return a copy of it so you can finish customizing it.  Once you finish customizing the properties of the object, save 
+it back using Save-SCCMProgram.  Follow the link in the LINK section of this documentation block to find out the options available 
+for customizing a program.
+
 .PARAMETER siteServer
 Site server where the package containing the new program resides.
 
@@ -1301,11 +1354,11 @@ ID of the package that will contain the new program.
 A unique name for the program.  If this name matches the name for an existing program in the same package,
 the program will be overwritten.
 
-.PARAMETER programComment
-A comment for the program.
-
 .PARAMETER programCommandLine
 The command line that will be executed when this program runs.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc144361.aspx
 #>
 Function New-SCCMProgram {
     [CmdletBinding()]
@@ -1314,7 +1367,6 @@ Function New-SCCMProgram {
         [parameter(Mandatory=$true)][string]$siteCode,
         [parameter(Mandatory=$true)][string]$packageId,
         [parameter(Mandatory=$true)][string]$programName,
-        [parameter(Mandatory=$true)][string]$programComment,
         [parameter(Mandatory=$true)][string]$programCommandLine
     )
 
@@ -1322,7 +1374,6 @@ Function New-SCCMProgram {
         $newProgram = ([WMIClass]("\\$siteServer\root\sms\site_" + "$siteCode" + ":SMS_Program")).CreateInstance()
         $newProgram.ProgramName = $programName
         $newProgram.PackageID = $packageId
-        $newProgram.Comment = $programComment
         $newProgram.CommandLine = $programCommandLine
 
         $programCreationResult = $newProgram.Put()
@@ -1337,6 +1388,27 @@ Function New-SCCMProgram {
     } else {
         Throw "Invalid package ID $packageId"
     }
+}
+
+<#
+.SYNOPSIS
+Saves a program back into the SCCM database.
+
+.DESCRIPTION
+The functions in this module that are used to create programs only have a limited number of supported parameters, but 
+SCCM programs are objects with a large number of settings.  When you create a program, it is likely that you will
+want to edit some of those settings.  Once you are finished editing the properties of the program, you need to save it back
+into the SCCM database by using this method.
+
+.PARAMETER program
+The program object to be put back into the database.
+#>
+Function Save-SCCMProgram {
+    param (
+        [parameter(Mandatory=$true)]$program
+    )
+
+    $program.Put() | Out-Null
 }
 
 <#
@@ -1618,6 +1690,7 @@ Export-ModuleMember Get-SCCMCollection
 Export-ModuleMember Get-SCCMCollectionMembers
 Export-ModuleMember Get-SCCMCollectionsForComputer
 Export-ModuleMember New-SCCMAdvertisement
+Export-ModuleMember Save-SCCMAdvertisement
 Export-ModuleMember Remove-SCCMAdvertisement
 Export-ModuleMember Get-SCCMAdvertisement
 Export-ModuleMember Get-SCCMAdvertisementsForCollection
@@ -1636,9 +1709,11 @@ Export-ModuleMember Set-SCCMClientAssignedSite
 Export-ModuleMember Get-SCCMClientCacheSize
 Export-ModuleMember Set-SCCMClientCacheSize
 Export-ModuleMember New-SCCMPackage
+Export-ModuleMember Save-SCCMPackage
 Export-ModuleMember Remove-SCCMPackage
 Export-ModuleMember Get-SCCMPackage
-Export-ModuleMember New-SCCMProgram 
+Export-ModuleMember New-SCCMProgram
+Export-ModuleMember Save-SCCMProgram
 Export-ModuleMember Remove-SCCMProgram
 Export-ModuleMember Get-SCCMProgram
 Export-ModuleMember Add-SCCMPackageToDistributionPoint

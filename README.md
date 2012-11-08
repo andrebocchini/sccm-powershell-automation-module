@@ -16,6 +16,7 @@ These are the functions currently present in the module:
 * Get-SCCMCollectionMembers
 * Get-SCCMCollectionsForComputer
 * New-SCCMAdvertisement
+* Save-SCCMAdvertisement
 * Remove-SCCMAdvertisement
 * Get-SCCMAdvertisement
 * Get-SCCMAdvertisementsForCollection
@@ -34,9 +35,11 @@ These are the functions currently present in the module:
 * Get-SCCMClientCacheSize
 * Set-SCCMClientCacheSize
 * New-SCCMPackage
+* Save-SCCMPackage
 * Remove-SCCMPackage
 * Get-SCCMPackage
-* New-SCCMProgram 
+* New-SCCMProgram
+* Save-SCCMProgram
 * Remove-SCCMProgram
 * Get-SCCMProgram
 * Add-SCCMPackageToDistributionPoint
