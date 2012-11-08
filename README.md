@@ -152,7 +152,7 @@ The program will be created with default settings, but you can customize it furt
                             -packageId $newPackage.PackageID `
                             -programName $newProgram.ProgramName
 
-The program will be created with default settings, but you can customize it further if you wish.  Look at this link for some help http://msdn.microsoft.com/en-us/library/cc146108.aspx.  If you do make changes to the advertisement, make sure to use Save-SCCMAdvertisement when you're finished.
+The advertisement will be created with default settings, but you can customize it further if you wish.  Look at this link for some help http://msdn.microsoft.com/en-us/library/cc146108.aspx.  If you do make changes to the advertisement, make sure to use Save-SCCMAdvertisement when you're finished.
 
 7. Instruct the test computer to retrieve new machine policies
 
