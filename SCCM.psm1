@@ -31,7 +31,7 @@ The name of the site server where the new computer account is to be created.
 The 3-character site code for the site where the new computer account is to be created.
 
 .PARAMETER computerName
-Name of the computer to be created.
+Name of the computer to be created.  Name should not be longer than 15 characters.
 
 .PARAMETER macAddress
 MAC address of the computer account to be created in the format 00:00:00:00:00:00.
@@ -58,7 +58,7 @@ Function New-SCCMComputer {
     $computerCreationResult = $site.psbase.InvokeMethod("ImportMachineEntry", $methodParameters, $null)
     
     if($computerCreationResult.MachineExists -eq $true) {
-        Throw "Computer already exists with resource ID $($result.ResourceID)"
+        Throw "Computer already exists with resource ID $($computerCreationResult.ResourceID)"
     } elseif($computerCreationResult.ReturnValue -eq 0) {
         return Get-SCCMComputer $siteServer $siteCode $computerName
     } else {
