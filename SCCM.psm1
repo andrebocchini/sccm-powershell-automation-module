@@ -60,7 +60,7 @@ Function New-SCCMComputer {
     if($computerCreationResult.MachineExists -eq $true) {
         Throw "Computer already exists with resource ID $($computerCreationResult.ResourceID)"
     } elseif($computerCreationResult.ReturnValue -eq 0) {
-        return Get-SCCMComputer $siteProvider $siteCode $computerName
+        return Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -computerName $computerName
     } else {
         Throw "Computer account creation failed"
     }
@@ -106,29 +106,39 @@ Function Remove-SCCMComputer {
 Returns computers from SCCM.
 
 .DESCRIPTION
-Takes in information about a specific site, along with a computer name and will attempt to retrieve an object for the computer.  This function
+Takes in information about a specific site, along with a computer name or resource ID and will attempt to retrieve an object for the computer.  This function
 intentionally ignores obsolete computers by default, but you can specify a parameter to include them.
 
-When invoked without specifying a computer name, this function returns a list of all computers found on the specified SCCM site.
+When invoked without specifying a computer name or resource ID, this function returns a list of all computers found on the specified SCCM site.
 
 .PARAMETER siteProvider
 The name of the site provider.
 
 .PARAMETER siteCode
-The 3-character site code for the site to be queried.
+The 3-character site code for the site where the computer exists.
 
 .PARAMETER computerName
-The name of the computer to be retrieved. 
+The name of the computer to be retrieved.
+
+.PARAMETER resourceId
+The resource ID of the computer to be retrieved.
 
 .PARAMETER includeObsolete
 This switch defaults to false.  If you want your results to include obsolete computers, set this to true when calling this function.
 
 .EXAMPLE
-Get-SCCMComputer -siteProvider MYSITEPROVIDER -siteCode SIT -computerName MYCOMPUTER -includeObsolete:true
+Get-SCCMComputer -siteProvider MYSITEPROVIDER -siteCode SIT -computerName MYCOMPUTER -includeObsolete:$true
 
 Description
 -----------
-Returns any computer whose name matches MYCOMPUTER found on site provider MYSITEPROVIDER for site SIT.
+Returns any computer whose name matches MYCOMPUTER found on site SIT.
+
+.EXAMPLE
+Get-SCCMComputer -siteProvider MYSITEPROVIDER -siteCode SIT -resourceId 1111
+
+Description
+-----------
+Returns any computer whose resource ID matches 1111 found on site site SIT.
 
 .EXAMPLE
 Get-SCCMComputer -siteProvider MYSITEPROVIDER -siteCode SIT
@@ -138,22 +148,43 @@ Description
 Returns all computers (excluding obsolete ones) found on site SIT.
 #>
 Function Get-SCCMComputer {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParametersetName="default")]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
+        [parameter(Mandatory=$true)]
+        [parameter(ParameterSetName="name")]
+        [parameter(ParameterSetName="default")]
+        [parameter(ParameterSetName="id")]
+        [string]$siteProvider,
+        [parameter(ParameterSetName="name")]
+        [parameter(ParameterSetName="default")]
+        [parameter(ParameterSetName="id")]
+        [parameter(Mandatory=$true)]
+        [string]$siteCode,
+        [parameter(ParameterSetName="name")]
         [string]$computerName,
+        [parameter(ParameterSetName="id")]
+        [int]$resourceId,
         [switch]$includeObsolete=$false
     )
 
-    if($computerName -and $includeObsolete) {
-        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System" | where { $_.Name -eq $computerName }
-    } elseif($computerName -and !$includeObsolete) {
-        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System" | where { ($_.Name -eq $computerName) -and ($_.Obsolete -ne 1) }
-    } elseif(!$computerName -and !$includeObsolete) {
-        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "select * from SMS_R_System" | where { $_.Obsolete -ne 1 }
+    if($computerName) {
+        $computerList = Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System" | where { $_.Name -eq $computerName }
+    } elseif($resourceId) {
+        $computerList = Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System" | where { $_.ResourceID -eq $resourceId }
     } else {
-        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "select * from SMS_R_System"
+        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System"
+    }
+
+    if(!$includeObsolete) {
+        $listWithoutObsoleteComputers = @()
+        foreach($computer in $computerList) {
+            if($computer.Obsolete -ne 1) {
+                $listWithoutObsoleteComputers += $computer
+            }
+        }
+        return $listWithoutObsoleteComputers
+    } else {
+        return $computerList
     }
 }
 
@@ -174,7 +205,7 @@ Function Add-SCCMComputerToCollection {
         [parameter(Mandatory=$true)][string]$collectionName
     )
 
-    $computer = Get-SCCMComputer $siteProvider $siteCode $computerName
+    $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -computerName $computerName
     $collectionRule = [WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_CollectionRuleDirect")
     $collectionRule.Properties["ResourceClassName"].Value = "SMS_R_System"
     $collectionRule.Properties["ResourceID"].Value = $computer.Properties["ResourceID"].Value
@@ -206,7 +237,7 @@ Function Remove-SCCMComputerFromCollection {
         [parameter(Mandatory=$true)][string]$collectionName
     )
 
-    $computer = Get-SCCMComputer $siteProvider $siteCode $computerName
+    $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -computerName $computerName
     $collection = Get-SCCMCollection $siteProvider $siteCode $collectionName
     $collectionRule = ([WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_CollectionRuleDirect")).CreateInstance()
     $collectionRule.ResourceID = $computer.ResourceID
@@ -434,7 +465,7 @@ Function Get-SCCMCollectionsForComputer {
     )
 
     # First we find all membership associations that match the colection ID of the computer in question
-    $computer = Get-SCCMComputer $siteProvider $siteCode $computerName
+    $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -computerName $computerName
     $computerCollectionIds = @()
     $collectionMembers = Get-WMIObject -Computer $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_CollectionMember_a Where ResourceID= $($computer.ResourceID)"
     foreach($collectionMember in $collectionMembers) {
@@ -742,7 +773,7 @@ Function Get-SCCMAdvertisementStatusForComputer {
         [parameter(Mandatory=$true)][string]$computerName
     )
 
-    $computer = Get-SCCMComputer $siteProvider $siteCode $computerName
+    $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -computerName $computerName
     return Get-WMIObject -Computer $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * from SMS_ClientAdvertisementStatus WHERE AdvertisementID='$advertisementId' AND ResourceID='$($computer.ResourceID)'"
 }
 
@@ -765,7 +796,7 @@ Function Set-SCCMComputerVariable {
         [parameter(Mandatory=$true)][bool]$isMasked
     )
 
-    $computer = Get-SCCMComputer $siteProvider $siteCode $computerName
+    $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -computerName $computerName
     $computerSettings = Get-WMIObject -computername $siteProvider -namespace "root\sms\site_$siteCode" -class "SMS_MachineSettings" | where {$_.ResourceID -eq $computer.ResourceID}
 
     # If the computer has never held any variables, computerSettings will be null, so we have to create a bunch of objects from scratch to hold
@@ -852,11 +883,12 @@ Function Get-SCCMComputerVariables {
         [parameter(Mandatory=$true)][string]$computerName
     )
 
-    $computer = Get-SCCMComputer $siteProvider $siteCode $computerName
+    $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -computerName $computerName
     $computerSettings = Get-WMIObject -computername $siteProvider -namespace "root\sms\site_$siteCode" -class "SMS_MachineSettings" | where {$_.ResourceID -eq $computer.ResourceID}
-    $computerSettings.Get()
-
-    return $computerSettings.MachineVariables
+    if($computerSettings) {
+        $computerSettings.Get()
+        return $computerSettings.MachineVariables
+    }
 }
 
 <#
@@ -875,7 +907,7 @@ Function Remove-SCCMComputerVariable {
         [parameter(Mandatory=$true)][string]$variableName
     )
 
-    $computer = Get-SCCMComputer $siteProvider $siteCode $computerName
+    $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -computerName $computerName
     $computerSettings = Get-WMIObject -computername $siteProvider -namespace "root\sms\site_$siteCode" -class "SMS_MachineSettings" | where {$_.ResourceID -eq $computer.ResourceID}
     $computerSettings.Get() 
     
