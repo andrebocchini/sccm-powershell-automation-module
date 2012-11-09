@@ -155,10 +155,10 @@ Function Get-SCCMComputer {
         [parameter(ParameterSetName="default")]
         [parameter(ParameterSetName="id")]
         [string]$siteProvider,
+        [parameter(Mandatory=$true)]
         [parameter(ParameterSetName="name")]
         [parameter(ParameterSetName="default")]
         [parameter(ParameterSetName="id")]
-        [parameter(Mandatory=$true)]
         [string]$siteCode,
         [parameter(ParameterSetName="name")]
         [string]$computerName,
@@ -193,31 +193,75 @@ Function Get-SCCMComputer {
 Adds a computer to a collection in SCCM.
 
 .DESCRIPTION
-Takes in information about a specific site, along with a computer name, and a collection name and direct membership rule for the computer in
-the specified collection.
+Takes in information about a specific site, along with a computer name, and a collection name or collection ID and creates a 
+direct membership rule for the computer in the specified collection.
+
+.PARAMETER siteProvider
+The name of the site provider.
+
+.PARAMETER siteCode
+The 3-character site code.
+
+.PARAMETER computerName
+Name of the computer to be added to a collection.
+
+.PARAMETER collectionName
+Name of the collection where the computer is to be added.
+
+.PARAMETER collectionId
+ID of the collection where the computer is to be added.
 #>
 Function Add-SCCMComputerToCollection {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
-        [parameter(Mandatory=$true)][string]$computerName,
-        [parameter(Mandatory=$true)][string]$collectionName
+        [parameter(Mandatory=$true)]
+        [parameter(ParameterSetName="name")]
+        [parameter(ParameterSetName="id")]
+        [string]$siteProvider,
+        [parameter(Mandatory=$true)]
+        [parameter(ParameterSetName="name")]
+        [parameter(ParameterSetName="id")]
+        [string]$siteCode,
+        [parameter(Mandatory=$true)]
+        [parameter(ParameterSetName="name")]
+        [parameter(ParameterSetName="id")]
+        [string]$computerName,
+        [parameter(ParameterSetName="name")]
+        [string]$collectionName,
+        [parameter(ParameterSetName="id")]
+        [string]$collectionId
     )
 
+    # First we get an object for the computer and one for the collection in question
     $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -computerName $computerName
-    $collectionRule = [WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_CollectionRuleDirect")
-    $collectionRule.Properties["ResourceClassName"].Value = "SMS_R_System"
-    $collectionRule.Properties["ResourceID"].Value = $computer.Properties["ResourceID"].Value
+    if($collectionName) {
+        $collection = Get-SCCMCollection -siteProvider $siteProvider -siteCode $siteCode -collectionName $collectionName
+        $collectionId = $collection.collectionId
+    } else {
+        $collection = Get-SCCMCollection -siteProvider $siteProvider -siteCode $siteCode -collectionId $collectionId
+    }
 
-    $collection = Get-WmiObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_Collection" | where { $_.Name -eq $collectionName }
-    $collectionId = $collection.collectionId
-    $addToCollectionParameters = $collection.psbase.GetmethodParameters("AddMembershipRule")
-    $addToCollectionParameters.collectionRule = $collectionRule  
+    # We want to get a list of all the collection this computer already belongs to so we can check later if it already is
+    # a member of the collection passed as a parameter to this function
+    $currentCollectionMembershipList = Get-SCCMCollectionsForComputer $siteProvider $siteCode $computerName
+    $currentCollectionIdList = @()
+    foreach($currentCollectionMembership in $currentCollectionMembershipList) {
+        $currentCollectionIdList += ($currentCollectionMembership.CollectionID).ToUpper()
+    }
 
-    $status = $collection.psbase.InvokeMethod("AddMembershipRule", $addToCollectionParameters, $null)
-    if($status.ReturnValue -ne 0) {
-        Throw "Failed to add computer $computerName to collection $collectionName"
+    # We will only add the computer if it isn't already part of the collection passed as a parameter to this function
+    if($currentCollectionIdList -notcontains ($collection.CollectionID).ToUpper()) {
+        $collectionRule = [WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_CollectionRuleDirect")
+        $collectionRule.Properties["ResourceClassName"].Value = "SMS_R_System"
+        $collectionRule.Properties["ResourceID"].Value = $computer.Properties["ResourceID"].Value
+
+        $addToCollectionParameters = $collection.psbase.GetmethodParameters("AddMembershipRule")
+        $addToCollectionParameters.collectionRule = $collectionRule
+
+        $status = $collection.psbase.InvokeMethod("AddMembershipRule", $addToCollectionParameters, $null)
+        if($status.ReturnValue -ne 0) {
+            Throw "Failed to add computer $computerName to collection $collectionName"
+        }
     }
 }
 
