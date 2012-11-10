@@ -56,11 +56,11 @@ Function New-SCCMComputer {
     $methodParameters.OverwriteExistingRecord = $false
 
     $computerCreationResult = $site.psbase.InvokeMethod("ImportMachineEntry", $methodParameters, $null)
-    
+
     if($computerCreationResult.MachineExists -eq $true) {
         Throw "Computer already exists with resource ID $($computerCreationResult.ResourceID)"
     } elseif($computerCreationResult.ReturnValue -eq 0) {
-        return Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -computerName $computerName
+        return Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -resourceId $computerCreationResult.ResourceID
     } else {
         Throw "Computer account creation failed"
     }
