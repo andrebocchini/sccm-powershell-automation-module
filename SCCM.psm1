@@ -58,11 +58,11 @@ Function New-SCCMComputer {
     $computerCreationResult = $site.psbase.InvokeMethod("ImportMachineEntry", $methodParameters, $null)
 
     if($computerCreationResult.MachineExists -eq $true) {
-        Throw "Computer already exists with resource ID $($computerCreationResult.ResourceID)"
+        Throw "Computer already exists with name $computerName or MAC $macAddress"
     } elseif($computerCreationResult.ReturnValue -eq 0) {
         return Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -resourceId $computerCreationResult.ResourceID
     } else {
-        Throw "Computer account creation failed"
+        Throw "Computer account creation failed for $computerName"
     }
 }
 
@@ -230,7 +230,7 @@ Function Add-SCCMComputerToCollection {
 
     # We want to get a list of all the collection this computer already belongs to so we can check later if it already is
     # a member of the collection passed as a parameter to this function
-    $currentCollectionMembershipList = Get-SCCMCollectionsForComputer $siteProvider $siteCode $computer.Name
+    $currentCollectionMembershipList = Get-SCCMCollectionsForComputer $siteProvider $siteCode -resourceId $resourceId
     $currentCollectionIdList = @()
     foreach($currentCollectionMembership in $currentCollectionMembershipList) {
         $currentCollectionIdList += ($currentCollectionMembership.CollectionID).ToUpper()
@@ -506,18 +506,32 @@ Function Get-SCCMCollectionMembers {
 Returns a list of collection IDs that a computer belongs to.
 
 .DESCRIPTION
-Takes in information about a specific site, along with a computer name and returns an array containing the collection IDs that the computer belongs to.
+Takes in information about a specific site, along with a computer resource ID and returns an array containing the collection IDs that the computer belongs to.
+
+.PARAMETER siteProvider
+The name of the site provider.
+
+.PARAMETER siteCode
+The 3-character code for the site where the computer exists.
+
+.PARAMETER resourceId
+Resource ID for the computer whose list of collections are being retrieved.
 #>
 Function Get-SCCMCollectionsForComputer {
     [CmdletBinding()]
     param (
         [parameter(Mandatory=$true)][string]$siteProvider,
         [parameter(Mandatory=$true)][string]$siteCode,
-        [parameter(Mandatory=$true)][string]$computerName
+        [parameter(Mandatory=$true)][string]$resourceId
     )
 
     # First we find all membership associations that match the colection ID of the computer in question
-    $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -computerName $computerName
+    $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -resourceId $resourceId
+
+    if(!$computer) {
+        Throw "Unable to retrieve computer with resource ID $resourceId"
+    }
+
     $computerCollectionIds = @()
     $collectionMembers = Get-WMIObject -Computer $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_CollectionMember_a Where ResourceID= $($computer.ResourceID)"
     foreach($collectionMember in $collectionMembers) {
@@ -753,17 +767,26 @@ Function Get-SCCMAdvertisementsForCollection {
 Returns a list of advertisements assigned to a computer.
 
 .DESCRIPTION
-Takes in information about a specific site, along with a computer name and returns all advertisements assigned to that computer.
+Takes in information about a specific site, along with a computer resource ID and returns all advertisements assigned to that computer.
+
+.PARAMETER siteProvider
+The name of the site provider.
+
+.PARAMETER siteCode
+The 3-character code for the site where the computer exists.
+
+.PARAMETER resourceId
+Resource ID of the computers whose advertisements are being retrieved.
 #>
 Function Get-SCCMAdvertisementsForComputer {
     [CmdletBinding()]
     param (
         [parameter(Mandatory=$true)][string]$siteProvider,
         [parameter(Mandatory=$true)][string]$siteCode,
-        [parameter(Mandatory=$true)][string]$computerName
+        [parameter(Mandatory=$true)][string]$resourceId
     )
 
-    $collections = Get-SCCMCollectionsForComputer $siteProvider $siteCode -collectionName $computerName
+    $collections = Get-SCCMCollectionsForComputer $siteProvider $siteCode -resourceId $resourceId
     $computerAdvertisements = @()
     foreach($collection in $collections) {
         $advertisements = Get-SCCMAdvertisementsForCollection $siteProvider $siteCode $collection.CollectionID
