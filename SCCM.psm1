@@ -643,7 +643,7 @@ Function Save-SCCMAdvertisement {
         [parameter(Mandatory=$true)]$advertisement
     )
 
-    $advertisement.Put()
+    $advertisement.Put() | Out-Null
 }
 
 <#
@@ -869,21 +869,44 @@ Function Get-SCCMAdvertisementStatusForComputer {
 Settings a variable on an SCCM computer record.
 
 .DESCRIPTION
-Takes in information about a specific site, along with a computer name, variable name and value and attempts to set the variable on an SCCM computer record.
+Takes in information about a specific site, along with a computer resource ID, variable name and value and attempts to set the variable on an SCCM computer record.
 If the variable already exists, it will overwrite be overwritten.
+
+.PARAMETER siteProvider
+Name of the site provider.
+
+.PARAMETER siteCode
+3-character site code.
+
+.PARAMETER resourceId
+Resource ID of the target computer.
+
+.PARAMETER variableName
+Name of the variable to be created.
+
+.PARAMETER variableValue
+Value to be assigned to the variable.
+
+.PARAMETER isMasked
+A masked variable has its text display replaced with asterisks.
 #>
 Function Set-SCCMComputerVariable {
     [CmdletBinding()]
     param (
         [parameter(Mandatory=$true)][string]$siteProvider,
         [parameter(Mandatory=$true)][string]$siteCode,
-        [parameter(Mandatory=$true)][string]$computerName,
+        [parameter(Mandatory=$true)][string]$resourceId,
         [parameter(Mandatory=$true)][string]$variableName,
         [parameter(Mandatory=$true)][string]$variableValue,
         [parameter(Mandatory=$true)][bool]$isMasked
     )
 
-    $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -computerName $computerName
+    $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -resourceId $resourceId
+
+    if(!$computer) {
+        Throw "Unable to retrieve computer with resource ID $resourceId"
+    }
+
     $computerSettings = Get-WMIObject -computername $siteProvider -namespace "root\sms\site_$siteCode" -class "SMS_MachineSettings" | where {$_.ResourceID -eq $computer.ResourceID}
 
     # If the computer has never held any variables, computerSettings will be null, so we have to create a bunch of objects from scratch to hold
@@ -894,7 +917,7 @@ Function Set-SCCMComputerVariable {
         $computerSettings.ResourceID = $computer.ResourceID
         $computerSettings.SourceSite = $siteCode
         $computerSettings.LocaleID = $computer.LocaleID
-        $computerSettings.Put()
+        $computerSettings.Put() | Out-Null
 
         # Create an object to hold the variable data
         $computerVariable = ([WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_MachineVariable")).CreateInstance()
@@ -904,11 +927,11 @@ Function Set-SCCMComputerVariable {
 
         # Add the variable to the settings object we created earlier and store it
         $computerSettings.MachineVariables += $computerVariable
-        $computerSettings.Put()
+        $computerSettings.Put() | Out-Null
     } else {
         # This computer once had variables (or still does), so we need to check for an existing variable with the same name as the one
         # we're trying to add so we can properly overwrite it
-        $computerSettings.Get()
+        $computerSettings.Get() | Out-Null
         $computerVariables = $computerSettings.MachineVariables
 
         if($computerVariables -eq $null) {
@@ -924,7 +947,7 @@ Function Set-SCCMComputerVariable {
             $computerVariables += $computerVariable
 
             $computerSettings.MachineVariables = $computerVariables
-            $computerSettings.Put()
+            $computerSettings.Put() | Out-Null
         } else {
             # Looks like the computer still has some variables. We'll search through the list of variables to figure out if the computer 
             # already has the variable that we're trying to set.
@@ -949,10 +972,10 @@ Function Set-SCCMComputerVariable {
 
                 $computerSettings.MachineVariables += $computerVariable
             }
-            $computerSettings.Put() 
+            $computerSettings.Put() | Out-Null
         }
     }
-    return $computerSettings
+    return $computerSettings.MachineVariables
 }
 
 <#
@@ -960,20 +983,34 @@ Function Set-SCCMComputerVariable {
 Returns a list of all computer variables for a specific computer.
 
 .DESCRIPTION
-Takes in information about a specific site, along with a computer name and returns a list of all variables associated with that computer.
+Takes in information about a specific site, along with a computer resource ID and returns a list of all variables associated with that computer.
+
+.PARAMETER siteProvider
+Name of the site provider.
+
+.PARAMETER siteCode
+3-character site code.
+
+.PARAMETER resourceId
+Resource ID of the target computer.
 #>
 Function Get-SCCMComputerVariables {
     [CmdletBinding()]
     param (
         [parameter(Mandatory=$true)][string]$siteProvider,
         [parameter(Mandatory=$true)][string]$siteCode,
-        [parameter(Mandatory=$true)][string]$computerName
+        [parameter(Mandatory=$true)][string]$resourceId
     )
 
-    $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -computerName $computerName
+    $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -resourceId $resourceId
+
+    if(!$computer) {
+        Throw "Unable to retrive computer with resource ID $resourceId"
+    }
+
     $computerSettings = Get-WMIObject -computername $siteProvider -namespace "root\sms\site_$siteCode" -class "SMS_MachineSettings" | where {$_.ResourceID -eq $computer.ResourceID}
     if($computerSettings) {
-        $computerSettings.Get()
+        $computerSettings.Get() | Out-Null
         return $computerSettings.MachineVariables
     }
 }
@@ -984,30 +1021,51 @@ Deletes a variable for an SCCM computer.
 
 .DESCRIPTION
 Takes in information about a specific site, along with a computer name and variable name and attempts to delete that variable.
+
+.PARAMETER siteProvider
+Name of the site provider.
+
+.PARAMETER siteCode
+3-character site code.
+
+.PARAMETER resourceId
+Resource ID of the target computer.
+
+.PARAMETER variableName
+Name of the variable to be removed.
 #>
 Function Remove-SCCMComputerVariable {
     [CmdletBinding()]
     param (
         [parameter(Mandatory=$true)][string]$siteProvider,
         [parameter(Mandatory=$true)][string]$siteCode,
-        [parameter(Mandatory=$true)][string]$computerName,
+        [parameter(Mandatory=$true)][string]$resourceId,
         [parameter(Mandatory=$true)][string]$variableName
     )
 
-    $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -computerName $computerName
-    $computerSettings = Get-WMIObject -computername $siteProvider -namespace "root\sms\site_$siteCode" -class "SMS_MachineSettings" | where {$_.ResourceID -eq $computer.ResourceID}
-    $computerSettings.Get() 
-    
-    # Since Powershell arrays are immutable, we create a new one to hold all the computer variable minus the one we're being asked to remove.
-    $newVariables = @()
-    $computerVariables = $computerSettings.MachineVariables
-    for($index = 0; $index -lt $computerVariables.Count; $index++) {
-        if($computerVariables[$index].Name -ne $variableName) {
-            $newVariables += $computerVariables[$index]
-        }
+    $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -resourceId $resourceId
+
+    if(!$computer) {
+        Throw "Unable to retrieve computer with resource ID $resourceId"
     }
-    $computerSettings.MachineVariables = $newVariables
-    $computerSettings.Put()
+
+    $computerSettings = Get-WMIObject -computername $siteProvider -namespace "root\sms\site_$siteCode" -class "SMS_MachineSettings" | where {$_.ResourceID -eq $computer.ResourceID}
+    
+    if($computerSettings) {
+        $computerSettings.Get() | Out-Null
+        
+        # Since Powershell arrays are immutable, we create a new one to hold all the computer variable minus the one we're being asked to remove.
+        $newVariables = @()
+        $computerVariables = $computerSettings.MachineVariables
+        for($index = 0; $index -lt $computerVariables.Count; $index++) {
+            if($computerVariables[$index].Name -ne $variableName) {
+                $newVariables += $computerVariables[$index]
+            }
+        }
+        $computerSettings.MachineVariables = $newVariables
+        $computerSettings.Put() | Out-Null
+    }
+
     return $computerSettings.MachineVariables
 }
 
@@ -1340,6 +1398,7 @@ into the SCCM database by using this method.
 The package object to be put back into the database.
 #>
 Function Save-SCCMPackage {
+    [CmdletBinding()]
     param (
         [parameter(Mandatory=$true)]$package
     )
@@ -1529,6 +1588,7 @@ into the SCCM database by using this method.
 The program object to be put back into the database.
 #>
 Function Save-SCCMProgram {
+    [CmdletBinding()]
     param (
         [parameter(Mandatory=$true)]$program
     )
