@@ -1378,7 +1378,7 @@ Function New-SCCMPackage {
         $newPackageId = $($newPackageIdTokens[1]).TrimStart("`"")
         $newPackageId = $($newPackageId).TrimEnd("`"")
 
-        return Get-SCCMPackage $siteProvider $siteCode $packageId $newPackageId
+        return Get-SCCMPackage $siteProvider $siteCode -packageId $newPackageId
     } else {
         Throw "Package creation failed"
     }
@@ -1439,7 +1439,7 @@ Function Remove-SCCMPackage {
 
     $package = Get-SCCMPackage $siteProvider $siteCode -packageId $packageId
     if($package) {
-        return $package.psbase.Delete()
+        $package.psbase.Delete() | Out-Null
     } else {
         Throw "Invalid package with ID $packageId"
     }
@@ -1450,33 +1450,16 @@ Function Remove-SCCMPackage {
 Retrieves SCCM packages from the specified site.
 
 .DESCRIPTION
-Takes in information about a specific site and a package name and/or package ID and returns all packages that match the specified parameters.  If no package name or ID is specified, it returns all packages found on the specified site.
+Takes in information about a specific site and a package ID and returns a package with a matching ID.  If no package ID is specified, it returns all packages found on the specified site.
 
 .PARAMETER siteProvider
 The name of the site provider.
 
 .PARAMETER siteCode
-The 3-character site code for the site to be queried.
-
-.PARAMETER packageName
-Optional parameter.  If specified, the function attempts to match the package by package name. 
+The 3-character site code.
 
 .PARAMETER packageId
 Optional parameter.  If specified, the function attempts to match the package by package ID.
-
-.EXAMPLE
-Get-SCCMPackage -siteProvider MYSITEPROVIDER -siteCode SIT -packageName MYPACKAGE
-
-Description
------------
-Retrieve the package named MYPACKAGE from site SIT on MYSITEPROVIDER
-
-.EXAMPLE
-Get-SCCMPackage -siteProvider MYSITEPROVIDER -siteCode SIT -packageName MYPACKAGE -packageId MYPACKAGEID
-
-Description
------------
-Retrieve the package named MYPACKAGE with ID matching MYPACKAGEID from site SIT on MYSITEPROVIDER
 
 .EXAMPLE
 Get-SCCMPackage -siteProvider MYSITEPROVIDER -siteCode SIT
@@ -1497,15 +1480,10 @@ Function Get-SCCMPackage {
     param (
         [parameter(Mandatory=$true)][string]$siteProvider,
         [parameter(Mandatory=$true)][string]$siteCode,
-        [string]$packageName,
         [string]$packageId
     )
 
-    if($packageName -and $packageId) {
-        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_Package" | where { ($_.Name -eq $packageName) -and ($_.PackageID -eq $packageId) }
-    } elseif($packageName -and !$packageId) {
-        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_Package" | where { ($_.Name -eq $packageName) }
-    } elseif(!$packageName -and $packageId) {
+    if($packageId) {
         return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_Package" | where { ($_.PackageID -eq $packageId) }
     } else { 
         return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_Package"
