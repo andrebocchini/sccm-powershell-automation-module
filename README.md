@@ -136,11 +136,16 @@ Here's how this can be accomplished:
 
 5. Add a computer to the test collection
 
+        $testComputer = Get-SCCMComputer `
+                            -siteProvider $siteProvider `
+                            -siteCode $siteCode `
+                            -computerName $testComputerName
+
         Add-SCCMComputerToCollection `
                             -siteProvider $siteProvider
                             -siteCode $siteCode
-                            -computerName $testComputerName
-                            -collectionName $testCollection.Name
+                            -resourceId $testComputer.ResourceID
+                            -collectionName $testCollection.CollectionID
 
 6. Advertise the program to the test collection
 
