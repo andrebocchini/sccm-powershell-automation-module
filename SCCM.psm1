@@ -150,12 +150,12 @@ Returns all computers (excluding obsolete ones) found on site SIT.
 Function Get-SCCMComputer {
     [CmdletBinding(DefaultParametersetName="default")]
     param (
-        [parameter(Mandatory=$true)]
+        [parameter(Mandatory=$true, Position=0)]
         [parameter(ParameterSetName="name")]
         [parameter(ParameterSetName="default")]
         [parameter(ParameterSetName="id")]
         [string]$siteProvider,
-        [parameter(Mandatory=$true)]
+        [parameter(Mandatory=$true, Position=1)]
         [parameter(ParameterSetName="name")]
         [parameter(ParameterSetName="default")]
         [parameter(ParameterSetName="id")]
@@ -193,7 +193,7 @@ Function Get-SCCMComputer {
 Adds a computer to a collection in SCCM.
 
 .DESCRIPTION
-Takes in information about a specific site, along with a computer name, and a collection name or collection ID and creates a 
+Takes in information about a specific site, along with a computer resource ID, and a collection ID and creates a 
 direct membership rule for the computer in the specified collection.
 
 .PARAMETER siteProvider
@@ -203,10 +203,7 @@ The name of the site provider.
 The 3-character site code.
 
 .PARAMETER computerName
-Name of the computer to be added to a collection.
-
-.PARAMETER collectionName
-Name of the collection where the computer is to be added.
+Resource ID of the computer to be added to the collection.
 
 .PARAMETER collectionId
 ID of the collection where the computer is to be added.
@@ -214,32 +211,15 @@ ID of the collection where the computer is to be added.
 Function Add-SCCMComputerToCollection {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)]
-        [parameter(ParameterSetName="name")]
-        [parameter(ParameterSetName="id")]
-        [string]$siteProvider,
-        [parameter(Mandatory=$true)]
-        [parameter(ParameterSetName="name")]
-        [parameter(ParameterSetName="id")]
-        [string]$siteCode,
-        [parameter(Mandatory=$true)]
-        [parameter(ParameterSetName="name")]
-        [parameter(ParameterSetName="id")]
-        [string]$computerName,
-        [parameter(ParameterSetName="name")]
-        [string]$collectionName,
-        [parameter(ParameterSetName="id")]
-        [string]$collectionId
+        [parameter(Mandatory=$true)][string]$siteProvider,
+        [parameter(Mandatory=$true)][string]$siteCode,
+        [parameter(Mandatory=$true)][string]$resourceId,
+        [parameter(Mandatory=$true)][string]$collectionId
     )
 
     # First we get an object for the computer and one for the collection in question
-    $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -computerName $computerName
-    if($collectionName) {
-        $collection = Get-SCCMCollection -siteProvider $siteProvider -siteCode $siteCode -collectionName $collectionName
-        $collectionId = $collection.collectionId
-    } else {
-        $collection = Get-SCCMCollection -siteProvider $siteProvider -siteCode $siteCode -collectionId $collectionId
-    }
+    $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -resourceId
+    $collection = Get-SCCMCollection -siteProvider $siteProvider -siteCode $siteCode -collectionId $collectionId
 
     # We want to get a list of all the collection this computer already belongs to so we can check later if it already is
     # a member of the collection passed as a parameter to this function
@@ -282,7 +262,7 @@ Function Remove-SCCMComputerFromCollection {
     )
 
     $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -computerName $computerName
-    $collection = Get-SCCMCollection $siteProvider $siteCode $collectionName
+    $collection = Get-SCCMCollection $siteProvider $siteCode -collectionName $collectionName
     $collectionRule = ([WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_CollectionRuleDirect")).CreateInstance()
     $collectionRule.ResourceID = $computer.ResourceID
     
@@ -338,7 +318,7 @@ Function New-SCCMStaticCollection {
 
             # Now we establish the parent to child relationship of the two collections. If we create a collection without
             # establishing the relationship, the new collection will not be visible in the console.
-            $newCollectionId = (Get-SCCMCollection $siteProvider $siteCode $collectionName).CollectionID
+            $newCollectionId = (Get-SCCMCollection $siteProvider $siteCode -collectionName $collectionName).CollectionID
             $newCollectionRelationship = ([WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_CollectToSubCollect")).CreateInstance()
             $newCollectionRelationship.parentCollectionID = $parentCollectionId
             $newCollectionRelationship.subCollectionID = $newCollectionId
@@ -400,7 +380,7 @@ Takes in information about a specific site and a collection name and returns an 
 The name of the site.
 
 .PARAMETER siteCode
-The 3-character site code for the site to be queried.
+The 3-character site code for the site where the collection exists.
 
 .PARAMETER collectionName
 Optional parameter.  If specified, the function will try to find a collection that matches the name provided.
@@ -414,13 +394,6 @@ Get-SCCMCollection -siteProvider MYSITEPROVIDER -siteCode SIT -collectionName MY
 Description
 -----------
 Retrieve the collection named MYCOLLECTION from site SIT
-
-.EXAMPLE
-Get-SCCMCollection -siteProvider MYSITEPROVIDER -siteCode SIT -collectionName MYCOLLECTION -collectionId MYCOLLECTIONID
-
-Description
------------
-Retrieve the collection named MYCOLLECTION with id MYCOLLECTIONID from site SIT
 
 .EXAMPLE
 Get-SCCMCollection -siteProvider MYSITEPROVIDER -siteCode SIT
@@ -437,19 +410,27 @@ Description
 Retrieve all collections from site SIT and filter out only their names and IDs
 #>
 Function Get-SCCMCollection {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParametersetName="default")]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [parameter(ParameterSetName="name")]
+        [parameter(ParameterSetName="default")]
+        [parameter(ParameterSetName="id")]
+        [string]$siteProvider,
+        [parameter(Mandatory=$true, Position=1)]
+        [parameter(ParameterSetName="name")]
+        [parameter(ParameterSetName="default")]
+        [parameter(ParameterSetName="id")]
+        [string]$siteCode,
+        [parameter(ParameterSetName="name")]
         [string]$collectionName,
+        [parameter(ParameterSetName="id")]
         [string]$collectionId
     )
 
-    if($collectionName -and $collectionId) {
-        return Get-WMIObject -Computer $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * from SMS_Collection" | Where { ($_.Name -eq $collectionName) -and ($_.CollectionID -eq $collectionId) } 
-    } elseif($collectionName -and !$collectionId) {
+    if($collectionName) {
         return Get-WMIObject -Computer $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * from SMS_Collection" | Where { $_.Name -eq $collectionName } 
-    } elseif(!$collectionName -and $collectionId) {
+    } elseif($collectionId) {
         return Get-WMIObject -Computer $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * from SMS_Collection" | Where { $_.CollectionID -eq $collectionId }
     } else {
         return Get-WMIObject -Computer $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * from SMS_Collection"
@@ -755,7 +736,7 @@ Function Get-SCCMAdvertisementsForComputer {
         [parameter(Mandatory=$true)][string]$computerName
     )
 
-    $collections = Get-SCCMCollectionsForComputer $siteProvider $siteCode $computerName
+    $collections = Get-SCCMCollectionsForComputer $siteProvider $siteCode -collectionName $computerName
     $computerAdvertisements = @()
     foreach($collection in $collections) {
         $advertisements = Get-SCCMAdvertisementsForCollection $siteProvider $siteCode $collection.CollectionID
