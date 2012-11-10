@@ -638,6 +638,7 @@ into the SCCM database by using this method.
 The advertisement object to be put back into the database.
 #>
 Function Save-SCCMAdvertisement {
+    [CmdletBinding()]
     param (
         [parameter(Mandatory=$true)]$advertisement
     )
@@ -837,7 +838,19 @@ Function Get-SCCMAdvertisementsForPackage {
 Returns the advertisement status for a specific advertisement for a specific computer.
 
 .DESCRIPTION
-Takes in information about a specific site, along with an advertisement id and a computer name and returns the status of that advertisement for that computer.
+Takes in information about a specific site, along with an advertisement id and a computer resource ID and returns the status of that advertisement for that computer.
+
+.PARAMETER siteProvider
+The name of the site provider.
+
+.PARAMETER siteCode
+The 3-character code for the site where the computer exists.
+
+.PARAMETER advertisementId
+The ID of the advertisement.
+
+.PARAMETER resourceId
+The resource ID of the computer.
 #>
 Function Get-SCCMAdvertisementStatusForComputer {
     [CmdletBinding()]
@@ -845,11 +858,10 @@ Function Get-SCCMAdvertisementStatusForComputer {
         [parameter(Mandatory=$true)][string]$siteProvider,
         [parameter(Mandatory=$true)][string]$siteCode,
         [parameter(Mandatory=$true)][string]$advertisementId,
-        [parameter(Mandatory=$true)][string]$computerName
+        [parameter(Mandatory=$true)][string]$resourceId
     )
 
-    $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -computerName $computerName
-    return Get-WMIObject -Computer $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * from SMS_ClientAdvertisementStatus WHERE AdvertisementID='$advertisementId' AND ResourceID='$($computer.ResourceID)'"
+    return Get-WMIObject -Computer $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * from SMS_ClientAdvertisementStatus WHERE AdvertisementID='$advertisementId' AND ResourceID='$resourceId'"
 }
 
 <#
