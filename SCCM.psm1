@@ -163,7 +163,7 @@ Function Get-SCCMComputer {
         [parameter(ParameterSetName="name")]
         [string]$computerName,
         [parameter(ParameterSetName="id")]
-        [int]$resourceId,
+        [string]$resourceId,
         [switch]$includeObsolete=$false
     )
 
@@ -218,12 +218,19 @@ Function Add-SCCMComputerToCollection {
     )
 
     # First we get an object for the computer and one for the collection in question
-    $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -resourceId
+    $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -resourceId $resourceId
     $collection = Get-SCCMCollection -siteProvider $siteProvider -siteCode $siteCode -collectionId $collectionId
+
+    if(!$computer) {
+        Throw "Unable to retrieve computer with resource ID $resourceId"
+    }
+    if(!$collection) {
+        Throw "Unable to retrieve collection with ID $collectionId"
+    }
 
     # We want to get a list of all the collection this computer already belongs to so we can check later if it already is
     # a member of the collection passed as a parameter to this function
-    $currentCollectionMembershipList = Get-SCCMCollectionsForComputer $siteProvider $siteCode $computerName
+    $currentCollectionMembershipList = Get-SCCMCollectionsForComputer $siteProvider $siteCode $computer.Name
     $currentCollectionIdList = @()
     foreach($currentCollectionMembership in $currentCollectionMembershipList) {
         $currentCollectionIdList += ($currentCollectionMembership.CollectionID).ToUpper()
@@ -240,7 +247,7 @@ Function Add-SCCMComputerToCollection {
 
         $status = $collection.psbase.InvokeMethod("AddMembershipRule", $addToCollectionParameters, $null)
         if($status.ReturnValue -ne 0) {
-            Throw "Failed to add computer $computerName to collection $collectionName"
+            Throw "Failed to add computer $($computer.Name) to collection $($collection.Name)"
         }
     }
 }
@@ -250,25 +257,45 @@ Function Add-SCCMComputerToCollection {
 Removes a computer from a specific collection
 
 .DESCRIPTION
-Takes in information about a specific site, along with a computer name, and a collection name and removes the computer from the collection.
+Takes in information about a specific site, along with a computer resource ID, and a collection ID and removes the computer from the collection.
+
+.PARAMETER siteProvider
+The name of the site provider.
+
+.PARAMETER siteCode
+The 3-character site code.
+
+.PARAMETER resourceId
+Resource ID of the computer to be removed from the collection.
+
+.PARAMETER collectionId
+ID of the collection where the computer is a member.
 #>
 Function Remove-SCCMComputerFromCollection {
     [CmdletBinding()]
     param (
         [parameter(Mandatory=$true)][string]$siteProvider,
         [parameter(Mandatory=$true)][string]$siteCode,
-        [parameter(Mandatory=$true)][string]$computerName,
-        [parameter(Mandatory=$true)][string]$collectionName
+        [parameter(Mandatory=$true)][string]$resourceId,
+        [parameter(Mandatory=$true)][string]$collectionId
     )
 
-    $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -computerName $computerName
-    $collection = Get-SCCMCollection $siteProvider $siteCode -collectionName $collectionName
+    $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -resourceId $resourceId
+    $collection = Get-SCCMCollection $siteProvider $siteCode -collectionId $collectionId
+
+    if(!$computer) {
+        Throw "Unable to retrieve computer with resource ID $resourceId"
+    }
+    if(!$collection) {
+        Throw "Unable to retrieve collection with ID $collectionId"
+    }
+
     $collectionRule = ([WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_CollectionRuleDirect")).CreateInstance()
     $collectionRule.ResourceID = $computer.ResourceID
     
     $status = $collection.DeleteMembershipRule($collectionRule)
     if($status.ReturnValue -ne 0) {
-        Throw "Failed to remove computer $computerName from collection $collectionName"
+        Throw "Failed to remove computer $($computer.Name) from collection $($collection.Name)"
     }
 }
 
