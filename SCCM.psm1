@@ -1798,6 +1798,37 @@ Function Get-SCCMDistributionPoints {
 
 <#
 .SYNOPSIS
+Gets a list of supported platforms for programs for the specified site.
+
+.DESCRIPTION
+Gets a list of supported platforms for programs for the specified site.  This is useful when creaating programs and needing
+to determine the supported platforms one can configure for those programs.
+
+.PARAMETER siteProvider
+The name of the site provider.
+
+.PARAMETER siteCode
+The 3-character site code.
+
+.EXAMPLE
+Get-SCCMSupported Platforms -siteProvider MYSITEPROVIDER -siteCode SIT
+
+Description
+-----------
+Gets a list of all supported platforms on the site.
+#>
+Function Get-SCCMSupportedPlatforms {
+    [CmdletBinding()]
+    param(
+        [parameter(Mandatory=$true)][string]$siteProvider,
+        [parameter(Mandatory=$true)][string]$siteCode
+    )
+
+    return Get-WmiObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_SupportedPlatforms"
+}
+
+<#
+.SYNOPSIS
 Utility function to convert DMTF date strings into something readable and usable by PowerShell.
 
 .DESCRIPTION
@@ -1880,5 +1911,6 @@ Export-ModuleMember Get-SCCMProgram
 Export-ModuleMember Add-SCCMPackageToDistributionPoint
 Export-ModuleMember Remove-SCCMPackageFromDistributionPoint
 Export-ModuleMember Get-SCCMDistributionPoints
+Export-ModuleMember Get-SCCMSupportedPlatforms
 Export-ModuleMember Convert-SCCMDateToDate
 Export-ModuleMember Convert-DateToSCCMDate

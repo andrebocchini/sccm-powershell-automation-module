@@ -782,5 +782,92 @@
 
 <!-- End SMS_Collection_Member_a Views -->
 
+<!-- Begin SMS_SupportedPlatforms Views -->
+
+    <View>
+        <Name>System.Management.ManagementObject#SMS_SupportedPlatforms</Name>
+        <ViewSelectedBy>
+            <TypeName>System.Management.ManagementObject#SMS_SupportedPlatforms</TypeName>
+        </ViewSelectedBy>
+        <ListControl>
+            <ListEntries>
+                <ListEntry>
+                    <ListItems>
+                        <ListItem>
+                            <PropertyName>DisplayText</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>OSName</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>OSPlatform</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>OSMaxVersion</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>OSMinVersion</PropertyName>
+                        </ListItem>
+                    </ListItems>
+                </ListEntry>  
+            </ListEntries>
+        </ListControl>
+    </View>
+
+   <View>
+        <Name>System.Management.ManagementObject#SMS_SupportedPlatforms</Name>
+        <ViewSelectedBy>
+            <TypeName>System.Management.ManagementObject#SMS_SupportedPlatforms</TypeName>
+        </ViewSelectedBy>
+        <TableControl>
+            <TableHeaders>
+                <TableColumnHeader>
+                    <Label>DisplayText</Label>
+                    <Width>50</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>OSName</Label>
+                    <Width>15</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>OSPlatform</Label>
+                    <Width>10</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>OSMaxVersion</Label>
+                    <Width>20</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>OSMinVersion</Label>
+                    <Width>20</Width>
+                </TableColumnHeader>
+            </TableHeaders>
+            <TableRowEntries>
+                <TableRowEntry>
+                    <TableColumnItems>
+                        <TableColumnItem>
+                            <PropertyName>DisplayText</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <PropertyName>OSName</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <PropertyName>OSPlatform</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <PropertyName>OSMaxVersion</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <PropertyName>OSMinVersion</PropertyName>
+                        </TableColumnItem>
+                    </TableColumnItems>
+                </TableRowEntry>
+             </TableRowEntries>
+        </TableControl>
+    </View>
+
+<!-- End SMS_SupportedPlatforms Views -->
+
     </ViewDefinitions>
+
 </Configuration>

@@ -39,6 +39,7 @@ Site Functions
     Add-SCCMPackageToDistributionPoint
     Remove-SCCMPackageFromDistributionPoint
     Get-SCCMDistributionPoints
+    Get-SCCMSupportedPlatforms
 
 Client Functions
 
