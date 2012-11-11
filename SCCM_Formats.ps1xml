@@ -289,7 +289,16 @@
                             <PropertyName>PackageID</PropertyName>
                         </ListItem>
                         <ListItem>
+                            <PropertyName>DiskSpaceReq</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>Duration</PropertyName>
+                        </ListItem>
+                        <ListItem>
                             <PropertyName>CommandLine</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>WorkingDirectory</PropertyName>
                         </ListItem>
                     </ListItems>
                 </ListEntry>  
@@ -871,9 +880,9 @@
 <!-- Begin SMS_OS_Details Views -->
 
     <View>
-        <Name>System.Management.ManagementObject#SMS_OS_Details</Name>
+        <Name>System.Management.ManagementBaseObject#SMS_OS_Details</Name>
         <ViewSelectedBy>
-            <TypeName>System.Management.ManagementObject#SMS_OS_Details</TypeName>
+            <TypeName>System.Management.ManagementBaseObject#SMS_OS_Details</TypeName>
         </ViewSelectedBy>
         <ListControl>
             <ListEntries>
@@ -898,15 +907,15 @@
     </View>
 
    <View>
-        <Name>System.Management.ManagementObject#SMS_OS_Details</Name>
+        <Name>System.Management.ManagementBaseObject#SMS_OS_Details</Name>
         <ViewSelectedBy>
-            <TypeName>System.Management.ManagementObject#SMS_OS_Details</TypeName>
+            <TypeName>System.Management.ManagementBaseObject#SMS_OS_Details</TypeName>
         </ViewSelectedBy>
         <TableControl>
             <TableHeaders>
                 <TableColumnHeader>
                     <Label>Name</Label>
-                    <Width>50</Width>
+                    <Width>30</Width>
                 </TableColumnHeader>
                 <TableColumnHeader>
                     <Label>Platform</Label>

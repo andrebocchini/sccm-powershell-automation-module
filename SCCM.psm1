@@ -1857,6 +1857,7 @@ The platform the operating system runs on (x86, x64, IA64).
 New-SCCMSupportedPlatform -siteProvider MYSITEPROVIDER -siteCode SIT -name "WinNT" -maxVersion "6.10.999.0" -minVersion "6.10.7600.0" -platform "x86"
 #>
 Function New-SCCMSupportedPlatform {
+    [CmdletBinding()]
     param(
         [parameter(Mandatory=$true)][string]$siteProvider,
         [parameter(Mandatory=$true)][string]$siteCode,
@@ -1877,6 +1878,56 @@ Function New-SCCMSupportedPlatform {
     } else {
         Throw "Unable to create new supported platform"
     }
+}
+
+<#
+.SYNOPSIS
+Retrieves the list of supported platforms for a program.
+
+.DESCRIPTION
+The list of supported operating systems for a program is a lazy property and does not get retrieved when a program is
+retrieved via a WMI query; it has to be explicitly requested.
+
+.PARAMETER program
+The program whose list of supported platforms is to be retrevied.
+#>
+Function Get-SCCMProgramSupportedPlatforms {
+    [CmdletBinding()]
+    param(
+        [parameter(Mandatory=$true)]$program
+    )
+
+    # SupportedOperatingSystems is a lazy property, so we have to explicitly retrieve it with Get()
+    $program.Get() | Out-Null
+    return $program.SupportedOperatingSystems
+}
+
+<#
+.SYNOPSIS
+Sets the list of supported platforms for a program.
+
+.DESCRIPTION
+Sets the list of supported platforms for a program.  The list is an array of SMS_OS_Details objects whose individual value
+that have to match the list of available platforms reported by the server.  In order to find out the list of available
+platforms, you can use Get-SCCMSupportedPlatforms.  You can then use New-SCCMProgramSupportedPlatform to build an object
+for each desired platform.
+
+.PARAMETER program
+The program to be configured.
+
+.PARAMETER platformList
+A list of SMS_OS_Details objects to be stored in the program configuration.
+#>
+Function Set-SCCMProgramSupportedPlatforms {
+    [CmdletBinding()]
+    param(
+        [parameter(Mandatory=$true)]$program,
+        [parameter(Mandatory=$true)]$platformList
+    )
+
+    $program.Get() | Out-Null
+    $program.SupportedOperatingSystems = $platformList
+    $program.Put() | Out-Null
 }
 
 <#
@@ -1965,5 +2016,7 @@ Export-ModuleMember Remove-SCCMPackageFromDistributionPoint
 Export-ModuleMember Get-SCCMDistributionPoints
 Export-ModuleMember Get-SCCMSupportedPlatforms
 Export-ModuleMember New-SCCMSupportedPlatform
+Export-ModuleMember Get-SCCMProgramSupportedPlatforms
+Export-ModuleMember Set-SCCMProgramSupportedPlatforms
 Export-ModuleMember Convert-SCCMDateToDate
 Export-ModuleMember Convert-DateToSCCMDate

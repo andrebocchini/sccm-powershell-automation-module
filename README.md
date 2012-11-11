@@ -41,6 +41,8 @@ Site Functions
     Get-SCCMDistributionPoints
     Get-SCCMSupportedPlatforms
     New-SCCMSupportedPlatform
+    Get-SCCMProgramSupportedPlatforms
+    Set-SCCMProgramSupportedPlatforms
 
 Client Functions
 
