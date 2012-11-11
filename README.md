@@ -61,11 +61,24 @@ This code has only been tested with SCCM 2007.  Please conduct your own independ
 Installation
 ============
 
-Run the Install.ps1 script provided with the module.  Alternatively, create the directory:
+Make sure the following directory exists and is part of your PSModulePath:
+
+    %userprofile%\Documents\WindowsPowershell\Modules
+
+If you run the Install.ps1 script, it should copy the files to the right place for you.  If the script fails to copy the files properly, you can do so manually by creating the directory:
 
     %userprofile%\Documents\WindowsPowershell\Modules\SCCM
 
-After creating the directory, copy the SCCM.psm1 file into it.
+and copying the following files into it:
+
+    SCCM.psm1
+    SCCM.psd1
+    SCCM_Formats.ps1xml
+
+After the files are in place, you should be able to run:
+
+    Import-Module SCCM
+    Get-Help SCCM
 
 Usage
 =====

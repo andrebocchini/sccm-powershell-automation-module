@@ -6,15 +6,13 @@ Command line interface for an assortment of SCCM 2007 operations.
 The functions in this module provide a command line and scripting interface for automating management of SCCM 2007 environments.
 
 .NOTES
-File Name  : SCCM.ps1  
+File Name  : SCCM.psm1  
 Author     : Andre Bocchini <andrebocchini@gmail.com>  
 Requires   : PowerShell V2
 
 .LINK
 https://github.com/andrebocchini/SCCM-Powershell-Automation-Module
 #>
-
-#Requires -version 2
 
 <#
 .SYNOPSIS
