@@ -1829,6 +1829,58 @@ Function Get-SCCMSupportedPlatforms {
 
 <#
 .SYNOPSIS
+Creates a new supported platform object.
+
+.DESCRIPTION
+Creates a new supported platform object used to configure supported platforms for SCCM programs.  The values passed
+to this function have to match values obtained from Get-SCCMSupportedPlatforms.
+
+.PARAMETER siteProvider
+The name of the site provider.
+
+.PARAMETER siteCode
+The 3-character site code.
+
+.PARAMETER name
+The display name of the operating system.
+
+.PARAMETER maxVersion
+The maximum version of the operating system.
+
+.PARAMETER minVersion
+The minimum version of the operating system.
+
+.PARAMETER platform
+The platform the operating system runs on (x86, x64, IA64).
+
+.EXAMPLE
+New-SCCMSupportedPlatform -siteProvider MYSITEPROVIDER -siteCode SIT -name "WinNT" -maxVersion "6.10.999.0" -minVersion "6.10.7600.0" -platform "x86"
+#>
+Function New-SCCMSupportedPlatform {
+    param(
+        [parameter(Mandatory=$true)][string]$siteProvider,
+        [parameter(Mandatory=$true)][string]$siteCode,
+        [parameter(Mandatory=$true)][string]$name,
+        [parameter(Mandatory=$true)][string]$maxVersion,
+        [parameter(Mandatory=$true)][string]$minVersion,
+        [parameter(Mandatory=$true)][string]$platform
+    )
+
+    $newPlatform = ([WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_OS_Details")).CreateInstance()
+    if($newPlatform) {
+        $newPlatform.Name = $name
+        $newPlatform.MaxVersion = $maxVersion
+        $newPlatform.MinVersion = $minVersion
+        $newPlatform.Platform = $platform
+
+        return $newPlatform
+    } else {
+        Throw "Unable to create new supported platform"
+    }
+}
+
+<#
+.SYNOPSIS
 Utility function to convert DMTF date strings into something readable and usable by PowerShell.
 
 .DESCRIPTION
@@ -1912,5 +1964,6 @@ Export-ModuleMember Add-SCCMPackageToDistributionPoint
 Export-ModuleMember Remove-SCCMPackageFromDistributionPoint
 Export-ModuleMember Get-SCCMDistributionPoints
 Export-ModuleMember Get-SCCMSupportedPlatforms
+Export-ModuleMember New-SCCMSupportedPlatform
 Export-ModuleMember Convert-SCCMDateToDate
 Export-ModuleMember Convert-DateToSCCMDate

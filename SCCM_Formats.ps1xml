@@ -868,6 +868,80 @@
 
 <!-- End SMS_SupportedPlatforms Views -->
 
+<!-- Begin SMS_OS_Details Views -->
+
+    <View>
+        <Name>System.Management.ManagementObject#SMS_OS_Details</Name>
+        <ViewSelectedBy>
+            <TypeName>System.Management.ManagementObject#SMS_OS_Details</TypeName>
+        </ViewSelectedBy>
+        <ListControl>
+            <ListEntries>
+                <ListEntry>
+                    <ListItems>
+                        <ListItem>
+                            <PropertyName>Name</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>Platform</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>MaxVersion</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>MinVersion</PropertyName>
+                        </ListItem>
+                    </ListItems>
+                </ListEntry>  
+            </ListEntries>
+        </ListControl>
+    </View>
+
+   <View>
+        <Name>System.Management.ManagementObject#SMS_OS_Details</Name>
+        <ViewSelectedBy>
+            <TypeName>System.Management.ManagementObject#SMS_OS_Details</TypeName>
+        </ViewSelectedBy>
+        <TableControl>
+            <TableHeaders>
+                <TableColumnHeader>
+                    <Label>Name</Label>
+                    <Width>50</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>Platform</Label>
+                    <Width>15</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>MaxVersion</Label>
+                    <Width>15</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>MinVersion</Label>
+                    <Width>15</Width>
+                </TableColumnHeader>
+            </TableHeaders>
+            <TableRowEntries>
+                <TableRowEntry>
+                    <TableColumnItems>
+                        <TableColumnItem>
+                            <PropertyName>Name</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <PropertyName>Platform</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <PropertyName>MaxVersion</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <PropertyName>MinVersion</PropertyName>
+                        </TableColumnItem>
+                    </TableColumnItems>
+                </TableRowEntry>
+             </TableRowEntries>
+        </TableControl>
+    </View>
+
     </ViewDefinitions>
 
 </Configuration>
