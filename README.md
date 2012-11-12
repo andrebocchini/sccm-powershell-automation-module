@@ -137,7 +137,7 @@ Here's how this can be accomplished:
 
 3. Distribute it to distribution points
     
-        $distributionPoints = Get-SCCMDistributionPoints -siteProvider $siteProvider -siteCode $siteCode
+        $distributionPoints = Get-SCCMDistributionPoints
     
         Add-SCCMPackageToDistributionPoint `
                             -packageId $newPackage.packageID `
