@@ -2332,7 +2332,7 @@ Export-ModuleMember Get-SCCMPackage -Alias "gspk"
 Export-ModuleMember New-SCCMProgram
 Export-ModuleMember Save-SCCMProgram
 Export-ModuleMember Remove-SCCMProgram
-Export-ModuleMember Get-SCCMProgram -Alias "gscpg"
+Export-ModuleMember Get-SCCMProgram -Alias "gspg"
 Export-ModuleMember Add-SCCMPackageToDistributionPoint
 Export-ModuleMember Remove-SCCMPackageFromDistributionPoint
 Export-ModuleMember Get-SCCMDistributionPoints -Alias "gsdist"
