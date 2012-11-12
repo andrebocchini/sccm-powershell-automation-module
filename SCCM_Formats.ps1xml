@@ -3,7 +3,7 @@
 <Configuration>
     <ViewDefinitions>
 
-<!-- Begin Computer Views -->
+<!-- Begin SMS_R_System Views -->
 
     <View>
         <Name>System.Management.ManagementObject#SMS_R_System</Name>
@@ -107,9 +107,9 @@
         </TableControl>
     </View>
 
-<!-- End Computer Views -->
+<!-- End SMS_R_Systemr Views -->
 
-<!-- Begin Collection Views -->
+<!-- Begin SMS_Collection Views -->
 
     <View>
         <Name>System.Management.ManagementObject#SMS_Collection</Name>
@@ -185,9 +185,9 @@
         </TableControl>
     </View>
 
-<!-- End Collection Views -->
+<!-- End SMS_Collection Views -->
 
-<!-- Begin Package Views -->
+<!-- Begin SMS_Package Views -->
 
     <View>
         <Name>System.Management.ManagementObject#SMS_Package</Name>
@@ -269,9 +269,9 @@
         </TableControl>
     </View>
 
-<!-- End Package Views -->
+<!-- End SMS_Package Views -->
 
-<!-- Begin Program Views -->
+<!-- Begin SMS_Program Views -->
 
     <View>
         <Name>System.Management.ManagementObject#SMS_Program</Name>
@@ -344,9 +344,9 @@
         </TableControl>
     </View>
 
-<!-- End Program Views -->
+<!-- End SMS_Program Views -->
 
-<!-- Begin Advertisement Views -->
+<!-- Begin SMS_Advertisement Views -->
 
     <View>
         <Name>System.Management.ManagementObject#SMS_Advertisement</Name>
@@ -430,9 +430,9 @@
         </TableControl>
     </View>
 
-<!-- End Advertisement Views -->
+<!-- End SMS_Advertisement Views -->
 
-<!-- Begin System Resource Views (Distributions Points) -->
+<!-- Begin SMS_SystemResourceList Views (Distributions Points) -->
 
    <View>
         <Name>System.Management.ManagementObject#SMS_SystemResourceList</Name>
@@ -506,9 +506,9 @@
         </ListControl>
     </View>
 
-<!-- End System Resource Views (Distribution Points) -->
+<!-- End SMS_SystemResourceList Views (Distribution Points) -->
 
-<!-- Begin Software Distribution Views -->
+<!-- Begin CCM_SoftwareDistribution Views -->
 
     <View>
         <Name>System.Management.ManagementObject#CCM_SoftwareDistribution</Name>
@@ -591,9 +591,9 @@
         </TableControl>
     </View>
 
-<!-- End Software Distribution Views -->
+<!-- End CCM_SoftwareDistribution Views -->
 
-<!-- Begin Machine Variable Views -->
+<!-- Begin SMS_MachineVariable Views -->
 
     <View>
         <Name>System.Management.ManagementBaseObject#SMS_MachineVariable</Name>
@@ -657,9 +657,9 @@
         </ListControl>
     </View>
 
-<!-- End Machine Variable Views -->
+<!-- End SMS_MachineVariable Views -->
 
-<!-- Begin Advertisement Status Views -->
+<!-- Begin SMS_ClientAdvertisementStatus Views -->
 
     <View>
         <Name>System.Management.ManagementObject#SMS_ClientAdvertisementStatus</Name>
@@ -733,7 +733,7 @@
         </TableControl>
     </View>
 
-<!-- End Advertisement Status Views -->
+<!-- End SMS_ClientAdvertisementStatus Views -->
 
 <!-- Begin SMS_Collection_Member_a Views -->
 
@@ -950,6 +950,125 @@
              </TableRowEntries>
         </TableControl>
     </View>
+
+<!-- End SMS_OS_Details Views -->
+
+<!-- End SMS_ST_RecurInterval Views -->
+
+    <View>
+        <Name>System.Management.ManagementBaseObject#SMS_ST_RecurInterval</Name>
+        <ViewSelectedBy>
+            <TypeName>System.Management.ManagementBaseObject#SMS_ST_RecurInterval</TypeName>
+        </ViewSelectedBy>
+        <ListControl>
+            <ListEntries>
+                <ListEntry>
+                    <ListItems>
+                        <ListItem>
+                            <PropertyName>DayDuration</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>DaySpan</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>HourDuration</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>HourSpan</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>IsGMT</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>MinuteDuration</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>MinuteSpan</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <Label>StartTime</Label>
+                            <ScriptBlock>$_.StartTime | Convert-SCCMDateToDate</ScriptBlock>
+                        </ListItem>
+                    </ListItems>
+                </ListEntry>  
+            </ListEntries>
+        </ListControl>
+    </View>
+
+   <View>
+        <Name>System.Management.ManagementBaseObject#SMS_ST_RecurInterval</Name>
+        <ViewSelectedBy>
+            <TypeName>System.Management.ManagementBaseObject#SMS_ST_RecurInterval</TypeName>
+        </ViewSelectedBy>
+        <TableControl>
+            <TableHeaders>
+                <TableColumnHeader>
+                    <Label>DayDuration</Label>
+                    <Width>15</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>DaySpan</Label>
+                    <Width>10</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>HourDuration</Label>
+                    <Width>15</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>HourSpan</Label>
+                    <Width>10</Width>                    
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>IsGMT</Label>
+                    <Width>10</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>MinuteDuration</Label>
+                    <Width>15</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>MinuteSpan</Label>
+                    <Width>15</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>StarTime</Label>
+                    <Width>25</Width>
+                </TableColumnHeader>
+            </TableHeaders>
+            <TableRowEntries>
+                <TableRowEntry>
+                    <TableColumnItems>
+                        <TableColumnItem>
+                            <PropertyName>DayDuration</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <PropertyName>DaySpan</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <PropertyName>HourDuration</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <PropertyName>HourSpan</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <PropertyName>IsGMT</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <PropertyName>MinuteDuration</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <PropertyName>MinuteSpan</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <ScriptBlock>$_.StartTime | Convert-SCCMDateToDate</ScriptBlock>
+                        </TableColumnItem>
+                    </TableColumnItems>
+                </TableRowEntry>
+             </TableRowEntries>
+        </TableControl>
+    </View>
+
+<!-- End SMS_ST_RecurInterval Views -->
 
     </ViewDefinitions>
 

@@ -25,6 +25,8 @@ Site Functions
     Get-SCCMAdvertisementsForComputer
     Get-SCCMAdvertisementsForPackage
     Get-SCCMAdvertisementStatusForComputer
+    Get-SCCMAdvertisementAssignedSchedule
+    Set-SCCMAdvertisementAssignedSchedule
     Set-SCCMComputerVariable
     Get-SCCMComputerVariables
     Remove-SCCMComputerVariable
@@ -43,6 +45,7 @@ Site Functions
     New-SCCMSupportedPlatform
     Get-SCCMProgramSupportedPlatforms
     Set-SCCMProgramSupportedPlatforms
+    New-SCCMRecurIntervalScheduleToken
 
 Client Functions
 

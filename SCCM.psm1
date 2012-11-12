@@ -990,6 +990,67 @@ Function Get-SCCMAdvertisementsForComputer {
 
 <#
 .SYNOPSIS
+Returns the assigned schedule for an advertisement.
+
+.DESCRIPTION
+Returns an array containing all of the assigned schedule objects for an advertisement.
+
+.PARAMETER advertisement
+The advertisement object whose schedule is being retrieved.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc145924.aspx
+#>
+Function Get-SCCMAdvertisementAssignedSchedule {
+    [CmdletBinding()]
+    param (
+        [parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        $advertisement
+    )    
+
+    $advertisement.Get() | Out-Null
+    return $advertisement.AssignedSchedule
+}
+
+<#
+.SYNOPSIS
+Sets the assigned schedule for an advertisement.
+
+.DESCRIPTION
+Sets the assigned schedule for an advertisement using an array of SMS_ScheduleToken objects passed as a parameter.
+
+.PARAMETER advertisement
+The advertisement whose schedule is being set.
+
+.PARAMETER schedule
+The array of SMS_ScheduleToken objects to be set as the advertisement schedule.  If a a $null or empty are passed, the 
+assignment schedule is cleared.
+
+.NOTES
+You can create schedule token objects using the schedule token functions in this module.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc145924.aspx
+#>
+Function Set-SCCMAdvertisementAssignedSchedule {
+    [CmdletBinding()]
+    param (
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateNotNull()]
+        $advertisement,
+        [parameter(Mandatory=$true, Position=1)]
+        [AllowNull()]
+        $schedule
+    )
+
+    $advertisement.Get() | Out-Null
+    $advertisement.AssignedSchedule = $schedule
+    $advertisement.Put() | Out-Null
+}
+
+<#
+.SYNOPSIS
 Returns a list of advertisements for a specific package.
 
 .DESCRIPTION
@@ -2247,6 +2308,88 @@ Function Set-SCCMProgramSupportedPlatforms {
 
 <#
 .SYNOPSIS
+Creates a SCCM recurring interval schedule token.
+
+.DESCRIPTION
+Creates a SCCM recurring interval schedule token.
+
+.PARAMETER siteProvider
+The name of the site provider.
+
+.PARAMETER siteCode
+The 3 character site code.
+
+.PARAMETER dayDuration
+The number of days in the interval.
+
+.PARAMETER daySpan
+The number of days spanning the interval.  Range 0-31.
+
+.PARAMETER hourDuration
+The number of hours in the interval.  Range is 0-23.
+
+.PARAMETER hourSpan
+Number of hours spanning intervals.  Range is 0-23.
+
+.PARAMETER isGmt
+Determines whether the schedule time is based on GMT.
+
+.PARAMETER minuteDuration
+The number of minutes in the interval.  Range is 0-59.
+
+.PARAMETER minuteSpan
+Number of minutes spanning intervals.  Range is 0-59.
+
+.PARAMETER startTime
+The time and date when the interval will be available.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc143477.aspx
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc146489.aspx
+#>
+Function New-SCCMRecurIntervalScheduleToken {
+    [CmdletBinding()]
+    param(
+        [string]$siteProvider,
+        [string]$siteCode,
+        [ValidateScript( { $_ -gt 0 } )][parameter(Position=0)][int]$dayDuration = 0,
+        [ValidateRange(0,31)][parameter(Position=1)][int]$daySpan = 0,
+        [ValidateRange(0,23)][parameter(Position=2)][int]$hourDuration = 0,
+        [ValidateRange(0,23)][parameter(Position=3)][int]$hourSpan = 0,
+        [parameter(Position=4)][boolean]$isGmt = 0,
+        [ValidateRange(0,59)][parameter(Position=5)][int]$minuteDuration = 0,
+        [ValidateRange(0,59)][parameter(Position=6)][int]$minuteSpan = 0,
+        [parameter(Mandatory=$true, Position=7)][DateTime]$startTime
+    )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
+
+    $scheduleToken = ([WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_ST_RecurInterval")).CreateInstance()   
+    if($scheduleToken) {
+        $scheduleToken.DayDuration = $dayDuration
+        $scheduleToken.DaySpan = $daySpan
+        $scheduleToken.HourDuration = $hourDuration
+        $scheduleToken.HourSpan = $hourSpan
+        $scheduleToken.IsGMT = $isGmt
+        $scheduleToken.MinuteDuration = $minuteDuration
+        $scheduleToken.MinuteSpan = $minuteSpan
+        $scheduleToken.StartTime = (Convert-DateToSCCMDate $startTime)
+
+        return $scheduleToken
+    } else {
+        Throw "Unable to create a new recurring interval schedule token"
+    }
+}
+
+<#
+.SYNOPSIS
 Utility function to convert DMTF date strings into something readable and usable by PowerShell.
 
 .DESCRIPTION
@@ -2314,6 +2457,8 @@ Export-ModuleMember Get-SCCMAdvertisementsForCollection
 Export-ModuleMember Get-SCCMAdvertisementsForComputer
 Export-ModuleMember Get-SCCMAdvertisementsForPackage
 Export-ModuleMember Get-SCCMAdvertisementStatusForComputer
+Export-ModuleMember Get-SCCMAdvertisementAssignedSchedule
+Export-ModuleMember Set-SCCMAdvertisementAssignedSchedule
 Export-ModuleMember Set-SCCMComputerVariable
 Export-ModuleMember Get-SCCMComputerVariables
 Export-ModuleMember Remove-SCCMComputerVariable
@@ -2340,5 +2485,6 @@ Export-ModuleMember Get-SCCMSupportedPlatforms
 Export-ModuleMember New-SCCMSupportedPlatform
 Export-ModuleMember Get-SCCMProgramSupportedPlatforms
 Export-ModuleMember Set-SCCMProgramSupportedPlatforms
+Export-ModuleMember New-SCCMRecurIntervalScheduleToken
 Export-ModuleMember Convert-SCCMDateToDate
 Export-ModuleMember Convert-DateToSCCMDate
