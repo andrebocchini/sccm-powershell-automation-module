@@ -2277,20 +2277,27 @@ Function Convert-DateToSCCMDate {
     [System.Management.ManagementDateTimeconverter]::ToDMTFDateTime($date)
 }
 
+Set-Alias -Name "gsc" -Value Get-SCCMComputer
+Set-Alias -Name "gscol" -Value Get-SCCMCollection
+Set-Alias -Name "gsa" -Value Get-SCCMAdvertisement
+Set-Alias -Name "gspk" -Value Get-SCCMPackage
+Set-Alias -Name "gspg" -Value Get-SCCMProgram
+Set-Alias -Name "gsdist" -Value Get-SCCMDistributionPoints
+
 Export-ModuleMember New-SCCMComputer
 Export-ModuleMember Remove-SCCMComputer
-Export-ModuleMember Get-SCCMComputer
+Export-ModuleMember Get-SCCMComputer -Alias "gsc"
 Export-ModuleMember Add-SCCMComputerToCollection
 Export-ModuleMember Remove-SCCMComputerFromCollection
 Export-ModuleMember New-SCCMStaticCollection
 Export-ModuleMember Remove-SCCMCollection
-Export-ModuleMember Get-SCCMCollection
+Export-ModuleMember Get-SCCMCollection -Alias "gscol"
 Export-ModuleMember Get-SCCMCollectionMembers
 Export-ModuleMember Get-SCCMCollectionsForComputer
 Export-ModuleMember New-SCCMAdvertisement
 Export-ModuleMember Save-SCCMAdvertisement
 Export-ModuleMember Remove-SCCMAdvertisement
-Export-ModuleMember Get-SCCMAdvertisement
+Export-ModuleMember Get-SCCMAdvertisement -Alias "gsa"
 Export-ModuleMember Get-SCCMAdvertisementsForCollection
 Export-ModuleMember Get-SCCMAdvertisementsForComputer
 Export-ModuleMember Get-SCCMAdvertisementsForPackage
@@ -2309,14 +2316,14 @@ Export-ModuleMember Set-SCCMClientCacheSize
 Export-ModuleMember New-SCCMPackage
 Export-ModuleMember Save-SCCMPackage
 Export-ModuleMember Remove-SCCMPackage
-Export-ModuleMember Get-SCCMPackage
+Export-ModuleMember Get-SCCMPackage -Alias "gspk"
 Export-ModuleMember New-SCCMProgram
 Export-ModuleMember Save-SCCMProgram
 Export-ModuleMember Remove-SCCMProgram
-Export-ModuleMember Get-SCCMProgram
+Export-ModuleMember Get-SCCMProgram -Alias "gscpg"
 Export-ModuleMember Add-SCCMPackageToDistributionPoint
 Export-ModuleMember Remove-SCCMPackageFromDistributionPoint
-Export-ModuleMember Get-SCCMDistributionPoints
+Export-ModuleMember Get-SCCMDistributionPoints -Alias "gsdist"
 Export-ModuleMember Get-SCCMSupportedPlatforms
 Export-ModuleMember New-SCCMSupportedPlatform
 Export-ModuleMember Get-SCCMProgramSupportedPlatforms
