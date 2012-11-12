@@ -115,7 +115,7 @@ Function New-SCCMComputer {
         [string]$siteProvider,
         [string]$siteCode,
         [parameter(Mandatory=$true, Position=0)]
-        [ValidateLength(3,15)]
+        [ValidateLength(1,15)]
         [ValidateNotNullOrEmpty()]
         [string]$computerName,
         [parameter(Mandatory=$true, Position=1)]
@@ -176,6 +176,7 @@ Function Remove-SCCMComputer {
     param (
         [string]$siteProvider,
         [string]$siteCode,
+        [ValidateScript( { $_ -gt 0 } )]
         [parameter(Mandatory=$true, Position=0)][int]$resourceId
     )
 
@@ -249,8 +250,10 @@ Function Get-SCCMComputer {
         [string]$siteCode,
         [parameter(Position=0)]
         [parameter(ParameterSetName="name")]
+        [ValidateLength(1,15)]
         [string]$computerName,
         [parameter(ParameterSetName="id")]
+        [ValidateScript( { $_ -gt 0 } )]
         [int]$resourceId,
         [switch]$includeObsolete=$false
     )
@@ -308,8 +311,12 @@ Function Add-SCCMComputerToCollection {
     param (
         [string]$siteProvider,
         [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)][int]$resourceId,
-        [parameter(Mandatory=$true, Position=1)][string]$collectionId
+        [ValidateScript( { $_ -gt 0 } )]
+        [parameter(Mandatory=$true, Position=0)]
+        [int]$resourceId,
+        [ValidateLength(8,8)]
+        [parameter(Mandatory=$true, Position=1)]
+        [string]$collectionId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -332,7 +339,7 @@ Function Add-SCCMComputerToCollection {
 
     # We want to get a list of all the collection this computer already belongs to so we can check later if it already is
     # a member of the collection passed as a parameter to this function
-    $currentCollectionMembershipList = Get-SCCMCollectionsForComputer $siteProvider $siteCode -resourceId $resourceId
+    $currentCollectionMembershipList = Get-SCCMCollectionsForComputer -siteProvider $siteProvider -siteCode $siteCode -resourceId $resourceId
     $currentCollectionIdList = @()
     foreach($currentCollectionMembership in $currentCollectionMembershipList) {
         $currentCollectionIdList += ($currentCollectionMembership.CollectionID).ToUpper()
@@ -378,8 +385,13 @@ Function Remove-SCCMComputerFromCollection {
     param (
         [string]$siteProvider,
         [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)][int]$resourceId,
-        [parameter(Mandatory=$true, Position=1)][string]$collectionId
+
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateScript( { $_ -gt 0 } )]
+        [int]$resourceId,
+        [ValidateLength(8,8)]
+        [parameter(Mandatory=$true, Position=1)]
+        [string]$collectionId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -390,7 +402,7 @@ Function Remove-SCCMComputerFromCollection {
     }
 
     $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -resourceId $resourceId
-    $collection = Get-SCCMCollection $siteProvider $siteCode -collectionId $collectionId
+    $collection = Get-SCCMCollection -siteProvider $siteProvider -siteCode $siteCode -collectionId $collectionId
 
     if(!$computer) {
         Throw "Unable to retrieve computer with resource ID $resourceId"
@@ -450,8 +462,8 @@ Function New-SCCMStaticCollection {
         $siteCode = Get-SCCMSiteCode
     }
 
-    if(Get-SCCMCollection $siteProvider $siteCode -collectionId $parentCollectionId) {
-        if(!(Get-SCCMCollection $siteProvider $siteCode -collectionName $collectionName)) {
+    if(Get-SCCMCollection -siteProvider $siteProvider -siteCode $siteCode -collectionId $parentCollectionId) {
+        if(!(Get-SCCMCollection -siteProvider $siteProvider -siteCode $siteCode -collectionName $collectionName)) {
             $newCollection = ([WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_Collection")).CreateInstance()
             $newCollection.Name = $collectionName
             $newCollection.Comment = $collectionComment
@@ -461,14 +473,14 @@ Function New-SCCMStaticCollection {
 
             # Now we establish the parent to child relationship of the two collections. If we create a collection without
             # establishing the relationship, the new collection will not be visible in the console.
-            $newCollectionId = (Get-SCCMCollection $siteProvider $siteCode -collectionName $collectionName).CollectionID
+            $newCollectionId = (Get-SCCMCollection -siteProvider $siteProvider -siteCode $siteCode -collectionName $collectionName).CollectionID
             $newCollectionRelationship = ([WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_CollectToSubCollect")).CreateInstance()
             $newCollectionRelationship.parentCollectionID = $parentCollectionId
             $newCollectionRelationship.subCollectionID = $newCollectionId
 
             $newCollectionRelationship.Put() | Out-Null
 
-            return Get-SCCMCollection $siteProvider $siteCode -collectionId $newCollectionId
+            return Get-SCCMCollection -siteProvider $siteProvider -siteCode $siteCode -collectionId $newCollectionId
         } else {
             Throw "A collection named $collectionName already exists"
         }
@@ -515,7 +527,7 @@ Function Remove-SCCMCollection {
         $siteCode = Get-SCCMSiteCode
     }
 
-    $collection = Get-SCCMCollection $siteProvider $siteCode -collectionId $collectionId
+    $collection = Get-SCCMCollection -siteProvider $siteProvider -siteCode $siteCode -collectionId $collectionId
     return $collection.psbase.Delete()
 }
 
@@ -681,7 +693,7 @@ Function Get-SCCMCollectionsForComputer {
     }
 
     # Now that we have a list of collection IDs, we want to retrieve and return some rich collection objects
-    $allServerCollections = Get-SCCMCollection $siteProvider $siteCode
+    $allServerCollections = Get-SCCMCollection -siteProvider $siteProvider -siteCode $siteCode
     $computerCollections = @()
     foreach($collectionId in $computerCollectionIds) {
         foreach($collection in $allServerCollections) {
@@ -745,11 +757,11 @@ Function New-SCCMAdvertisement {
         $siteCode = Get-SCCMSiteCode
     }
 
-    if(!(Get-SCCMCollection $siteProvider $siteCode -collectionId $collectionId)) {
+    if(!(Get-SCCMCollection -siteProvider $siteProvider -siteCode $siteCode -collectionId $collectionId)) {
         Throw "Invalid collection with ID $collectionId"
-    } elseif(!(Get-SCCMPackage $siteProvider $siteCode -packageId $packageId)) {
+    } elseif(!(Get-SCCMPackage -siteProvider $siteProvider -siteCode $siteCode -packageId $packageId)) {
         Throw "Invalid package with ID $packageId"
-    } elseif(!(Get-SCCMProgram $siteProvider $siteCode $packageId $programName)) {
+    } elseif(!(Get-SCCMProgram -siteProvider $siteProvider -siteCode $siteCode $packageId $programName)) {
         Throw "Invalid program with name `"$programName`""
     } else {
         $newAdvertisement = ([WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_Advertisement")).CreateInstance()
@@ -769,7 +781,7 @@ Function New-SCCMAdvertisement {
         $newAdvertisementId = $($advertisementCreationResult.RelativePath).TrimStart('SMS_Advertisement.AdvertisementID=')
         $newAdvertisementId = $newAdvertisementId.Substring(1,8)
 
-        return Get-SCCMAdvertisement $siteProvider $siteCode -advertisementId $newAdvertisementId
+        return Get-SCCMAdvertisement -siteProvider $siteProvider -siteCode $siteCode -advertisementId $newAdvertisementId
     }
 }
 
@@ -826,7 +838,7 @@ Function Remove-SCCMAdvertisement {
         $siteCode = Get-SCCMSiteCode
     }
 
-    $advertisement = Get-SCCMAdvertisement $siteProvider $siteCode -advertisementId $advertisementId
+    $advertisement = Get-SCCMAdvertisement -siteProvider $siteProvider -siteCode $siteCode -advertisementId $advertisementId
     if($advertisement) {
         $advertisement.psbase.Delete()
     } else {
@@ -964,10 +976,10 @@ Function Get-SCCMAdvertisementsForComputer {
         $siteCode = Get-SCCMSiteCode
     }
 
-    $collections = Get-SCCMCollectionsForComputer $siteProvider $siteCode -resourceId $resourceId
+    $collections = Get-SCCMCollectionsForComputer -siteProvider $siteProvider -siteCode $siteCode -resourceId $resourceId
     $computerAdvertisements = @()
     foreach($collection in $collections) {
-        $advertisements = Get-SCCMAdvertisementsForCollection $siteProvider $siteCode $collection.CollectionID
+        $advertisements = Get-SCCMAdvertisementsForCollection -siteProvider $siteProvider -siteCode $siteCode $collection.CollectionID
         foreach($advertisement in $advertisements) {
             $computerAdvertisements += $advertisement
         }
@@ -1597,7 +1609,7 @@ Function New-SCCMPackage {
         $newPackageId = $($newPackageIdTokens[1]).TrimStart("`"")
         $newPackageId = $($newPackageId).TrimEnd("`"")
 
-        return Get-SCCMPackage $siteProvider $siteCode -packageId $newPackageId
+        return Get-SCCMPackage -siteProvider $siteProvider -siteCode $siteCode -packageId $newPackageId
     } else {
         Throw "Package creation failed"
     }
@@ -1663,7 +1675,7 @@ Function Remove-SCCMPackage {
         $siteCode = Get-SCCMSiteCode
     }
 
-    $package = Get-SCCMPackage $siteProvider $siteCode -packageId $packageId
+    $package = Get-SCCMPackage -siteProvider $siteProvider -siteCode $siteCode -packageId $packageId
     if($package) {
         $package.psbase.Delete() | Out-Null
     } else {
@@ -1772,7 +1784,7 @@ Function New-SCCMProgram {
         $siteCode = Get-SCCMSiteCode
     }
 
-    if(Get-SCCMPackage $siteProvider $siteCode -packageId $packageId) { 
+    if(Get-SCCMPackage -siteProvider $siteProvider -siteCode $siteCode -packageId $packageId) { 
         $newProgram = ([WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_Program")).CreateInstance()
         $newProgram.ProgramName = $programName
         $newProgram.PackageID = $packageId
@@ -1783,7 +1795,7 @@ Function New-SCCMProgram {
             $newProgramId = $($programCreationResult.RelativePath).TrimStart('SMS_Program.PackageID=')
             $newProgramId = $newProgramId.Substring(1,8)
 
-            return Get-SCCMProgram $siteProvider $siteCode $packageId $programName
+            return Get-SCCMProgram -siteProvider $siteProvider -siteCode $siteCode $packageId $programName
         } else {
             Throw "Program creation failed"
         }
@@ -1849,7 +1861,7 @@ Function Remove-SCCMProgram {
         $siteCode = Get-SCCMSiteCode
     }
 
-    $program = Get-SCCMProgram $siteProvider $siteCode $packageId $programName
+    $program = Get-SCCMProgram -siteProvider $siteProvider -siteCode $siteCode $packageId $programName
     if($program) {
         return $program.psbase.Delete()
     } else {
@@ -1970,7 +1982,7 @@ Function Add-SCCMPackageToDistributionPoint {
         $siteCode = Get-SCCMSiteCode
     }
 
-    if(Get-SCCMPackage $siteProvider $siteCode -packageId $packageId) {
+    if(Get-SCCMPackage -siteProvider $siteProvider -siteCode $siteCode -packageId $packageId) {
         foreach($distributionPoint in $distributionPointList) {
             $newDistributionPoint = ([WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_DistributionPoint")).CreateInstance()
             $newDistributionPoint.ServerNALPath = $distributionPoint.NALPath
@@ -2028,7 +2040,7 @@ Function Remove-SCCMPackageFromDistributionPoint {
         $siteCode = Get-SCCMSiteCode
     }
 
-    if(Get-SCCMPackage $siteProvider $siteCode -packageId $packageId) {
+    if(Get-SCCMPackage -siteProvider $siteProvider -siteCode $siteCode -packageId $packageId) {
         foreach($distributionPoint in $distributionPointList) {
             $distributionPointToBeDeleted = Get-WmiObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_DistributionPoint" | Where { ($_.ServerNALPath -eq $distributionPoint.NALPath) -and ($_.PackageID -eq $packageId) }
             if($distributionPointToBeDeleted) {
