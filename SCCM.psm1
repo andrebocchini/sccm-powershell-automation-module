@@ -44,7 +44,7 @@ Function Get-SCCMSiteProvider {
             }
         }
     } catch {
-        Throw "Unable to determine site provider.  Please provider one as a parameter."
+        Throw "Unable to determine site provider.  Please provide one as a parameter."
     } finally{
         $ErrorActionPreference = "Continue"
     }
@@ -80,7 +80,7 @@ Function Get-SCCMSiteCode {
             }
         }
     } catch {
-         Throw "Unable to determine site code.  Please provider one as a parameter."
+         Throw "Unable to determine site code.  Please provide one as a parameter."
     } finally{
         $ErrorActionPreference = "Continue"
     }
@@ -114,8 +114,13 @@ Function New-SCCMComputer {
     param (
         [string]$siteProvider,
         [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)][string]$computerName,
-        [parameter(Mandatory=$true, Position=1)][string]$macAddress
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateLength(3,15)]
+        [ValidateNotNullOrEmpty()]
+        [string]$computerName,
+        [parameter(Mandatory=$true, Position=1)]
+        [ValidatePattern('^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$')]
+        [string]$macAddress
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
