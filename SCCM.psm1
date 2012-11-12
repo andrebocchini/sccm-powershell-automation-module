@@ -2105,6 +2105,9 @@ Get-SCCMSupported Platforms -siteProvider MYSITEPROVIDER -siteCode SIT
 Description
 -----------
 Gets a list of all supported platforms on the site.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc144734.aspx
 #>
 Function Get-SCCMSupportedPlatforms {
     [CmdletBinding()]
@@ -2150,7 +2153,10 @@ The minimum version of the operating system.
 The platform the operating system runs on (x86, x64, IA64).
 
 .EXAMPLE
-New-SCCMSupportedPlatform -siteProvider MYSITEPROVIDER -siteCode SIT -name "WinNT" -maxVersion "6.10.999.0" -minVersion "6.10.7600.0" -platform "x86"
+New-SCCMSupportedPlatform -siteProvider MYSITEPROVIDER -siteCode SIT -name "WinNT" -maxVersion "6.10.999.0" -minVersion "6.10.7600.0" -platform "i386"
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc146485.aspx
 #>
 Function New-SCCMSupportedPlatform {
     [CmdletBinding()]
@@ -2193,6 +2199,9 @@ retrieved via a WMI query; it has to be explicitly requested.
 
 .PARAMETER program
 The program whose list of supported platforms is to be retrevied.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc146485.aspx
 #>
 Function Get-SCCMProgramSupportedPlatforms {
     [CmdletBinding()]
@@ -2220,6 +2229,9 @@ The program to be configured.
 
 .PARAMETER platformList
 A list of SMS_OS_Details objects to be stored in the program configuration.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc146485.aspx
 #>
 Function Set-SCCMProgramSupportedPlatforms {
     [CmdletBinding()]
