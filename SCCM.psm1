@@ -8,7 +8,7 @@ The functions in this module provide a command line and scripting interface for 
 .NOTES
 File Name  : SCCM.psm1  
 Author     : Andre Bocchini <andrebocchini@gmail.com>  
-Requires   : PowerShell V2
+Requires   : PowerShell 3.0
 
 .LINK
 https://github.com/andrebocchini/SCCM-Powershell-Automation-Module

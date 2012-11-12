@@ -65,6 +65,10 @@ This code has only been tested with SCCM 2007.  Please conduct your own independ
 Installation
 ============
 
+You will need to have Powershell V3 installed.  If you don't already have it, you can download it here:
+
+http://www.microsoft.com/en-us/download/details.aspx?id=34595
+
 Make sure the following directory exists and is part of your PSModulePath:
 
     %userprofile%\Documents\WindowsPowershell\Modules
