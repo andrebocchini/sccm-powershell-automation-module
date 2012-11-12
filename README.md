@@ -116,7 +116,7 @@ Here's how this can be accomplished:
 
 1. Create a new package
 
-        $newPackage = New-SCCMPackage -siteProvider $siteProvider -siteCode $siteCode `
+        $newPackage = New-SCCMPackage `
                             -packageName $packageName `
                             -packageDescription $packageDescription `
                             -packageVersion $packageVersion `
@@ -129,8 +129,6 @@ Here's how this can be accomplished:
 2. Create an installation program for the new package
 
         $newProgram = New-SCCMProgram `
-                            -siteProvider $siteProvider `
-                            -siteCode $siteCode `
                             -packageId $newPackage.PackageID `
                             -programName $programName `
                             -programCommandLine $programCommandLine
@@ -142,37 +140,26 @@ Here's how this can be accomplished:
         $distributionPoints = Get-SCCMDistributionPoints -siteProvider $siteProvider -siteCode $siteCode
     
         Add-SCCMPackageToDistributionPoint `
-                            -siteProvider $siteProvider `
-                            -siteCode $siteCode `
                             -packageId $newPackage.packageID `
                             -distributionPointList $distributionPoints
 
 4. Create a collection in order to test the package
 
         $newCollection = New-SCCMStaticCollection `
-                            -siteProvider $siteProvider `
-                            -siteCode $siteCode `
                             -collectionName $newCollectionName `
                             -parentCollectionId $parentCollectionId
 
 5. Add a computer to the test collection
 
-        $testComputer = Get-SCCMComputer `
-                            -siteProvider $siteProvider `
-                            -siteCode $siteCode `
-                            -computerName $testComputerName
+        $testComputer = Get-SCCMComputer -computerName $testComputerName
 
         Add-SCCMComputerToCollection `
-                            -siteProvider $siteProvider
-                            -siteCode $siteCode
                             -resourceId $testComputer.ResourceID
                             -collectionId $testCollection.CollectionID
 
 6. Advertise the program to the test collection
 
         $newAdvertisement = New-SCCMAdvertisement `
-                            -siteProvider $siteProvider `
-                            -siteCode $siteCode `
                             -advertisementName $advertisementName `
                             -collectionId $newCollection.CollectionID `
                             -packageId $newPackage.PackageID `

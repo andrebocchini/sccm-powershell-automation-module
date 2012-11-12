@@ -16,6 +16,78 @@ https://github.com/andrebocchini/SCCM-Powershell-Automation-Module
 
 <#
 .SYNOPSIS
+Attempts to discover the local computer's site provider.
+
+.DESCRIPTION
+This function is not exported and is private to this module.  When a user does not specify a site provider for a function that requires that information,
+we call this code to try to determine who the provider is automatically.  If we cannot find it, we throw an exception.
+#>
+Function Get-SCCMSiteProvider {
+    $ErrorActionPreference = "Stop"
+    try {
+        # We need to find this client's management point
+        $ccmAuthorityInfo = Get-WMIObject -Namespace "root\ccm" -Class "CCM_Authority"
+        foreach($item in $ccmAuthorityInfo) {
+            if($item.__CLASS -eq "SMS_Authority") {
+                $currentManagementPoint = $item.CurrentManagementPoint
+            }
+        }     
+
+        # Now we ask the management point for the site provider
+        if($currentManagementPoint) {
+            
+            $providerLocations = Get-WMIObject -ComputerName $currentManagementPoint -Namespace "root\sms" -Query "Select * From SMS_ProviderLocation"
+            foreach($location in $providerLocations) {
+                if($location.ProviderForLocalSite) { 
+                    return $location.Machine
+                }
+            }
+        }
+    } catch {
+        Throw "Unable to determine site provider.  Please provider one as a parameter."
+    } finally{
+        $ErrorActionPreference = "Continue"
+    }
+}
+
+<#
+.SYNOPSIS
+Attempts to discover the local computer's site code.
+
+.DESCRIPTION
+This function is not exported and is private to this module.  When a user does not specify a site code for a function that requires that information,
+we call this code to try to determine what the code is automatically.  If we cannot find it, we throw an exception.
+#>
+Function Get-SCCMSiteCode {
+    $ErrorActionPreference = "Stop"
+    try {
+        # We need to find this client's management point
+        $ccmAuthorityInfo = Get-WMIObject -Namespace "root\ccm" -Class "CCM_Authority"
+
+        foreach($item in $ccmAuthorityInfo) {
+            if($item.__CLASS -eq "SMS_Authority") {
+                $currentManagementPoint = $item.CurrentManagementPoint
+            }
+        }     
+        
+        # Now we ask the management point for the site code
+        if($currentManagementPoint) {
+            $providerLocations = Get-WMIObject -ComputerName $currentManagementPoint -Namespace "root\sms" -Query "Select * From SMS_ProviderLocation" 
+            foreach($location in $providerLocations) {
+                if($location.ProviderForLocalSite) { 
+                    return $location.SiteCode
+                }
+            }
+        }
+    } catch {
+         Throw "Unable to determine site code.  Please provider one as a parameter."
+    } finally{
+        $ErrorActionPreference = "Continue"
+    }
+}
+
+<#
+.SYNOPSIS
 Creates a new computer account in SCCM.
 
 .DESCRIPTION
@@ -40,11 +112,18 @@ New-SCCMComputer -siteProvider MYSITEPROVIDER -siteCode SIT -computerName MYCOMP
 Function New-SCCMComputer {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
-        [parameter(Mandatory=$true)][string]$computerName,
-        [parameter(Mandatory=$true)][string]$macAddress
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)][string]$computerName,
+        [parameter(Mandatory=$true, Position=1)][string]$macAddress
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     $site = [WMIClass]("\\$siteProvider\ROOT\sms\site_" + $siteCode + ":SMS_Site")
 
@@ -90,10 +169,17 @@ Removes the computer with resource ID 1293 from the specified site.
 Function Remove-SCCMComputer {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
-        [parameter(Mandatory=$true)][string]$resourceId
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)][int]$resourceId
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     $computer =  Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System" | where { $_.ResourceID -eq $resourceId }
     return $computer.psbase.Delete()
@@ -148,22 +234,28 @@ Returns all computers (excluding obsolete ones) found on site SIT.
 Function Get-SCCMComputer {
     [CmdletBinding(DefaultParametersetName="default")]
     param (
-        [parameter(Mandatory=$true, Position=0)]
         [parameter(ParameterSetName="name")]
         [parameter(ParameterSetName="default")]
         [parameter(ParameterSetName="id")]
         [string]$siteProvider,
-        [parameter(Mandatory=$true, Position=1)]
         [parameter(ParameterSetName="name")]
         [parameter(ParameterSetName="default")]
         [parameter(ParameterSetName="id")]
         [string]$siteCode,
+        [parameter(Position=0)]
         [parameter(ParameterSetName="name")]
         [string]$computerName,
         [parameter(ParameterSetName="id")]
-        [string]$resourceId,
+        [int]$resourceId,
         [switch]$includeObsolete=$false
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     if($computerName) {
         $computerList = Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System" | where { $_.Name -eq $computerName }
@@ -209,11 +301,18 @@ ID of the collection where the computer is to be added.
 Function Add-SCCMComputerToCollection {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
-        [parameter(Mandatory=$true)][string]$resourceId,
-        [parameter(Mandatory=$true)][string]$collectionId
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)][int]$resourceId,
+        [parameter(Mandatory=$true, Position=1)][string]$collectionId
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     # First we get an object for the computer and one for the collection in question
     $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -resourceId $resourceId
@@ -272,11 +371,18 @@ ID of the collection where the computer is a member.
 Function Remove-SCCMComputerFromCollection {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
-        [parameter(Mandatory=$true)][string]$resourceId,
-        [parameter(Mandatory=$true)][string]$collectionId
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)][int]$resourceId,
+        [parameter(Mandatory=$true, Position=1)][string]$collectionId
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -resourceId $resourceId
     $collection = Get-SCCMCollection $siteProvider $siteCode -collectionId $collectionId
@@ -325,12 +431,19 @@ New-SCCMStaticCollection -siteProvider MYSITEPROVIDER -siteCode SIT -collectionN
 Function New-SCCMStaticCollection {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
-        [parameter(Mandatory=$true)][string]$collectionName,
-        [parameter(Mandatory=$true)][string]$parentCollectionId,
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)][string]$collectionName,
+        [parameter(Mandatory=$true, Position=1)][string]$parentCollectionId,
         [string]$collectionComment
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     if(Get-SCCMCollection $siteProvider $siteCode -collectionId $parentCollectionId) {
         if(!(Get-SCCMCollection $siteProvider $siteCode -collectionName $collectionName)) {
@@ -385,10 +498,17 @@ Deletes the collection with id MYID from site SIT on MYSITEPROVIDER.
 Function Remove-SCCMCollection {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
-        [parameter(Mandatory=$true)][string]$collectionId
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=1)][string]$collectionId
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     $collection = Get-SCCMCollection $siteProvider $siteCode -collectionId $collectionId
     return $collection.psbase.Delete()
@@ -437,21 +557,26 @@ Retrieve all collections from site SIT and filter out only their names and IDs
 Function Get-SCCMCollection {
     [CmdletBinding(DefaultParametersetName="default")]
     param (
-        [parameter(Mandatory=$true, Position=0)]
         [parameter(ParameterSetName="name")]
         [parameter(ParameterSetName="default")]
         [parameter(ParameterSetName="id")]
         [string]$siteProvider,
-        [parameter(Mandatory=$true, Position=1)]
         [parameter(ParameterSetName="name")]
         [parameter(ParameterSetName="default")]
         [parameter(ParameterSetName="id")]
         [string]$siteCode,
         [parameter(ParameterSetName="name")]
         [string]$collectionName,
-        [parameter(ParameterSetName="id")]
+        [parameter(ParameterSetName="id", Position=0)]
         [string]$collectionId
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     if($collectionName) {
         return Get-WMIObject -Computer $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * from SMS_Collection" | Where { $_.Name -eq $collectionName } 
@@ -491,10 +616,17 @@ Retrieves all members of collection SIT00012 and lists only their names
 Function Get-SCCMCollectionMembers {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
-        [parameter(Mandatory=$true)][string]$collectionId
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)][string]$collectionId
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     return Get-WMIObject -Computer $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_CollectionMember_a" | Where { $_.CollectionID -eq $collectionId }
 }
@@ -518,10 +650,17 @@ Resource ID for the computer whose list of collections are being retrieved.
 Function Get-SCCMCollectionsForComputer {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
-        [parameter(Mandatory=$true)][string]$resourceId
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)][int]$resourceId
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     # First we find all membership associations that match the colection ID of the computer in question
     $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -resourceId $resourceId
@@ -586,13 +725,20 @@ http://msdn.microsoft.com/en-us/library/cc146108.aspx
 Function New-SCCMAdvertisement {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
+        [string]$siteProvider,
+        [string]$siteCode,
         [parameter(Mandatory=$true)][string]$advertisementName,
         [parameter(Mandatory=$true)][string]$collectionId,
         [parameter(Mandatory=$true)][string]$packageId,
         [parameter(Mandatory=$true)][string]$programName
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     if(!(Get-SCCMCollection $siteProvider $siteCode -collectionId $collectionId)) {
         Throw "Invalid collection with ID $collectionId"
@@ -663,10 +809,17 @@ The ID of the advertisement to be deleted.
 Function Remove-SCCMAdvertisement {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
-        [parameter(Mandatory=$true)][string]$advertisementId
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)][string]$advertisementId
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     $advertisement = Get-SCCMAdvertisement $siteProvider $siteCode -advertisementId $advertisementId
     if($advertisement) {
@@ -726,11 +879,18 @@ Retrieve all advertisements from site SIT on MYSITEPROVIDER and filter out only 
 Function Get-SCCMAdvertisement {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
+        [string]$siteProvider,
+        [string]$siteCode,
         [string]$advertisementName,
-        [string]$advertisementId
+        [parameter(Position=0)][string]$advertisementId
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     if($advertisementName -and $advertisementID) {
         return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_Advertisement" | where { ($_.AdvertisementName -eq $advertisementName) -and ($_.AdvertisementID -eq $advertisementId) }
@@ -753,10 +913,17 @@ Takes in information about a specific site, along with a collection ID and retur
 Function Get-SCCMAdvertisementsForCollection {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
-        [parameter(Mandatory=$true)][string]$collectionId
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)][string]$collectionId
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     return Get-WMIObject -Computer $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * from SMS_Advertisement WHERE CollectionID='$collectionId'"
 }
@@ -780,10 +947,17 @@ Resource ID of the computers whose advertisements are being retrieved.
 Function Get-SCCMAdvertisementsForComputer {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
-        [parameter(Mandatory=$true)][string]$resourceId
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)][int]$resourceId
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     $collections = Get-SCCMCollectionsForComputer $siteProvider $siteCode -resourceId $resourceId
     $computerAdvertisements = @()
@@ -823,10 +997,17 @@ Retrieve all advertisements from site SIT on MYSITEPROVIDER for package with ID 
 Function Get-SCCMAdvertisementsForPackage {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
-        [parameter(Mandatory=$true)][string]$packageId
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)][string]$packageId
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_Advertisement" | where { $_.PackageID -eq $packageId }
 }
@@ -853,11 +1034,18 @@ The resource ID of the computer.
 Function Get-SCCMAdvertisementStatusForComputer {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
-        [parameter(Mandatory=$true)][string]$advertisementId,
-        [parameter(Mandatory=$true)][string]$resourceId
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)][string]$advertisementId,
+        [parameter(Mandatory=$true, Position=1)][int]$resourceId
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     return Get-WMIObject -Computer $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * from SMS_ClientAdvertisementStatus WHERE AdvertisementID='$advertisementId' AND ResourceID='$resourceId'"
 }
@@ -891,13 +1079,20 @@ A masked variable has its text display replaced with asterisks.
 Function Set-SCCMComputerVariable {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
-        [parameter(Mandatory=$true)][string]$resourceId,
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true)][int]$resourceId,
         [parameter(Mandatory=$true)][string]$variableName,
         [parameter(Mandatory=$true)][string]$variableValue,
         [parameter(Mandatory=$true)][bool]$isMasked
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -resourceId $resourceId
 
@@ -995,10 +1190,17 @@ Resource ID of the target computer.
 Function Get-SCCMComputerVariables {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
-        [parameter(Mandatory=$true)][string]$resourceId
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)][int]$resourceId
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -resourceId $resourceId
 
@@ -1035,11 +1237,18 @@ Name of the variable to be removed.
 Function Remove-SCCMComputerVariable {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
-        [parameter(Mandatory=$true)][string]$resourceId,
-        [parameter(Mandatory=$true)][string]$variableName
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)][int]$resourceId,
+        [parameter(Mandatory=$true, Position=1)][string]$variableName
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -resourceId $resourceId
 
@@ -1102,8 +1311,8 @@ OOBSDiscovery
 Function Invoke-SCCMClientAction {           
     [CmdletBinding()]             
     param(             
-        [parameter(Mandatory=$true)][string]$computerName, 
-        [Parameter(Mandatory=$true)][string]$scheduleId    
+        [parameter(Mandatory=$true, Position=0)][string]$computerName, 
+        [Parameter(Mandatory=$true, Position=1)][string]$scheduleId    
     )             
 
     $scheduleIdList = @{
@@ -1143,8 +1352,8 @@ Takes in a computer name and an scheduled message id, and attempts to trigger it
 Function Invoke-SCCMClientSchedule {           
     [CmdletBinding()]             
     param(             
-        [parameter(Mandatory=$true)][string]$computerName, 
-        [Parameter(Mandatory=$true)][string]$scheduleId    
+        [parameter(Mandatory=$true, Position=0)][string]$computerName, 
+        [Parameter(Mandatory=$true, Position=1)][string]$scheduleId    
     ) 
 
     $sccmClient = [WMIclass]"\\$computerName\root\ccm:SMS_Client" 
@@ -1191,8 +1400,8 @@ Useful when trying to trigger and advertisement on demand.
 Function Get-SCCMClientAdvertisementScheduleId {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$computerName,
-        [parameter(Mandatory=$true)][string]$advertisementId
+        [parameter(Mandatory=$true, Position=0)][string]$computerName,
+        [parameter(Mandatory=$true, Position=1)][string]$advertisementId
     )
 
     $scheduledMessages = Get-WMIObject -Computer $computerName -Namespace "root\CCM\Policy\Machine\ActualConfig" -Query "Select * from CCM_Scheduler_ScheduledMessage"  
@@ -1231,8 +1440,8 @@ Takes in a computer name and contacts the client to set its assigned site code.
 Function Set-SCCMClientAssignedSite {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$computerName,
-        [parameter(Mandatory=$true)][string]$siteCode
+        [parameter(Mandatory=$true, Position=0)][string]$computerName,
+        [parameter(Mandatory=$true, Position=1)][string]$siteCode
     )
 
     $sccmClient = [WMIclass]"\\$computerName\root\ccm:SMS_Client" 
@@ -1290,8 +1499,8 @@ Sets the client computer's cache size to 1000MB.
 Function Set-SCCMClientCacheSize {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$computerName,
-        [parameter(Mandatory=$true)][int]$cacheSize
+        [parameter(Mandatory=$true, Position=0)][string]$computerName,
+        [parameter(Mandatory=$true, Position=1)][int]$cacheSize
     )
 
     if($cacheSize -gt 0) {
@@ -1347,8 +1556,8 @@ http://msdn.microsoft.com/en-us/library/cc144959.aspx
 Function New-SCCMPackage {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
+        [string]$siteProvider,
+        [string]$siteCode,
         [parameter(Mandatory=$true)][string]$packageName,
         [parameter(Mandatory=$true)][string]$packageDescription,
         [parameter(Mandatory=$true)][string]$packageVersion,
@@ -1356,6 +1565,13 @@ Function New-SCCMPackage {
         [parameter(Mandatory=$true)][string]$packageLanguage,
         [string]$packageSource   
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     $newPackage = ([WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_Package")).CreateInstance()
     $newPackage.Name = $packageName
@@ -1430,10 +1646,17 @@ Deletes the package with ID MYID from SIT on MYSITEPROVIDER
 Function Remove-SCCMPackage {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
-        [parameter(Mandatory=$true)][string]$packageId
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)][string]$packageId
     )    
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     $package = Get-SCCMPackage $siteProvider $siteCode -packageId $packageId
     if($package) {
@@ -1476,10 +1699,17 @@ Retrieve all packages from site SIT on MYSITEPROVIDER and filter out only their 
 Function Get-SCCMPackage {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
-        [string]$packageId
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Position=0)][string]$packageId
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     if($packageId) {
         return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_Package" | where { ($_.PackageID -eq $packageId) }
@@ -1523,12 +1753,19 @@ http://msdn.microsoft.com/en-us/library/cc144361.aspx
 Function New-SCCMProgram {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
+        [string]$siteProvider,
+        [string]$siteCode,
         [parameter(Mandatory=$true)][string]$packageId,
         [parameter(Mandatory=$true)][string]$programName,
         [parameter(Mandatory=$true)][string]$programCommandLine
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     if(Get-SCCMPackage $siteProvider $siteCode -packageId $packageId) { 
         $newProgram = ([WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_Program")).CreateInstance()
@@ -1594,11 +1831,18 @@ Name of the program to be deleted.
 Function Remove-SCCMProgram {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
-        [parameter(Mandatory=$true)][string]$packageId,
-        [parameter(Mandatory=$true)][string]$programName
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)][string]$packageId,
+        [parameter(Mandatory=$true, Position=1)][string]$programName
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     $program = Get-SCCMProgram $siteProvider $siteCode $packageId $programName
     if($program) {
@@ -1653,11 +1897,18 @@ Retrieve all programs from site SIT on MYSITEPROVIDER and filter out only their 
 Function Get-SCCMProgram {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
-        [string]$packageId,
-        [string]$programName
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Position=0)][string]$packageId,
+        [parameter(Position=1)][string]$programName
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     if($packageId -and $programName) {
         return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_Program" | where { ($_.PackageID -eq $packageId) -and ($_.ProgramName -eq $programName) }
@@ -1701,11 +1952,18 @@ This will add the package SIT00000 to every distribution point on the site SIT.
 Function Add-SCCMPackageToDistributionPoint {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
-        [parameter(Mandatory=$true)][string]$packageId,
-        [parameter(Mandatory=$true)]$distributionPointList
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)][string]$packageId,
+        [parameter(Mandatory=$true, Position=1)]$distributionPointList
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     if(Get-SCCMPackage $siteProvider $siteCode -packageId $packageId) {
         foreach($distributionPoint in $distributionPointList) {
@@ -1752,11 +2010,18 @@ This will remove the package SIT00000 from every distribution point on the site 
 Function Remove-SCCMPackageFromDistributionPoint {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
-        [parameter(Mandatory=$true)][string]$packageId,
-        [parameter(Mandatory=$true)]$distributionPointList
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)][string]$packageId,
+        [parameter(Mandatory=$true, Position=1)]$distributionPointList
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     if(Get-SCCMPackage $siteProvider $siteCode -packageId $packageId) {
         foreach($distributionPoint in $distributionPointList) {
@@ -1789,9 +2054,16 @@ Get-SCCMDistributionPoints -siteProvider MYSITEPROVIDER -siteCode SIT
 Function Get-SCCMDistributionPoints {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode
+        [string]$siteProvider,
+        [string]$siteCode
     )    
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     return Get-WmiObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_SystemResourceList" | Where { ($_.RoleName -eq "SMS Distribution Point") -and  ($_.SiteCode -eq $siteCode) }
 }
@@ -1820,9 +2092,16 @@ Gets a list of all supported platforms on the site.
 Function Get-SCCMSupportedPlatforms {
     [CmdletBinding()]
     param(
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode
+        [string]$siteProvider,
+        [string]$siteCode
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     return Get-WmiObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_SupportedPlatforms"
 }
@@ -1859,13 +2138,20 @@ New-SCCMSupportedPlatform -siteProvider MYSITEPROVIDER -siteCode SIT -name "WinN
 Function New-SCCMSupportedPlatform {
     [CmdletBinding()]
     param(
-        [parameter(Mandatory=$true)][string]$siteProvider,
-        [parameter(Mandatory=$true)][string]$siteCode,
+        [string]$siteProvider,
+        [string]$siteCode,
         [parameter(Mandatory=$true)][string]$name,
         [parameter(Mandatory=$true)][string]$maxVersion,
         [parameter(Mandatory=$true)][string]$minVersion,
         [parameter(Mandatory=$true)][string]$platform
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     $newPlatform = ([WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_OS_Details")).CreateInstance()
     if($newPlatform) {
@@ -1921,8 +2207,8 @@ A list of SMS_OS_Details objects to be stored in the program configuration.
 Function Set-SCCMProgramSupportedPlatforms {
     [CmdletBinding()]
     param(
-        [parameter(Mandatory=$true)]$program,
-        [parameter(Mandatory=$true)]$platformList
+        [parameter(Mandatory=$true, Position=0)]$program,
+        [parameter(Mandatory=$true, Position=1)]$platformList
     )
 
     $program.Get() | Out-Null
