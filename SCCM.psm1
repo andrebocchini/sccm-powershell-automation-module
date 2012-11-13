@@ -2428,10 +2428,10 @@ Function New-SCCMNonRecurringScheduleToken {
         [string]$siteProvider,
         [string]$siteCode,
         [ValidateScript( { $_ -gt 0 } )][parameter(Position=0)][int]$dayDuration = 0,
-        [ValidateRange(0,23)][parameter(Position=2)][int]$hourDuration = 0,
-        [parameter(Position=4)][boolean]$isGmt = 0,
-        [ValidateRange(0,59)][parameter(Position=5)][int]$minuteDuration = 0,
-        [parameter(Mandatory=$true, Position=7)][DateTime]$startTime
+        [ValidateRange(0,23)][parameter(Position=1)][int]$hourDuration = 0,
+        [parameter(Position=2)][boolean]$isGmt = 0,
+        [ValidateRange(0,59)][parameter(Position=3)][int]$minuteDuration = 0,
+        [parameter(Mandatory=$true, Position=4)][DateTime]$startTime
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -2453,6 +2453,83 @@ Function New-SCCMNonRecurringScheduleToken {
     } else {
         Throw "Unable to create a new non-recurring interval schedule token"
     }
+}
+
+<#
+.SYNOPSIS
+Creates a recurring schedule token that happens on specific at specific monthly intervals.
+
+.DESCRIPTION
+Creates a recurring schedule token that happens on specific at specific monthly intervals.
+
+.PARAMETER siteProvider
+The name of the site provider.
+
+.PARAMETER siteCode
+The 3 character site code.
+
+.PARAMETER dayDuration
+The number of days in the interval.
+
+.PARAMETER forNumberOfMonths
+Number of months in the interval.  Range is 1-12.
+
+.PARAMETER hourDuration
+The number of hours in the interval.  Range is 0-23.
+
+.PARAMETER isGmt
+Determines whether the schedule time is based on GMT.
+
+.PARAMETER minuteDuration
+The number of minutes in the interval.  Range is 0-59.
+
+.PARAMETER monthDay
+Day of the month when the event happens.  Range is 0-31 with 0 indicating the last day of the month.
+
+.PARAMETER startTime
+The time and date when the interval will be available.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc145924.aspx
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc146724.aspx
+#>
+Function New-SCCMRecurMonthlyByDateIntervalScheduleToken {
+    [CmdletBinding()]
+    param(
+        [string]$siteProvider,
+        [string]$siteCode,
+        [ValidateScript( { $_ -gt 0 } )][parameter(Position=0)][int]$dayDuration = 0,
+        [ValidateRange(1,12)][parameter(Position=1)][int]$forNumberofMonths = 0,
+        [ValidateRange(0,23)][parameter(Position=2)][int]$hourDuration = 0,
+        [parameter(Position=3)][boolean]$isGmt = 0,
+        [ValidateRange(0,59)][parameter(Position=4)][int]$minuteDuration = 0,
+        [ValidateRange(0,31)][parameter(Position=5)][int]$monthDay = 0,
+        [parameter(Mandatory=$true, Position=6)][DateTime]$startTime
+    )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
+
+    $scheduleToken = ([WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_ST_RecurMonthlyByDate")).CreateInstance()   
+    if($scheduleToken) {
+        $scheduleToken.DayDuration = $dayDuration
+        $scheduleToken.ForNumberofMonths = $forNumberofMonths
+        $scheduleToken.HourDuration = $hourDuration
+        $scheduleToken.IsGMT = $isGmt
+        $scheduleToken.MinuteDuration = $minuteDuration
+        $scheduleToken.MonthDay = $monthDay
+        $scheduleToken.StartTime = (Convert-DateToSCCMDate $startTime)
+
+        return $scheduleToken
+    } else {
+        Throw "Unable to create a new monthly-by-date recurring interval schedule token"
+    }    
 }
 
 <#
@@ -2554,5 +2631,6 @@ Export-ModuleMember Get-SCCMProgramSupportedPlatforms
 Export-ModuleMember Set-SCCMProgramSupportedPlatforms
 Export-ModuleMember New-SCCMRecurIntervalScheduleToken
 Export-ModuleMember New-SCCMNonRecurringScheduleToken
+Export-ModuleMember New-SCCMRecurMonthlyByDateIntervalScheduleToken
 Export-ModuleMember Convert-SCCMDateToDate
 Export-ModuleMember Convert-DateToSCCMDate
