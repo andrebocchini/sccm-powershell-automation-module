@@ -582,9 +582,9 @@ Function Get-SCCMCollection {
         [parameter(ParameterSetName="default")]
         [parameter(ParameterSetName="id")]
         [string]$siteCode,
-        [parameter(ParameterSetName="name")]
+        [parameter(ParameterSetName="name", Position=0)]
         [string]$collectionName,
-        [parameter(ParameterSetName="id", Position=0)]
+        [parameter(ParameterSetName="id", Position=1)]
         [string]$collectionId
     )
 
