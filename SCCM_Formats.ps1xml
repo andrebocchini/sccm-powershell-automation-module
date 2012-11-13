@@ -1611,6 +1611,9 @@
                             <PropertyName>Name</PropertyName>
                         </ListItem>
                         <ListItem>
+                            <PropertyName>ContainerNodeID</PropertyName>
+                        </ListItem>
+                        <ListItem>
                             <PropertyName>ObjectType</PropertyName>
                         </ListItem>
                         <ListItem>
@@ -1638,6 +1641,10 @@
                     <Width>50</Width>
                 </TableColumnHeader>
                 <TableColumnHeader>
+                    <Label>ContainerNodeID</Label>
+                    <Width>15</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
                     <Label>ObjectType</Label>
                     <Alignment>Center</Alignment>
                     <Width>15</Width>
@@ -1657,6 +1664,9 @@
                     <TableColumnItems>
                         <TableColumnItem>
                             <PropertyName>Name</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <PropertyName>ContainerNodeID</PropertyName>
                         </TableColumnItem>
                         <TableColumnItem>
                             <PropertyName>ObjectType</PropertyName>

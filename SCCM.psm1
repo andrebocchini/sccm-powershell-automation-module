@@ -2847,13 +2847,13 @@ Creates a new SCCM folder.
 
 .DESCRIPTION
 Creates a new SCCM folder.  Currently, the supported folder types are Package and Advertisement folders.  If there is already a folder with the specified
-name under the same parent, an exception will be raised.
+name under the same parent, an exception will be raised.  
 
 .PARAMETER siteProvider
 The name of the site provider.
 
 .PARAMETER siteCode
-the 3-character site code.
+The 3-character site code.
 
 .PARAMETER folderName
 The name of the new folder.
@@ -2903,6 +2903,46 @@ Function New-SCCMFolder {
         return $folder
     } else {
         Throw "There was a problem creating the folder"
+    }
+}
+<#
+.SYNOPSIS
+Delete an SCCM folder.
+
+.DESCRIPTION
+Deletes and SCCM folder.  If you delete a parent folder without deleting its children, SCCM will by default assign the topmost
+child folder the parent folder ID of 0.
+
+.PARAMETER siteProvider
+The name of the site provider.
+
+.PARAMETER siteCode
+The 3-character site code.
+
+.PARAMETER folderNodeId
+The unique node ID for the folder being deleted.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc145264.aspx
+#>
+Function Remove-SCCMFolder {
+    [CmdletBinding()]
+    param (
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)][ValidateScript( { $_ -gt 0 } )][ValidateNotNull()][int]$folderNodeId
+    )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
+
+    $folder = Get-SCCMFolder -siteProvider $siteProvider -siteCode $siteCode -folderNodeId $folderNodeId
+    if($folder) {
+        $folder.Delete() | Out-Null
     }
 }
 
@@ -3013,5 +3053,6 @@ Export-ModuleMember New-SCCMRecurMonthlyByWeekdayScheduleToken
 Export-ModuleMember New-SCCMRecurWeeklyScheduleToken
 Export-ModuleMember Get-SCCMFolder -Alias "gsf"
 Export-ModuleMember New-SCCMFolder
+Export-ModuleMember Remove-SCCMFolder
 Export-ModuleMember Convert-SCCMDateToDate
 Export-ModuleMember Convert-DateToSCCMDate

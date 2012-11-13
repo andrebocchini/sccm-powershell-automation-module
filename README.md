@@ -54,6 +54,7 @@ Site Functions
     New-SCCMRecurWeeklyScheduleToken
     Get-SCCMFolder
     New-SCCMFolder
+    Remove-SCCMFolder
 
 Client Functions
 
