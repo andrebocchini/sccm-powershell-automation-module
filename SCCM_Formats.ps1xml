@@ -1392,10 +1392,10 @@
 <!-- End SMS_ST_RecurWeekly Views -->
 
     <View>
-        <Name>System.Management.ManagementObject#SMS_ST_RecurWeeklySMS_ST_RecurWeekly</Name>
+        <Name>System.Management.ManagementObject#SMS_ST_RecurWeekly</Name>
         <ViewSelectedBy>
-            <TypeName>System.Management.ManagementObject#SMS_ST_RecurWeeklySMS_ST_RecurWeekly</TypeName>
-            <TypeName>System.Management.ManagementBaseObject#SMS_ST_RecurWeeklySMS_ST_RecurWeekly</TypeName>
+            <TypeName>System.Management.ManagementObject#SMS_ST_RecurWeekly</TypeName>
+            <TypeName>System.Management.ManagementBaseObject#SMS_ST_RecurWeekly</TypeName>
         </ViewSelectedBy>
         <ListControl>
             <ListEntries>
@@ -1497,6 +1497,103 @@
     </View>
 
 <!-- End SMS_ST_RecurWeekly Views -->
+
+<!-- Begin SMS_ServiceWindow Views -->
+
+<View>
+        <Name>System.Management.ManagementObject#SMS_ServiceWindow</Name>
+        <ViewSelectedBy>
+            <TypeName>System.Management.ManagementObject#SMS_ServiceWindow</TypeName>
+            <TypeName>System.Management.ManagementBaseObject#SMS_ServiceWindow</TypeName>
+        </ViewSelectedBy>
+        <ListControl>
+            <ListEntries>
+                <ListEntry>
+                    <ListItems>
+                        <ListItem>
+                            <PropertyName>Description</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>Duration</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>IsEnabled</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>IsGMT</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>Name</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>RecurrenceType</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>ServiceWindowID</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>ServiceWindowType</PropertyName>
+                        </ListItem>
+                    </ListItems>
+                </ListEntry>  
+            </ListEntries>
+        </ListControl>
+    </View>
+
+   <View>
+        <Name>System.Management.ManagementObject#SMS_ServiceWindow</Name>
+        <ViewSelectedBy>
+            <TypeName>System.Management.ManagementObject#SMS_ServiceWindow</TypeName>
+            <TypeName>System.Management.ManagementBaseObject#SMS_ServiceWindow</TypeName>
+        </ViewSelectedBy>
+        <TableControl>
+            <TableHeaders>
+                <TableColumnHeader>
+                    <Label>Name</Label>
+                    <Width>30</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>Duration</Label>
+                    <Width>15</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>IsEnabled</Label>
+                    <Width>10</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>ServiceWindowID</Label>
+                    <Width>45</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>ServiceWindowType</Label>
+                    <Width>20</Width>
+                </TableColumnHeader>
+            </TableHeaders>
+            <TableRowEntries>
+                <TableRowEntry>
+                    <TableColumnItems>
+                        <TableColumnItem>
+                            <PropertyName>Name</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <PropertyName>Duration</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <PropertyName>IsEnabled</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <PropertyName>ServiceWindowID</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <PropertyName>ServiceWindowType</PropertyName>
+                        </TableColumnItem>
+                    </TableColumnItems>
+                </TableRowEntry>
+             </TableRowEntries>
+        </TableControl>
+    </View>
+
+<!-- End SMS_ServiceWindow Views -->
 
     </ViewDefinitions>
 

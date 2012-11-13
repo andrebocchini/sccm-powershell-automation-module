@@ -40,6 +40,8 @@ Site Functions
     Get-SCCMProgram
     Add-SCCMPackageToDistributionPoint
     Remove-SCCMPackageFromDistributionPoint
+    Get-SCCMMaintenanceWindows
+    Get-SCCMMaintenanceWindowSchedules
     Get-SCCMDistributionPoints
     Get-SCCMSupportedPlatforms
     New-SCCMSupportedPlatform

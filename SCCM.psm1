@@ -2148,6 +2148,92 @@ Function Get-SCCMDistributionPoints {
 
 <#
 .SYNOPSIS
+Returns the maintenance windows for a collection.
+
+.DESCRIPTION
+Returns the maintenance windows for a collection.
+
+.PARAMETER siteProvider
+The name of the site provider.
+
+.PARAMETER siteCode
+The 3-character site code.
+
+.PARAMETER collectionId
+ID of the collection whose maintenance windows are being retrieved.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc143300.aspx
+#>
+Function Get-SCCMMaintenanceWindows {
+    [CmdletBinding()]
+    param (
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)][ValidateNotNull()][string]$collectionId
+    )    
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
+
+    $collectionSettings = GET-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_CollectionSettings" | Where { $_.CollectionID -eq $collectionId }
+    if($collectionSettings) {
+        $collectionSettings.Get()
+        return $collectionSettings.ServiceWindows
+    }
+}
+
+<#
+.SYNOPSIS
+Retrieves the schedules from a maintenance window object.
+
+.DESCRIPTION
+Retrieves the schedules from a maintenance window object.
+
+.PARAMETER siteProvider
+The name of the site provider.
+
+.PARAMETER siteCode
+The 3-character site code.
+
+.PARAMETER maintenanceWindow
+Maintenance window object whose schedules are being retrieved.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc145924.aspx
+#>
+Function Get-SCCMMaintenanceWindowSchedules {
+    [CmdletBinding()]
+    param (
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)][ValidateNotNull()]$maintenanceWindow
+    )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
+
+    if($maintenanceWindow) {
+        $schedules = $maintenanceWindow.ServiceWindowSchedules
+
+        if($schedules) {
+            $scheduleMethod = [WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_ScheduleMethods")
+            $result = $scheduleMethod.ReadFromString($schedules)
+            return $result.TokenData
+        }
+    }
+}
+
+<#
+.SYNOPSIS
 Gets a list of supported platforms for programs for the specified site.
 
 .DESCRIPTION
@@ -2790,6 +2876,8 @@ Export-ModuleMember Get-SCCMProgram -Alias "gspg"
 Export-ModuleMember Add-SCCMPackageToDistributionPoint
 Export-ModuleMember Remove-SCCMPackageFromDistributionPoint
 Export-ModuleMember Get-SCCMDistributionPoints -Alias "gsdist"
+Export-ModuleMember Get-SCCMMaintenanceWindows
+Export-ModuleMember Get-SCCMMaintenanceWindowSchedules
 Export-ModuleMember Get-SCCMSupportedPlatforms
 Export-ModuleMember New-SCCMSupportedPlatform
 Export-ModuleMember Get-SCCMProgramSupportedPlatforms
