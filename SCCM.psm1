@@ -2843,6 +2843,71 @@ Function Get-SCCMFolder {
 
 <#
 .SYNOPSIS
+Creates a new SCCM folder.
+
+.DESCRIPTION
+Creates a new SCCM folder.  Currently, the supported folder types are Package and Advertisement folders.  If there is already a folder with the specified
+name under the same parent, an exception will be raised.
+
+.PARAMETER siteProvider
+The name of the site provider.
+
+.PARAMETER siteCode
+the 3-character site code.
+
+.PARAMETER folderName
+The name of the new folder.
+
+.PARAMETER folderType
+The type of folder.  Allowed values are 2 and 3 (Package and Advertisement, respectively).
+
+.PARAMETER parentFolderNodeID
+ID of the parent folder.  If you specify 0, the folder will be placed under the root node for that folder type.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc145264.aspx
+#>
+Function New-SCCMFolder {
+    [CmdletBinding()]
+    param (
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)][ValidateNotNull()][string]$folderName,
+        [parameter(Mandatory=$true, Position=1)][ValidateRange(2,3)][int]$folderType,
+        [parameter(Mandatory=$true, Position=2)][ValidateScript( { $_ -ge 0 } )][int]$parentFolderNodeId=0
+    )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }    
+
+    # We need to find out if there's another folder with that name under the same parent.  If there is, we throw an exception and don't create the folder.
+    $allFolders = Get-SCCMFolder -siteProvider $siteProvider -siteCode $siteCode
+    foreach($folder in $allFolders) {
+        if( ($folder.Name -eq $folderName) -and ($folder.ParentContainerNodeID -eq $parentFolderNodeId) ) {
+            Throw "There is already a folder named $folderName under the same parent folder with ID $parentFolderNodeId"
+        }
+    }
+
+    # If we made it down here is because we need to go ahead with the folder creation.
+    $folder = ([wmiclass]("\\$siteProvider\ROOT\sms\site_" + $siteCode + ":SMS_ObjectContainerNode")).CreateInstance()
+    if($folder) {
+        $folder.Name = $folderName
+        $folder.ObjectType = $folderType
+        $folder.ParentContainerNodeID = $parentFolderNodeId
+        $folder.Put() | Out-Null
+
+        return $folder
+    } else {
+        Throw "There was a problem creating the folder"
+    }
+}
+
+<#
+.SYNOPSIS
 Utility function to convert DMTF date strings into something readable and usable by PowerShell.
 
 .DESCRIPTION
@@ -2947,5 +3012,6 @@ Export-ModuleMember New-SCCMRecurMonthlyByDateScheduleToken
 Export-ModuleMember New-SCCMRecurMonthlyByWeekdayScheduleToken
 Export-ModuleMember New-SCCMRecurWeeklyScheduleToken
 Export-ModuleMember Get-SCCMFolder -Alias "gsf"
+Export-ModuleMember New-SCCMFolder
 Export-ModuleMember Convert-SCCMDateToDate
 Export-ModuleMember Convert-DateToSCCMDate
