@@ -2785,6 +2785,64 @@ Function New-SCCMRecurWeeklyScheduleToken {
 
 <#
 .SYNOPSIS
+Returns an SCCM folder object.
+
+.DESCRIPTION
+Returns an SCCM folder object.  Currently, the objects returned can only be of Type 2 or 3 (Package folders and Advertisement folders, respectively).
+If no folder name or ID are specified, this function returns all folders on the site.
+
+.PARAMETER siteProvider
+The name of the site provider.
+
+.PARAMETER siteCode
+The 3-character site code.
+
+.PARAMETER folderName
+The name of the folder to be returned.  If more than one folder is found with the same name, an array containing all matches is returned.
+
+.PARAMETER folderNodeId
+Unique folder ID of the folder to be returned.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc145264.aspx
+#>
+Function Get-SCCMFolder {
+    [CmdletBinding(DefaultParametersetName="default")]
+    param (
+        [parameter(ParameterSetName="name")]
+        [parameter(ParameterSetName="default")]
+        [parameter(ParameterSetName="id")]
+        [string]$siteProvider,
+        [parameter(ParameterSetName="name")]
+        [parameter(ParameterSetName="default")]
+        [parameter(ParameterSetName="id")]
+        [string]$siteCode,
+        [parameter(Position=0)]
+        [parameter(ParameterSetName="name")]
+        [string]$folderName,
+        [parameter(ParameterSetName="id")]
+        [ValidateScript( { $_ -gt 0 } )]
+        [int]$folderNodeId
+    )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
+
+    if($folderName) {
+         return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_ObjectContainerNode" | Where { ($_.Name -eq $folderName) -and (@(2,3) -contains $_.ObjectType) }
+    } elseif($folderNodeId) {
+         return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_ObjectContainerNode" | Where { ($_.ContainerNodeID -eq $folderNodeId) -and (@(2,3) -contains $_.ObjectType) }
+    } else {
+         return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_ObjectContainerNode" | Where { @(2,3) -contains $_.ObjectType }
+    }
+}
+
+<#
+.SYNOPSIS
 Utility function to convert DMTF date strings into something readable and usable by PowerShell.
 
 .DESCRIPTION
@@ -2833,6 +2891,7 @@ Set-Alias -Name "gsa" -Value Get-SCCMAdvertisement
 Set-Alias -Name "gspk" -Value Get-SCCMPackage
 Set-Alias -Name "gspg" -Value Get-SCCMProgram
 Set-Alias -Name "gsdist" -Value Get-SCCMDistributionPoints
+Set-Alias -Name "gsf" -Value Get-SCCMFolder
 
 Export-ModuleMember New-SCCMComputer
 Export-ModuleMember Remove-SCCMComputer
@@ -2887,5 +2946,6 @@ Export-ModuleMember New-SCCMNonRecurringScheduleToken
 Export-ModuleMember New-SCCMRecurMonthlyByDateScheduleToken
 Export-ModuleMember New-SCCMRecurMonthlyByWeekdayScheduleToken
 Export-ModuleMember New-SCCMRecurWeeklyScheduleToken
+Export-ModuleMember Get-SCCMFolder -Alias "gsf"
 Export-ModuleMember Convert-SCCMDateToDate
 Export-ModuleMember Convert-DateToSCCMDate

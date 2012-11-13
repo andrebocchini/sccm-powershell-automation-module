@@ -1595,6 +1595,86 @@
 
 <!-- End SMS_ServiceWindow Views -->
 
+<!-- Begin SMS_ObjectContainerNode Views -->
+
+    <View>
+        <Name>System.Management.ManagementObject#SMS_ObjectContainerNode</Name>
+        <ViewSelectedBy>
+            <TypeName>System.Management.ManagementObject#SMS_ObjectContainerNode</TypeName>
+            <TypeName>System.Management.ManagementBaseObject#SMS_ObjectContainerNode</TypeName>
+        </ViewSelectedBy>
+        <ListControl>
+            <ListEntries>
+                <ListEntry>
+                    <ListItems>
+                        <ListItem>
+                            <PropertyName>Name</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>ObjectType</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>ParentContainerNodeID</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>FolderGuid</PropertyName>
+                        </ListItem>
+                    </ListItems>
+                </ListEntry>  
+            </ListEntries>
+        </ListControl>
+    </View>
+
+   <View>
+        <Name>System.Management.ManagementObject#SMS_ObjectContainerNode</Name>
+        <ViewSelectedBy>
+            <TypeName>System.Management.ManagementObject#SMS_ObjectContainerNode</TypeName>
+            <TypeName>System.Management.ManagementBaseObject#SMS_ObjectContainerNode</TypeName>
+        </ViewSelectedBy>
+        <TableControl>
+            <TableHeaders>
+                <TableColumnHeader>
+                    <Label>Name</Label>
+                    <Width>50</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>ObjectType</Label>
+                    <Alignment>Center</Alignment>
+                    <Width>15</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>ParentcontainerNodeID</Label>
+                    <Alignment>Center</Alignment>
+                    <Width>25</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>FolderGuid</Label>
+                    <Width>45</Width>
+                </TableColumnHeader>
+            </TableHeaders>
+            <TableRowEntries>
+                <TableRowEntry>
+                    <TableColumnItems>
+                        <TableColumnItem>
+                            <PropertyName>Name</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <PropertyName>ObjectType</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <PropertyName>ParentContainerNodeID</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <PropertyName>FolderGuid</PropertyName>
+                        </TableColumnItem>
+                    </TableColumnItems>
+                </TableRowEntry>
+             </TableRowEntries>
+        </TableControl>
+    </View>
+
+<!-- End SMS_ObjectContainerNode Views -->
+
     </ViewDefinitions>
 
 </Configuration>

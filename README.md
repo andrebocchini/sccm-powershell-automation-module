@@ -52,6 +52,7 @@ Site Functions
     New-SCCMRecurMonthlyByDateScheduleToken
     New-SCCMRecurMonthlyByWeekdayScheduleToken
     New-SCCMRecurWeeklyScheduleToken
+    Get-SCCMFolder
 
 Client Functions
 
