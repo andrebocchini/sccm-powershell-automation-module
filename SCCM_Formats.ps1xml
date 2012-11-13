@@ -956,8 +956,9 @@
 <!-- End SMS_ST_RecurInterval Views -->
 
     <View>
-        <Name>System.Management.ManagementBaseObject#SMS_ST_RecurInterval</Name>
+        <Name>System.Management.ManagementObject#SMS_ST_RecurInterval</Name>
         <ViewSelectedBy>
+            <TypeName>System.Management.ManagementObject#SMS_ST_RecurInterval</TypeName>
             <TypeName>System.Management.ManagementBaseObject#SMS_ST_RecurInterval</TypeName>
         </ViewSelectedBy>
         <ListControl>
@@ -996,8 +997,9 @@
     </View>
 
    <View>
-        <Name>System.Management.ManagementBaseObject#SMS_ST_RecurInterval</Name>
+        <Name>System.Management.ManagementObject#SMS_ST_RecurInterval</Name>
         <ViewSelectedBy>
+            <TypeName>System.Management.ManagementObject#SMS_ST_RecurInterval</TypeName>
             <TypeName>System.Management.ManagementBaseObject#SMS_ST_RecurInterval</TypeName>
         </ViewSelectedBy>
         <TableControl>
@@ -1069,6 +1071,96 @@
     </View>
 
 <!-- End SMS_ST_RecurInterval Views -->
+
+<!-- End SMS_ST_NonRecurring Views -->
+
+    <View>
+        <Name>System.Management.ManagementObject#SMS_ST_NonRecurring</Name>
+        <ViewSelectedBy>
+            <TypeName>System.Management.ManagementObject#SMS_ST_NonRecurring</TypeName>
+            <TypeName>System.Management.ManagementBaseObject#SMS_ST_NonRecurring</TypeName>
+        </ViewSelectedBy>
+        <ListControl>
+            <ListEntries>
+                <ListEntry>
+                    <ListItems>
+                        <ListItem>
+                            <PropertyName>DayDuration</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>HourDuration</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>IsGMT</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>MinuteDuration</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <Label>StartTime</Label>
+                            <ScriptBlock>$_.StartTime | Convert-SCCMDateToDate</ScriptBlock>
+                        </ListItem>
+                    </ListItems>
+                </ListEntry>  
+            </ListEntries>
+        </ListControl>
+    </View>
+
+   <View>
+        <Name>System.Management.ManagementObject#SMS_ST_NonRecurring</Name>
+        <ViewSelectedBy>
+            <TypeName>System.Management.ManagementObject#SMS_ST_NonRecurring</TypeName>
+            <TypeName>System.Management.ManagementBaseObject#SMS_ST_NonRecurring</TypeName>
+        </ViewSelectedBy>
+        <TableControl>
+            <TableHeaders>
+                <TableColumnHeader>
+                    <Label>DayDuration</Label>
+                    <Width>15</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>HourDuration</Label>
+                    <Width>15</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>IsGMT</Label>
+                    <Width>10</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>MinuteDuration</Label>
+                    <Width>15</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>StarTime</Label>
+                    <Width>25</Width>
+                </TableColumnHeader>
+            </TableHeaders>
+            <TableRowEntries>
+                <TableRowEntry>
+                    <TableColumnItems>
+                        <TableColumnItem>
+                            <PropertyName>DayDuration</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <PropertyName>HourDuration</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <PropertyName>IsGMT</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <PropertyName>MinuteDuration</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <ScriptBlock>$_.StartTime | Convert-SCCMDateToDate</ScriptBlock>
+                        </TableColumnItem>
+                    </TableColumnItems>
+                </TableRowEntry>
+             </TableRowEntries>
+        </TableControl>
+    </View>
+
+<!-- End SMS_ST_NonRecurring Views -->
+
 
     </ViewDefinitions>
 

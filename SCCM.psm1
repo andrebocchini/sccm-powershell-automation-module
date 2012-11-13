@@ -2308,10 +2308,10 @@ Function Set-SCCMProgramSupportedPlatforms {
 
 <#
 .SYNOPSIS
-Creates a SCCM recurring interval schedule token.
+Creates a recurring SCCM interval schedule token.
 
 .DESCRIPTION
-Creates a SCCM recurring interval schedule token.
+Creates a recurring SCCM interval schedule token.
 
 .PARAMETER siteProvider
 The name of the site provider.
@@ -2344,7 +2344,7 @@ Number of minutes spanning intervals.  Range is 0-59.
 The time and date when the interval will be available.
 
 .LINK
-http://msdn.microsoft.com/en-us/library/cc143477.aspx
+http://msdn.microsoft.com/en-us/library/cc145924.aspx
 
 .LINK
 http://msdn.microsoft.com/en-us/library/cc146489.aspx
@@ -2385,6 +2385,73 @@ Function New-SCCMRecurIntervalScheduleToken {
         return $scheduleToken
     } else {
         Throw "Unable to create a new recurring interval schedule token"
+    }
+}
+
+<#
+.SYNOPSIS
+Creates a non recurring SCCM interval schedule token.
+
+.DESCRIPTION
+Creates a non recurring SCCM interval schedule token.
+
+.PARAMETER siteProvider
+The name of the site provider.
+
+.PARAMETER siteCode
+The 3 character site code.
+
+.PARAMETER dayDuration
+The number of days in the interval.
+
+.PARAMETER hourDuration
+The number of hours in the interval.  Range is 0-23.
+
+.PARAMETER isGmt
+Determines whether the schedule time is based on GMT.
+
+.PARAMETER minuteDuration
+The number of minutes in the interval.  Range is 0-59.
+
+.PARAMETER startTime
+The time and date when the interval will be available.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc145924.aspx
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc143487.aspx
+#>
+Function New-SCCMNonRecurringScheduleToken {
+    [CmdletBinding()]
+    param(
+        [string]$siteProvider,
+        [string]$siteCode,
+        [ValidateScript( { $_ -gt 0 } )][parameter(Position=0)][int]$dayDuration = 0,
+        [ValidateRange(0,23)][parameter(Position=2)][int]$hourDuration = 0,
+        [parameter(Position=4)][boolean]$isGmt = 0,
+        [ValidateRange(0,59)][parameter(Position=5)][int]$minuteDuration = 0,
+        [parameter(Mandatory=$true, Position=7)][DateTime]$startTime
+    )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
+
+    $scheduleToken = ([WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_ST_NonRecurring")).CreateInstance()   
+    if($scheduleToken) {
+        $scheduleToken.DayDuration = $dayDuration
+        $scheduleToken.HourDuration = $hourDuration
+        $scheduleToken.IsGMT = $isGmt
+        $scheduleToken.MinuteDuration = $minuteDuration
+        $scheduleToken.StartTime = (Convert-DateToSCCMDate $startTime)
+
+        return $scheduleToken
+    } else {
+        Throw "Unable to create a new non-recurring interval schedule token"
     }
 }
 
@@ -2486,5 +2553,6 @@ Export-ModuleMember New-SCCMSupportedPlatform
 Export-ModuleMember Get-SCCMProgramSupportedPlatforms
 Export-ModuleMember Set-SCCMProgramSupportedPlatforms
 Export-ModuleMember New-SCCMRecurIntervalScheduleToken
+Export-ModuleMember New-SCCMNonRecurringScheduleToken
 Export-ModuleMember Convert-SCCMDateToDate
 Export-ModuleMember Convert-DateToSCCMDate
