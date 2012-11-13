@@ -55,6 +55,7 @@ Site Functions
     Get-SCCMFolder
     New-SCCMFolder
     Remove-SCCMFolder
+    Move-SCCMFolder
 
 Client Functions
 

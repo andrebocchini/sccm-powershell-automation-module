@@ -2948,6 +2948,60 @@ Function Remove-SCCMFolder {
 
 <#
 .SYNOPSIS
+Moves an SCCM Folder.
+
+.DESCRIPTION
+Moves an SCCM Folder.
+
+.PARAMETER siteProvider
+The name of the site provider.
+
+.PARAMETER siteCode
+The 3-character site code.
+
+.PARAMETER folderNodeId
+The unique node ID for the folder being moved.
+
+.PARAMETER newParentFolderNodeId
+The unique node ID of the new parent folder.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc145264.aspx
+#>
+Function Move-SCCMFolder {
+    [CmdletBinding()]
+    param (
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)][ValidateScript( { $_ -gt 0 } )][ValidateNotNull()][int]$folderNodeId,
+        [parameter(Mandatory=$true, Position=1)][ValidateScript( { $_ -ge 0 } )][ValidateNotNull()][int]$newParentFolderNodeId
+    )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
+
+    # We need to make sure the parent actually exists, if it doesn't, we're moving the folder to the root folder for that object type.
+    if($newParentFolderNodeId -ne 0) {
+        $parentFolder = Get-SCCMFolder -siteProvider $siteProvider -siteCode $siteCode -folderNodeId $newParentFolderNodeId
+        if(!$parentFolder) {
+            $newParentFolderNodeId = 0
+        }
+    }
+
+    $folder = Get-SCCMFolder -siteProvider $siteProvider -siteCode $siteCode -folderNodeId $folderNodeId
+    if($folder) {
+        $folder.ParentContainerNodeID = $newParentFolderNodeId
+        $folder.Put() | Out-Null
+        return $folder
+    }    
+}
+
+<#
+.SYNOPSIS
 Utility function to convert DMTF date strings into something readable and usable by PowerShell.
 
 .DESCRIPTION
@@ -3054,5 +3108,6 @@ Export-ModuleMember New-SCCMRecurWeeklyScheduleToken
 Export-ModuleMember Get-SCCMFolder -Alias "gsf"
 Export-ModuleMember New-SCCMFolder
 Export-ModuleMember Remove-SCCMFolder
+Export-ModuleMember Move-SCCMFolder
 Export-ModuleMember Convert-SCCMDateToDate
 Export-ModuleMember Convert-DateToSCCMDate
