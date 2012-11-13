@@ -2457,10 +2457,10 @@ Function New-SCCMNonRecurringScheduleToken {
 
 <#
 .SYNOPSIS
-Creates a recurring schedule token that happens on specific at specific monthly intervals.
+Creates a recurring schedule token that happens on specific days of the month at specific monthly intervals.
 
 .DESCRIPTION
-Creates a recurring schedule token that happens on specific at specific monthly intervals.
+Creates a recurring schedule token that happens on specific days of the month at specific monthly intervals.
 
 .PARAMETER siteProvider
 The name of the site provider.
@@ -2495,7 +2495,7 @@ http://msdn.microsoft.com/en-us/library/cc145924.aspx
 .LINK
 http://msdn.microsoft.com/en-us/library/cc146724.aspx
 #>
-Function New-SCCMRecurMonthlyByDateIntervalScheduleToken {
+Function New-SCCMRecurMonthlyByDateScheduleToken {
     [CmdletBinding()]
     param(
         [string]$siteProvider,
@@ -2530,6 +2530,94 @@ Function New-SCCMRecurMonthlyByDateIntervalScheduleToken {
     } else {
         Throw "Unable to create a new monthly-by-date recurring interval schedule token"
     }    
+}
+
+<#
+.SYNOPSIS
+Creates a recurring schedule token that happens on specific days of the week at specific monthly intervals.
+
+.DESCRIPTION
+Creates a recurring schedule token that happens on specific days of the week at specific monthly intervals.
+
+.PARAMETER siteProvider
+The name of the site provider.
+
+.PARAMETER siteCode
+The 3 character site code.
+
+.PARAMETER day
+The day of the month when the event happens.
+
+.PARAMETER dayDuration
+The number of days in the interval.
+
+.PARAMETER forNumberOfMonths
+Number of months in the interval.  Range is 1-12.
+
+.PARAMETER hourDuration
+The number of hours in the interval.  Range is 0-23.
+
+.PARAMETER isGmt
+Determines whether the schedule time is based on GMT.
+
+.PARAMETER minuteDuration
+The number of minutes in the interval.  Range is 0-59.
+
+.PARAMETER startTime
+The time and date when the interval will be available.
+
+.PARAMETER weekOrder
+The week of the month when the event happens.  Range is 0-4.
+
+0 - LAST
+1 - FIRST
+2 - SECOND
+3 - THIRD
+4 - FOURTH
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc144566.aspx
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc146724.aspx
+#>
+Function New-SCCMRecurMonthlyByWeekdayScheduleToken {
+    [CmdletBinding()]
+    param(
+        [string]$siteProvider,
+        [string]$siteCode,
+        [ValidateRange(1,7)][parameter(Position=0)][int]$day = 0,
+        [ValidateScript( { $_ -gt 0 } )][parameter(Position=1)][int]$dayDuration = 0,
+        [ValidateRange(1,12)][parameter(Position=2)][int]$forNumberofMonths = 0,
+        [ValidateRange(0,23)][parameter(Position=3)][int]$hourDuration = 0,
+        [parameter(Position=4)][boolean]$isGmt = 0,
+        [ValidateRange(0,59)][parameter(Position=5)][int]$minuteDuration = 0,
+        [parameter(Mandatory=$true, Position=6)][DateTime]$startTime,
+        [ValidateRange(0,4)][parameter(Position=7)][int]$weekOrder = 0
+    )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
+
+    $scheduleToken = ([WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_ST_RecurMonthlyByWeekday")).CreateInstance()   
+    if($scheduleToken) {
+        $scheduleToken.Day = $day
+        $scheduleToken.DayDuration = $dayDuration
+        $scheduleToken.ForNumberofMonths = $forNumberofMonths
+        $scheduleToken.HourDuration = $hourDuration
+        $scheduleToken.IsGMT = $isGmt
+        $scheduleToken.MinuteDuration = $minuteDuration
+        $scheduleToken.StartTime = (Convert-DateToSCCMDate $startTime)
+        $scheduleToken.WeekOrder = $weekOrder
+
+        return $scheduleToken
+    } else {
+        Throw "Unable to create a new monthly-by-weekday recurring interval schedule token"
+    }        
 }
 
 <#
@@ -2631,6 +2719,7 @@ Export-ModuleMember Get-SCCMProgramSupportedPlatforms
 Export-ModuleMember Set-SCCMProgramSupportedPlatforms
 Export-ModuleMember New-SCCMRecurIntervalScheduleToken
 Export-ModuleMember New-SCCMNonRecurringScheduleToken
-Export-ModuleMember New-SCCMRecurMonthlyByDateIntervalScheduleToken
+Export-ModuleMember New-SCCMRecurMonthlyByDateScheduleToken
+Export-ModuleMember New-SCCMRecurMonthlyByWeekdayScheduleToken
 Export-ModuleMember Convert-SCCMDateToDate
 Export-ModuleMember Convert-DateToSCCMDate

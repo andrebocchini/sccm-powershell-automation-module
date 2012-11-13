@@ -47,7 +47,8 @@ Site Functions
     Set-SCCMProgramSupportedPlatforms
     New-SCCMRecurIntervalScheduleToken
     New-SCCMNonRecurringScheduleToken
-    New-SCCMRecurMonthlyByDateIntervalScheduleToken
+    New-SCCMRecurMonthlyByDateScheduleToken
+    New-SCCMRecurMonthlyByWeekdayScheduleToken
 
 Client Functions
 
