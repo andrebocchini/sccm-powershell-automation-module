@@ -3052,6 +3052,56 @@ Function Move-SCCMPackageToFolder {
 
 <#
 .SYNOPSIS
+Moves an SCCM advertisement to a folder.
+
+.DESCRIPTION
+Moves an SCCM advertisement to a folder.
+
+.PARAMETER siteProvider
+The name of the site provider.
+
+.PARAMETER siteCode
+The 3-character site code.
+
+.PARAMETER advertisementId
+The ID of the advertisement to be moved.
+
+.PARAMETER targetFolderNodeId
+The folder to which the advertisement is to be moved.  If this value is 0, the advertisement is removed from all folders.
+#>
+Function Move-SCCMAdvertisementToFolder {
+    [CmdletBinding()]
+    param (
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)][ValidateLength(8,8)][string]$advertisementId,
+        [parameter(Mandatory=$true, Position=1)][ValidateScript( { $_ -ge 0 } )][ValidateNotNull()][int]$targetFolderNodeId
+    )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
+
+    $sourceContainerId = 0
+    $sourceContainer = Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_ObjectContainerItem" | Where { $_.InstanceKey -eq $advertisementId }
+    if($sourceContainer) {
+        # The item is in a folder other than the root folder.
+        $sourceContainerId = $sourceContainer.ContainerNodeID
+    }
+
+    $containerClass = [WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_ObjectContainerItem")
+    $result = $containerClass.MoveMembers($advertisementId, $sourceContainerId, $targetFolderNodeId, 3)
+
+    if($result.ReturnValue -ne 0) {
+        Throw "There was a problem moving advertisement with ID $advertisementId to folder with ID $folderNodeId"
+    }
+}
+
+<#
+.SYNOPSIS
 Utility function to convert DMTF date strings into something readable and usable by PowerShell.
 
 .DESCRIPTION
@@ -3160,5 +3210,6 @@ Export-ModuleMember New-SCCMFolder
 Export-ModuleMember Remove-SCCMFolder
 Export-ModuleMember Move-SCCMFolder
 Export-ModuleMember Move-SCCMPackageToFolder
+Export-ModuleMember Move-SCCMAdvertisementToFolder
 Export-ModuleMember Convert-SCCMDateToDate
 Export-ModuleMember Convert-DateToSCCMDate

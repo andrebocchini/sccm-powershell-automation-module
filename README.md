@@ -57,6 +57,7 @@ Site Functions
     Remove-SCCMFolder
     Move-SCCMFolder
     Move-SCCMPackageToFolder
+    Move-SCCMAdvertisementToFolder
 
 Client Functions
 
