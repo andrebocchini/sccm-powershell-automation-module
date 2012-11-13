@@ -851,7 +851,8 @@ Function Remove-SCCMAdvertisement {
 Retrieves SCCM advertisements from the site provider.
 
 .DESCRIPTION
-Takes in information about a specific site and an advertisement name and/or and advertisement ID and returns advertisements matching the specified parameters.  If no advertisement name or ID is specified, it returns all advertisements found on the site provider.
+Takes in information about a specific site and an advertisement name and/or and advertisement ID and returns advertisements matching the specified parameters.  
+If no advertisement name or ID is specified, it returns all advertisements found on the site.
 
 .PARAMETER siteProvider
 The name of the site provider.
@@ -873,13 +874,6 @@ Description
 Retrieve the advertisement named MYADVERTISEMENT from site SIT on MYSITEPROVIDER
 
 .EXAMPLE
-Get-SCCMAdvertisement -siteProvider MYSITEPROVIDER -siteCode SIT -advertisementName MYADVERTISEMENT -advertisementId MYADVERTISEMENTID
-
-Description
------------
-Retrieve the advertisement named MYADVERTISEMENT with ID MYADVERTISEMENTID from site SIT on MYSITEPROVIDER
-
-.EXAMPLE
 Get-SCCMAdvertisement -siteProvider MYSITEPROVIDER -siteCode SIT
 
 Description
@@ -894,12 +888,24 @@ Description
 Retrieve all advertisements from site SIT on MYSITEPROVIDER and filter out only their names and IDs
 #>
 Function Get-SCCMAdvertisement {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParametersetName="default")]
     param (
+        [parameter(ParameterSetName="name")]
+        [parameter(ParameterSetName="default")]
+        [parameter(ParameterSetName="id")]
         [string]$siteProvider,
+        [parameter(ParameterSetName="name")]
+        [parameter(ParameterSetName="default")]
+        [parameter(ParameterSetName="id")]
         [string]$siteCode,
+        [parameter(Position=0)]
+        [parameter(ParameterSetName="name")]
+        [ValidateNotNull()]
         [string]$advertisementName,
-        [parameter(Position=0)][string]$advertisementId
+        [parameter(Position=1)]
+        [parameter(ParameterSetName="id")]
+        [ValidateNotNull()]
+        [string]$advertisementId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -909,12 +915,10 @@ Function Get-SCCMAdvertisement {
         $siteCode = Get-SCCMSiteCode
     }
 
-    if($advertisementName -and $advertisementID) {
-        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_Advertisement" | where { ($_.AdvertisementName -eq $advertisementName) -and ($_.AdvertisementID -eq $advertisementId) }
-    } elseif($advertisementName -and !$advertisementId) {
-        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_Advertisement" | where { ($_.AdvertisementName -eq $advertisementName) }
-    } elseif(!$advertisementName -and $advertisementId) {
-        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_Advertisement" | where { ($_.AdvertisementID -eq $advertisementId) }
+    if($advertisementName) {
+        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_Advertisement" | where { $_.AdvertisementName -like $advertisementName }
+    } elseif($advertisementId) {
+        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_Advertisement" | where { $_.AdvertisementID -eq $advertisementId }
     } else { 
         return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_Advertisement"
     }
@@ -1757,6 +1761,9 @@ The name of the site provider.
 .PARAMETER siteCode
 The 3-character site code.
 
+.PARAMETER packageName
+The name of the package being searched for.
+
 .PARAMETER packageId
 Optional parameter.  If specified, the function attempts to match the package by package ID.
 
@@ -1775,11 +1782,22 @@ Description
 Retrieve all packages from site SIT on MYSITEPROVIDER and filter out only their names and IDs
 #>
 Function Get-SCCMPackage {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParametersetName="default")]
     param (
+        [parameter(ParameterSetName="name")]
+        [parameter(ParameterSetName="default")]
+        [parameter(ParameterSetName="id")]
         [string]$siteProvider,
+        [parameter(ParameterSetName="name")]
+        [parameter(ParameterSetName="default")]
+        [parameter(ParameterSetName="id")]
         [string]$siteCode,
-        [parameter(Position=0)][string]$packageId
+        [parameter(Position=0)]
+        [parameter(ParameterSetName="name")]
+        [ValidateNotNull()]
+        [string]$packageName,
+        [parameter(ParameterSetName="id")]
+        [parameter(Position=1)][string]$packageId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -1789,7 +1807,9 @@ Function Get-SCCMPackage {
         $siteCode = Get-SCCMSiteCode
     }
 
-    if($packageId) {
+    if($packageName) {
+        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_Package" | where { ($_.Name -like $packageName) }
+    } elseif($packageId) {
         return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_Package" | where { ($_.PackageID -eq $packageId) }
     } else { 
         return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_Package"
