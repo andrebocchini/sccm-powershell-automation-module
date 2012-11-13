@@ -266,7 +266,7 @@ Function Get-SCCMComputer {
     }
 
     if($computerName) {
-        $computerList = Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System" | where { $_.Name -eq $computerName }
+        $computerList = Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System" | where { $_.Name -like $computerName }
     } elseif($resourceId) {
         $computerList = Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System" | where { $_.ResourceID -eq $resourceId }
     } else {
@@ -596,7 +596,7 @@ Function Get-SCCMCollection {
     }
 
     if($collectionName) {
-        return Get-WMIObject -Computer $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * from SMS_Collection" | Where { $_.Name -eq $collectionName } 
+        return Get-WMIObject -Computer $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * from SMS_Collection" | Where { $_.Name -like $collectionName } 
     } elseif($collectionId) {
         return Get-WMIObject -Computer $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * from SMS_Collection" | Where { $_.CollectionID -eq $collectionId }
     } else {
@@ -2833,7 +2833,7 @@ Function Get-SCCMFolder {
     }
 
     if($folderName) {
-         return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_ObjectContainerNode" | Where { ($_.Name -eq $folderName) -and (@(2,3) -contains $_.ObjectType) }
+         return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_ObjectContainerNode" | Where { ($_.Name -like $folderName) -and (@(2,3) -contains $_.ObjectType) }
     } elseif($folderNodeId) {
          return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_ObjectContainerNode" | Where { ($_.ContainerNodeID -eq $folderNodeId) -and (@(2,3) -contains $_.ObjectType) }
     } else {
