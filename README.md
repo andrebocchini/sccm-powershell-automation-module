@@ -7,74 +7,74 @@ These are the functions currently present in the module:
 
 Site Functions
 
-    New-SCCMComputer
-    Remove-SCCMComputer
-    Get-SCCMComputer
     Add-SCCMComputerToCollection
-    Remove-SCCMComputerFromCollection
-    New-SCCMStaticCollection
-    Remove-SCCMCollection
-    Get-SCCMCollection
-    Get-SCCMCollectionMembers
-    Get-SCCMCollectionsForComputer
-    New-SCCMAdvertisement
-    Save-SCCMAdvertisement
-    Remove-SCCMAdvertisement
+    Add-SCCMPackageToDistributionPoint
     Get-SCCMAdvertisement
+    Get-SCCMAdvertisementAssignedSchedule
     Get-SCCMAdvertisementsForCollection
     Get-SCCMAdvertisementsForComputer
     Get-SCCMAdvertisementsForPackage
     Get-SCCMAdvertisementStatusForComputer
-    Get-SCCMAdvertisementAssignedSchedule
-    Set-SCCMAdvertisementAssignedSchedule
-    Set-SCCMComputerVariable
+    Get-SCCMCollection
+    Get-SCCMCollectionMembers
+    Get-SCCMCollectionsForComputer
+    Get-SCCMComputer
     Get-SCCMComputerVariables
-    Remove-SCCMComputerVariable
-    New-SCCMPackage
-    Save-SCCMPackage
-    Remove-SCCMPackage
-    Get-SCCMPackage
-    New-SCCMProgram
-    Save-SCCMProgram
-    Remove-SCCMProgram
-    Get-SCCMProgram
-    Add-SCCMPackageToDistributionPoint
-    Remove-SCCMPackageFromDistributionPoint
+    Get-SCCMDistributionPoints
+    Get-SCCMFolder
     Get-SCCMMaintenanceWindows
     Get-SCCMMaintenanceWindowSchedules
-    Get-SCCMDistributionPoints
-    Get-SCCMSupportedPlatforms
-    New-SCCMSupportedPlatform
+    Get-SCCMPackage
+    Get-SCCMProgram
     Get-SCCMProgramSupportedPlatforms
-    Set-SCCMProgramSupportedPlatforms
-    New-SCCMRecurIntervalScheduleToken
+    Get-SCCMSupportedPlatforms
+    Move-SCCMAdvertisementToFolder
+    Move-SCCMFolder
+    Move-SCCMPackageToFolder
+    New-SCCMAdvertisement
+    New-SCCMComputer
+    New-SCCMFolder
     New-SCCMNonRecurringScheduleToken
+    New-SCCMPackage
+    New-SCCMProgram
+    New-SCCMRecurIntervalScheduleToken
     New-SCCMRecurMonthlyByDateScheduleToken
     New-SCCMRecurMonthlyByWeekdayScheduleToken
     New-SCCMRecurWeeklyScheduleToken
-    Get-SCCMFolder
-    New-SCCMFolder
+    New-SCCMStaticCollection
+    New-SCCMSupportedPlatform
+    Remove-SCCMAdvertisement
+    Remove-SCCMCollection
+    Remove-SCCMComputer
+    Remove-SCCMComputerFromCollection
+    Remove-SCCMComputerVariable
     Remove-SCCMFolder
-    Move-SCCMFolder
-    Move-SCCMPackageToFolder
-    Move-SCCMAdvertisementToFolder
+    Remove-SCCMPackage
+    Remove-SCCMPackageFromDistributionPoint
+    Remove-SCCMProgram
+    Save-SCCMAdvertisement
+    Save-SCCMPackage
+    Save-SCCMProgram
+    Set-SCCMAdvertisementAssignedSchedule
+    Set-SCCMComputerVariable
+    Set-SCCMProgramSupportedPlatforms
 
 Client Functions
 
-    Invoke-SCCMClientAction
-    Invoke-SCCMClientSchedule
-    Get-SCCMClientSoftwareDistributionHistory 
     Get-SCCMClientAdvertisementScheduleId
     Get-SCCMClientAssignedSite
-    Set-SCCMClientAssignedSite
     Get-SCCMClientCacheSize
+    Get-SCCMClientSoftwareDistributionHistory 
+    Invoke-SCCMClientAction
+    Invoke-SCCMClientSchedule
+    Set-SCCMClientAssignedSite
     Set-SCCMClientCacheSize
 
 Utility Functions
 
-    Convert-SCCMDateToDate
     Convert-DateToSCCMDate
-
+    Convert-SCCMDateToDate
+   
 This code has only been tested with SCCM 2007.  Please conduct your own independent testing before trusting this code in a production environment.
 
 Installation
