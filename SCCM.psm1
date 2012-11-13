@@ -2622,6 +2622,83 @@ Function New-SCCMRecurMonthlyByWeekdayScheduleToken {
 
 <#
 .SYNOPSIS
+Creates a recurring schedule token that happens on a weekly interval.
+
+.DESCRIPTION
+Creates a recurring schedule token that happens on a weekly interval.
+
+.PARAMETER siteProvider
+The name of the site provider.
+
+.PARAMETER siteCode
+The 3 character site code.
+
+.PARAMETER day
+The day of the week when the event happens.
+
+.PARAMETER dayDuration
+The number of days in the interval.
+
+.PARAMETER forNumberOfWeeks
+Number of weeks for recurrence.  Range is 1-4.
+
+.PARAMETER hourDuration
+The number of hours in the interval.  Range is 0-23.
+
+.PARAMETER isGmt
+Determines whether the schedule time is based on GMT.
+
+.PARAMETER minuteDuration
+The number of minutes in the interval.  Range is 0-59.
+
+.PARAMETER startTime
+The time and date when the interval will be available.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc146527.aspx
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc146724.aspx
+#>
+Function New-SCCMRecurWeeklyScheduleToken {
+    [CmdletBinding()]
+    param(
+        [string]$siteProvider,
+        [string]$siteCode,
+        [ValidateRange(1,7)][parameter(Position=0)][int]$day = 0,
+        [ValidateScript( { $_ -gt 0 } )][parameter(Position=1)][int]$dayDuration = 0,
+        [ValidateRange(1,4)][parameter(Position=2)][int]$forNumberofWeeks = 0,
+        [ValidateRange(0,23)][parameter(Position=3)][int]$hourDuration = 0,
+        [parameter(Position=4)][boolean]$isGmt = 0,
+        [ValidateRange(0,59)][parameter(Position=5)][int]$minuteDuration = 0,
+        [parameter(Mandatory=$true, Position=6)][DateTime]$startTime
+    )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
+
+    $scheduleToken = ([WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_ST_RecurWeekly")).CreateInstance()   
+    if($scheduleToken) {
+        $scheduleToken.Day = $day
+        $scheduleToken.DayDuration = $dayDuration
+        $scheduleToken.ForNumberofWeeks = $forNumberofWeeks
+        $scheduleToken.HourDuration = $hourDuration
+        $scheduleToken.IsGMT = $isGmt
+        $scheduleToken.MinuteDuration = $minuteDuration
+        $scheduleToken.StartTime = (Convert-DateToSCCMDate $startTime)
+
+        return $scheduleToken
+    } else {
+        Throw "Unable to create a new weekly recurring interval schedule token"
+    }        
+}
+
+<#
+.SYNOPSIS
 Utility function to convert DMTF date strings into something readable and usable by PowerShell.
 
 .DESCRIPTION
@@ -2721,5 +2798,6 @@ Export-ModuleMember New-SCCMRecurIntervalScheduleToken
 Export-ModuleMember New-SCCMNonRecurringScheduleToken
 Export-ModuleMember New-SCCMRecurMonthlyByDateScheduleToken
 Export-ModuleMember New-SCCMRecurMonthlyByWeekdayScheduleToken
+Export-ModuleMember New-SCCMRecurWeeklyScheduleToken
 Export-ModuleMember Convert-SCCMDateToDate
 Export-ModuleMember Convert-DateToSCCMDate

@@ -1033,7 +1033,7 @@
                     <Width>15</Width>
                 </TableColumnHeader>
                 <TableColumnHeader>
-                    <Label>StarTime</Label>
+                    <Label>StartTime</Label>
                     <Width>25</Width>
                 </TableColumnHeader>
             </TableHeaders>
@@ -1116,11 +1116,11 @@
             <TableHeaders>
                 <TableColumnHeader>
                     <Label>DayDuration</Label>
-                    <Width>15</Width>
+                    <Width>18</Width>
                 </TableColumnHeader>
                 <TableColumnHeader>
                     <Label>HourDuration</Label>
-                    <Width>15</Width>
+                    <Width>18</Width>
                 </TableColumnHeader>
                 <TableColumnHeader>
                     <Label>IsGMT</Label>
@@ -1128,10 +1128,10 @@
                 </TableColumnHeader>
                 <TableColumnHeader>
                     <Label>MinuteDuration</Label>
-                    <Width>15</Width>
+                    <Width>18</Width>
                 </TableColumnHeader>
                 <TableColumnHeader>
-                    <Label>StarTime</Label>
+                    <Label>StartTime</Label>
                     <Width>25</Width>
                 </TableColumnHeader>
             </TableHeaders>
@@ -1211,15 +1211,15 @@
             <TableHeaders>
                 <TableColumnHeader>
                     <Label>DayDuration</Label>
-                    <Width>15</Width>
+                    <Width>10</Width>
                 </TableColumnHeader>
                 <TableColumnHeader>
                     <Label>ForNumberOfMonths</Label>
-                    <Width>15</Width>
+                    <Width>18</Width>
                 </TableColumnHeader>
                 <TableColumnHeader>
                     <Label>HourDuration</Label>
-                    <Width>15</Width>
+                    <Width>18</Width>
                 </TableColumnHeader>
                 <TableColumnHeader>
                     <Label>IsGMT</Label>
@@ -1227,14 +1227,14 @@
                 </TableColumnHeader>
                 <TableColumnHeader>
                     <Label>MinuteDuration</Label>
-                    <Width>15</Width>
+                    <Width>18</Width>
                 </TableColumnHeader>
                 <TableColumnHeader>
                     <Label>MonthDay</Label>
                     <Width>15</Width>
                 </TableColumnHeader>
                 <TableColumnHeader>
-                    <Label>StarTime</Label>
+                    <Label>StartTime</Label>
                     <Width>25</Width>
                 </TableColumnHeader>
             </TableHeaders>
@@ -1323,19 +1323,19 @@
             <TableHeaders>
                 <TableColumnHeader>
                     <Label>Day</Label>
-                    <Width>15</Width>
+                    <Width>10</Width>
                 </TableColumnHeader>
                 <TableColumnHeader>
                     <Label>DayDuration</Label>
-                    <Width>15</Width>
+                    <Width>18</Width>
                 </TableColumnHeader>
                 <TableColumnHeader>
                     <Label>ForNumberOfMonths</Label>
-                    <Width>15</Width>
+                    <Width>18</Width>
                 </TableColumnHeader>
                 <TableColumnHeader>
                     <Label>HourDuration</Label>
-                    <Width>15</Width>
+                    <Width>18</Width>
                 </TableColumnHeader>
                 <TableColumnHeader>
                     <Label>IsGMT</Label>
@@ -1343,10 +1343,10 @@
                 </TableColumnHeader>
                 <TableColumnHeader>
                     <Label>MinuteDuration</Label>
-                    <Width>15</Width>
+                    <Width>18</Width>
                 </TableColumnHeader>
                 <TableColumnHeader>
-                    <Label>StarTime</Label>
+                    <Label>StartTime</Label>
                     <Width>25</Width>
                 </TableColumnHeader>
                 <TableColumnHeader>
@@ -1388,6 +1388,115 @@
     </View>
 
 <!-- End SMS_ST_RecurMonthlyByWeekday Views -->
+
+<!-- End SMS_ST_RecurWeekly Views -->
+
+    <View>
+        <Name>System.Management.ManagementObject#SMS_ST_RecurWeeklySMS_ST_RecurWeekly</Name>
+        <ViewSelectedBy>
+            <TypeName>System.Management.ManagementObject#SMS_ST_RecurWeeklySMS_ST_RecurWeekly</TypeName>
+            <TypeName>System.Management.ManagementBaseObject#SMS_ST_RecurWeeklySMS_ST_RecurWeekly</TypeName>
+        </ViewSelectedBy>
+        <ListControl>
+            <ListEntries>
+                <ListEntry>
+                    <ListItems>
+                        <ListItem>
+                            <PropertyName>Day</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>DayDuration</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>ForNumberOfWeeks</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>HourDuration</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>IsGMT</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <PropertyName>MinuteDuration</PropertyName>
+                        </ListItem>
+                        <ListItem>
+                            <Label>StartTime</Label>
+                            <ScriptBlock>$_.StartTime | Convert-SCCMDateToDate</ScriptBlock>
+                        </ListItem>
+                    </ListItems>
+                </ListEntry>  
+            </ListEntries>
+        </ListControl>
+    </View>
+
+   <View>
+        <Name>System.Management.ManagementObject#SMS_ST_RecurWeekly</Name>
+        <ViewSelectedBy>
+            <TypeName>System.Management.ManagementObject#SMS_ST_RecurWeekly</TypeName>
+            <TypeName>System.Management.ManagementBaseObject#SMS_ST_RecurWeekly</TypeName>
+        </ViewSelectedBy>
+        <TableControl>
+            <TableHeaders>
+                <TableColumnHeader>
+                    <Label>Day</Label>
+                    <Width>10</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>DayDuration</Label>
+                    <Width>18</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>ForNumberOfWeeks</Label>
+                    <Width>18</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>HourDuration</Label>
+                    <Width>18</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>IsGMT</Label>
+                    <Width>10</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>MinuteDuration</Label>
+                    <Width>18</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>StartTime</Label>
+                    <Width>25</Width>
+                </TableColumnHeader>
+            </TableHeaders>
+            <TableRowEntries>
+                <TableRowEntry>
+                    <TableColumnItems>
+                        <TableColumnItem>
+                            <PropertyName>Day</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <PropertyName>DayDuration</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <PropertyName>ForNumberOfWeeks</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <PropertyName>HourDuration</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <PropertyName>IsGMT</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <PropertyName>MinuteDuration</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
+                            <ScriptBlock>$_.StartTime | Convert-SCCMDateToDate</ScriptBlock>
+                        </TableColumnItem>
+                    </TableColumnItems>
+                </TableRowEntry>
+             </TableRowEntries>
+        </TableControl>
+    </View>
+
+<!-- End SMS_ST_RecurWeekly Views -->
 
     </ViewDefinitions>
 

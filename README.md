@@ -49,6 +49,7 @@ Site Functions
     New-SCCMNonRecurringScheduleToken
     New-SCCMRecurMonthlyByDateScheduleToken
     New-SCCMRecurMonthlyByWeekdayScheduleToken
+    New-SCCMRecurWeeklyScheduleToken
 
 Client Functions
 
