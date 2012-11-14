@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-Command line interface for an assortment of SCCM 2007 operations.
+Command line interface for an assortment of SCCM operations.
 
 .DESCRIPTION
 The functions in this module provide a command line and scripting interface for automating management of SCCM 2007 environments.
@@ -487,6 +487,25 @@ Function New-SCCMStaticCollection {
     } else {
         Throw "Invalid parent collection"
     }
+}
+
+<#
+.SYNOPSIS
+Saves a collection back into the SCCM database.
+
+.DESCRIPTION
+This function is used to save direct property changes to collections back to the SCCM database.
+
+.PARAMETER collection
+The collection object to be put back into the database.
+#>
+Function Save-SCCMCollection {
+    [CmdletBinding()]
+    param (
+        [parameter(Mandatory=$true)]$collection
+    )
+
+    $collection.Put() | Out-Null
 }
 
 <#
@@ -2925,6 +2944,26 @@ Function New-SCCMFolder {
         Throw "There was a problem creating the folder"
     }
 }
+
+<#
+.SYNOPSIS
+Saves a folder back into the SCCM database.
+
+.DESCRIPTION
+This function is used to save direct property changes to folders back to the SCCM database.
+
+.PARAMETER folder
+The folder object to be put back into the database.
+#>
+Function Save-SCCMFolder {
+    [CmdletBinding()]
+    param (
+        [parameter(Mandatory=$true)]$folder
+    )
+
+    $folder.Put() | Out-Null
+}
+
 <#
 .SYNOPSIS
 Delete an SCCM folder.
@@ -3220,6 +3259,7 @@ Export-ModuleMember Get-SCCMComputer -Alias "gsc"
 Export-ModuleMember Add-SCCMComputerToCollection
 Export-ModuleMember Remove-SCCMComputerFromCollection
 Export-ModuleMember New-SCCMStaticCollection
+Export-ModuleMember Save-SCCMCollection
 Export-ModuleMember Remove-SCCMCollection
 Export-ModuleMember Get-SCCMCollection -Alias "gscol"
 Export-ModuleMember Get-SCCMCollectionMembers
@@ -3269,6 +3309,7 @@ Export-ModuleMember New-SCCMRecurMonthlyByWeekdayScheduleToken
 Export-ModuleMember New-SCCMRecurWeeklyScheduleToken
 Export-ModuleMember Get-SCCMFolder -Alias "gsf"
 Export-ModuleMember New-SCCMFolder
+Export-ModuleMember Save-SCCMFolder
 Export-ModuleMember Remove-SCCMFolder
 Export-ModuleMember Move-SCCMFolder
 Export-ModuleMember Move-SCCMPackageToFolder

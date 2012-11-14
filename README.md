@@ -53,6 +53,8 @@ Site Functions
     Remove-SCCMPackageFromDistributionPoint
     Remove-SCCMProgram
     Save-SCCMAdvertisement
+    Save-SCCMCollection
+    Save-SCCMFolder
     Save-SCCMPackage
     Save-SCCMProgram
     Set-SCCMAdvertisementAssignedSchedule
