@@ -33,6 +33,7 @@ Site Functions
     Move-SCCMPackageToFolder
     New-SCCMAdvertisement
     New-SCCMComputer
+    New-SCCMComputerVariable
     New-SCCMFolder
     New-SCCMNonRecurringScheduleToken
     New-SCCMPackage
@@ -58,7 +59,7 @@ Site Functions
     Save-SCCMPackage
     Save-SCCMProgram
     Set-SCCMAdvertisementAssignedSchedule
-    Set-SCCMComputerVariable
+    Set-SCCMComputerVariables
     Set-SCCMProgramSupportedPlatforms
 
 Client Functions
