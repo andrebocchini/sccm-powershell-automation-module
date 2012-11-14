@@ -3022,6 +3022,66 @@ Function Move-SCCMFolder {
 
 <#
 .SYNOPSIS
+Moves objects between containers.
+
+.DESCRIPTION
+Moves objects between containers.
+
+.PARAMETER siteProvider
+The name of the site provider.
+
+.PARAMETER siteCode
+The 3-character site code.
+
+.PARAMETER packageId
+The instance key of the object to be moved.
+
+.PARAMETER targetContainerNodeId
+Node ID of the target container.  If it is 0, the object is moved back to the root container of objects of the same type.
+
+.PARAMETER objectType
+The type of object being moved.  Current supported values are 2 (packages) and 3 (advertisements).
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc144997.aspx
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc146279.aspx
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc145264.aspx
+#>
+Function Move-ObjectToContainer {
+    [CmdletBinding()]
+    param (
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)][ValidateLength(8,8)][string]$instanceKey,
+        [parameter(Mandatory=$true, Position=1)][ValidateScript( { $_ -ge 0 } )][ValidateNotNull()][int]$targetContainerNodeId,
+        [parameter(Mandatory=$true, Position=3)][ValidateRange(2,3)][int]$objectType
+    )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
+
+    $sourceContainerId = 0
+    $sourceContainer = Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_ObjectContainerItem" | Where { $_.InstanceKey -eq $instanceKey }
+    if($sourceContainer) {
+        # The object is in a folder other than the root folder.
+        $sourceContainerId = $sourceContainer.ContainerNodeID
+    }
+
+    $containerClass = [WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_ObjectContainerItem")
+    $result = $containerClass.MoveMembers($instanceKey, $sourceContainerId, $targetContainerNodeId, $objectType)
+    return $result.ReturnValue 
+}
+
+<#
+.SYNOPSIS
 Moves an SCCM Package to a folder.
 
 .DESCRIPTION
@@ -3055,17 +3115,8 @@ Function Move-SCCMPackageToFolder {
         $siteCode = Get-SCCMSiteCode
     }
 
-    $sourceContainerId = 0
-    $sourceContainer = Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_ObjectContainerItem" | Where { $_.InstanceKey -eq $packageId }
-    if($sourceContainer) {
-        # The item is in a folder other than the root folder.
-        $sourceContainerId = $sourceContainer.ContainerNodeID
-    }
-
-    $containerClass = [WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_ObjectContainerItem")
-    $result = $containerClass.MoveMembers($packageId, $sourceContainerId, $targetFolderNodeId, 2)
-
-    if($result.ReturnValue -ne 0) {
+    $result = Move-ObjectToContainer -siteProvider $siteProvider -siteCode $siteCode -instanceKey $packageId -targetContainerNodeId $targetFolderNodeId -objectType 2
+    if($result -ne 0) {
         Throw "There was a problem moving package with ID $packageId to folder with ID $folderNodeId"
     }
 }
@@ -3105,17 +3156,8 @@ Function Move-SCCMAdvertisementToFolder {
         $siteCode = Get-SCCMSiteCode
     }
 
-    $sourceContainerId = 0
-    $sourceContainer = Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_ObjectContainerItem" | Where { $_.InstanceKey -eq $advertisementId }
-    if($sourceContainer) {
-        # The item is in a folder other than the root folder.
-        $sourceContainerId = $sourceContainer.ContainerNodeID
-    }
-
-    $containerClass = [WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_ObjectContainerItem")
-    $result = $containerClass.MoveMembers($advertisementId, $sourceContainerId, $targetFolderNodeId, 3)
-
-    if($result.ReturnValue -ne 0) {
+    $result = Move-ObjectToContainer -siteProvider $siteProvider -siteCode $siteCode -instanceKey $advertisementId -targetContainerNodeId $targetFolderNodeId -objectType 3
+    if($result -ne 0) {
         Throw "There was a problem moving advertisement with ID $advertisementId to folder with ID $folderNodeId"
     }
 }
