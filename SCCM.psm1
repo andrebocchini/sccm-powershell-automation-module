@@ -532,6 +532,52 @@ Function New-SCCMStaticCollection {
 
 <#
 .SYNOPSIS
+Returns a collection refresh schedule.
+
+.DESCRIPTION
+Returns a collection refresh schedule.  If the collection is set to refresh manually, it returns null.
+
+.PARAMETER siteProvider
+The name of the site provider.
+
+.PARAMETER siteCode
+The 3-character site code where the collection is to be created.
+
+.PARAMETER collectionId
+ID of the collection whose collection is being returned.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc145320.aspx
+#>
+Function Get-SCCMCollectionRefreshSchedule {
+    [CmdletBinding()]
+    param (
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)][ValidateLength(8,8)][string]$collectionId
+    )
+
+    $refreshTypeManual = 1
+    $refreshTypeAuto = 2
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
+
+    $collection = Get-SCCMCollection -siteProvider $siteProvider -siteCode $siteCode -collectionId $collectionId
+    if($collection) {
+        $collection.Get() | Out-Null
+        if($collection.RefreshType -eq $refreshTypeAuto) {
+            return $collection.RefreshSchedule
+        }         
+    }
+}
+
+<#
+.SYNOPSIS
 Saves a collection back into the SCCM database.
 
 .DESCRIPTION
@@ -3312,74 +3358,75 @@ Function Convert-DateToSCCMDate {
     [System.Management.ManagementDateTimeconverter]::ToDMTFDateTime($date)
 }
 
-Set-Alias -Name "gsc" -Value Get-SCCMComputer
-Set-Alias -Name "gscol" -Value Get-SCCMCollection
 Set-Alias -Name "gsa" -Value Get-SCCMAdvertisement
-Set-Alias -Name "gspk" -Value Get-SCCMPackage
-Set-Alias -Name "gspg" -Value Get-SCCMProgram
+Set-Alias -Name "gscol" -Value Get-SCCMCollection
+Set-Alias -Name "gsc" -Value Get-SCCMComputer
 Set-Alias -Name "gsdist" -Value Get-SCCMDistributionPoints
 Set-Alias -Name "gsf" -Value Get-SCCMFolder
+Set-Alias -Name "gspk" -Value Get-SCCMPackage
+Set-Alias -Name "gspg" -Value Get-SCCMProgram
 
-Export-ModuleMember New-SCCMComputer
-Export-ModuleMember Remove-SCCMComputer
-Export-ModuleMember Get-SCCMComputer -Alias "gsc"
 Export-ModuleMember Add-SCCMComputerToCollection
-Export-ModuleMember Remove-SCCMComputerFromCollection
-Export-ModuleMember New-SCCMStaticCollection
-Export-ModuleMember Save-SCCMCollection
-Export-ModuleMember Remove-SCCMCollection
-Export-ModuleMember Get-SCCMCollection -Alias "gscol"
-Export-ModuleMember Get-SCCMCollectionMembers
-Export-ModuleMember Get-SCCMCollectionsForComputer
-Export-ModuleMember New-SCCMAdvertisement
-Export-ModuleMember Save-SCCMAdvertisement
-Export-ModuleMember Remove-SCCMAdvertisement
+Export-ModuleMember Add-SCCMPackageToDistributionPoint
+Export-ModuleMember Convert-DateToSCCMDate
+Export-ModuleMember Convert-SCCMDateToDate
 Export-ModuleMember Get-SCCMAdvertisement -Alias "gsa"
+Export-ModuleMember Get-SCCMAdvertisementAssignedSchedule
 Export-ModuleMember Get-SCCMAdvertisementsForCollection
 Export-ModuleMember Get-SCCMAdvertisementsForComputer
 Export-ModuleMember Get-SCCMAdvertisementsForPackage
 Export-ModuleMember Get-SCCMAdvertisementStatusForComputer
-Export-ModuleMember Get-SCCMAdvertisementAssignedSchedule
-Export-ModuleMember Set-SCCMAdvertisementAssignedSchedule
-Export-ModuleMember Set-SCCMComputerVariables
-Export-ModuleMember Get-SCCMComputerVariables
-Export-ModuleMember New-SCCMComputerVariable
-Export-ModuleMember Invoke-SCCMClientAction
-Export-ModuleMember Invoke-SCCMClientSchedule
-Export-ModuleMember Get-SCCMClientSoftwareDistributionHistory 
 Export-ModuleMember Get-SCCMClientAdvertisementScheduleId
 Export-ModuleMember Get-SCCMClientAssignedSite
-Export-ModuleMember Set-SCCMClientAssignedSite
 Export-ModuleMember Get-SCCMClientCacheSize
-Export-ModuleMember Set-SCCMClientCacheSize
-Export-ModuleMember New-SCCMPackage
-Export-ModuleMember Save-SCCMPackage
-Export-ModuleMember Remove-SCCMPackage
-Export-ModuleMember Get-SCCMPackage -Alias "gspk"
-Export-ModuleMember New-SCCMProgram
-Export-ModuleMember Save-SCCMProgram
-Export-ModuleMember Remove-SCCMProgram
-Export-ModuleMember Get-SCCMProgram -Alias "gspg"
-Export-ModuleMember Add-SCCMPackageToDistributionPoint
-Export-ModuleMember Remove-SCCMPackageFromDistributionPoint
+Export-ModuleMember Get-SCCMClientSoftwareDistributionHistory 
+Export-ModuleMember Get-SCCMCollection -Alias "gscol"
+Export-ModuleMember Get-SCCMCollectionMembers
+Export-ModuleMember Get-SCCMCollectionRefreshSchedule
+Export-ModuleMember Get-SCCMCollectionsForComputer
+Export-ModuleMember Get-SCCMComputer -Alias "gsc"
+Export-ModuleMember Get-SCCMComputerVariables
 Export-ModuleMember Get-SCCMDistributionPoints -Alias "gsdist"
+Export-ModuleMember Get-SCCMFolder -Alias "gsf"
 Export-ModuleMember Get-SCCMMaintenanceWindows
 Export-ModuleMember Get-SCCMMaintenanceWindowSchedules
-Export-ModuleMember Get-SCCMSupportedPlatforms
-Export-ModuleMember New-SCCMSupportedPlatform
+Export-ModuleMember Get-SCCMPackage -Alias "gspk"
+Export-ModuleMember Get-SCCMProgram -Alias "gspg"
 Export-ModuleMember Get-SCCMProgramSupportedPlatforms
-Export-ModuleMember Set-SCCMProgramSupportedPlatforms
-Export-ModuleMember New-SCCMRecurIntervalScheduleToken
+Export-ModuleMember Get-SCCMSupportedPlatforms
+Export-ModuleMember Invoke-SCCMClientAction
+Export-ModuleMember Invoke-SCCMClientSchedule
+Export-ModuleMember Move-SCCMAdvertisementToFolder
+Export-ModuleMember Move-SCCMFolder
+Export-ModuleMember Move-SCCMPackageToFolder
+Export-ModuleMember New-SCCMAdvertisement
+Export-ModuleMember New-SCCMComputer
+Export-ModuleMember New-SCCMComputerVariable
+Export-ModuleMember New-SCCMFolder
 Export-ModuleMember New-SCCMNonRecurringScheduleToken
+Export-ModuleMember New-SCCMPackage
+Export-ModuleMember New-SCCMProgram
+Export-ModuleMember New-SCCMRecurIntervalScheduleToken
 Export-ModuleMember New-SCCMRecurMonthlyByDateScheduleToken
 Export-ModuleMember New-SCCMRecurMonthlyByWeekdayScheduleToken
 Export-ModuleMember New-SCCMRecurWeeklyScheduleToken
-Export-ModuleMember Get-SCCMFolder -Alias "gsf"
-Export-ModuleMember New-SCCMFolder
-Export-ModuleMember Save-SCCMFolder
+Export-ModuleMember New-SCCMStaticCollection
+Export-ModuleMember New-SCCMSupportedPlatform
+Export-ModuleMember Remove-SCCMAdvertisement
+Export-ModuleMember Remove-SCCMCollection
+Export-ModuleMember Remove-SCCMComputer
+Export-ModuleMember Remove-SCCMComputerFromCollection
 Export-ModuleMember Remove-SCCMFolder
-Export-ModuleMember Move-SCCMFolder
-Export-ModuleMember Move-SCCMPackageToFolder
-Export-ModuleMember Move-SCCMAdvertisementToFolder
-Export-ModuleMember Convert-SCCMDateToDate
-Export-ModuleMember Convert-DateToSCCMDate
+Export-ModuleMember Remove-SCCMPackage
+Export-ModuleMember Remove-SCCMPackageFromDistributionPoint
+Export-ModuleMember Remove-SCCMProgram
+Export-ModuleMember Save-SCCMAdvertisement
+Export-ModuleMember Save-SCCMCollection
+Export-ModuleMember Save-SCCMFolder
+Export-ModuleMember Save-SCCMPackage
+Export-ModuleMember Save-SCCMProgram
+Export-ModuleMember Set-SCCMAdvertisementAssignedSchedule
+Export-ModuleMember Set-SCCMClientAssignedSite
+Export-ModuleMember Set-SCCMClientCacheSize
+Export-ModuleMember Set-SCCMComputerVariables
+Export-ModuleMember Set-SCCMProgramSupportedPlatforms

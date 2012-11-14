@@ -17,6 +17,7 @@ Site Functions
     Get-SCCMAdvertisementStatusForComputer
     Get-SCCMCollection
     Get-SCCMCollectionMembers
+    Get-SCCMCollectionRefreshSchedule
     Get-SCCMCollectionsForComputer
     Get-SCCMComputer
     Get-SCCMComputerVariables
