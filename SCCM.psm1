@@ -300,7 +300,7 @@ The name of the site provider.
 .PARAMETER siteCode
 The 3-character site code.
 
-.PARAMETER computerName
+.PARAMETER resourceId
 Resource ID of the computer to be added to the collection.
 
 .PARAMETER collectionId
@@ -326,13 +326,12 @@ Function Add-SCCMComputerToCollection {
         $siteCode = Get-SCCMSiteCode
     }
 
-    # First we get an object for the computer and one for the collection in question
     $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -resourceId $resourceId
-    $collection = Get-SCCMCollection -siteProvider $siteProvider -siteCode $siteCode -collectionId $collectionId
-
     if(!$computer) {
         Throw "Unable to retrieve computer with resource ID $resourceId"
     }
+
+    $collection = Get-SCCMCollection -siteProvider $siteProvider -siteCode $siteCode -collectionId $collectionId
     if(!$collection) {
         Throw "Unable to retrieve collection with ID $collectionId"
     }
@@ -347,14 +346,12 @@ Function Add-SCCMComputerToCollection {
 
     # We will only add the computer if it isn't already part of the collection passed as a parameter to this function
     if($currentCollectionIdList -notcontains ($collection.CollectionID).ToUpper()) {
-        $collectionRule = [WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_CollectionRuleDirect")
-        $collectionRule.Properties["ResourceClassName"].Value = "SMS_R_System"
-        $collectionRule.Properties["ResourceID"].Value = $computer.Properties["ResourceID"].Value
+        $collectionRule = New-SCCMCollectionRuleDirect -siteProvider $siteProvider -siteCode $siteCode -resourceId $resourceId
 
-        $addToCollectionParameters = $collection.psbase.GetmethodParameters("AddMembershipRule")
-        $addToCollectionParameters.collectionRule = $collectionRule
-
-        $status = $collection.psbase.InvokeMethod("AddMembershipRule", $addToCollectionParameters, $null)
+        $addToCollectionParameters = $collection.GetmethodParameters("AddMembershipRule")
+        $addToCollectionParameters.CollectionRule = $collectionRule
+        $status = $collection.InvokeMethod("AddMembershipRule", $addToCollectionParameters, $null)
+        
         if($status.ReturnValue -ne 0) {
             Throw "Failed to add computer $($computer.Name) to collection $($collection.Name)"
         }
@@ -402,22 +399,66 @@ Function Remove-SCCMComputerFromCollection {
     }
 
     $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -resourceId $resourceId
-    $collection = Get-SCCMCollection -siteProvider $siteProvider -siteCode $siteCode -collectionId $collectionId
-
     if(!$computer) {
         Throw "Unable to retrieve computer with resource ID $resourceId"
     }
+
+    $collection = Get-SCCMCollection -siteProvider $siteProvider -siteCode $siteCode -collectionId $collectionId
     if(!$collection) {
         Throw "Unable to retrieve collection with ID $collectionId"
     }
 
-    $collectionRule = ([WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_CollectionRuleDirect")).CreateInstance()
-    $collectionRule.ResourceID = $computer.ResourceID
+    $collectionRule = New-SCCMCollectionRuleDirect -siteProvider $siteProvider -siteCode $siteCode -resourceId $resourceId
+    $collectionRule.ResourceID = $resourceId
     
     $status = $collection.DeleteMembershipRule($collectionRule)
     if($status.ReturnValue -ne 0) {
         Throw "Failed to remove computer $($computer.Name) from collection $($collection.Name)"
     }
+}
+
+<#
+.SYNOPSIS
+Creates a direct collection rule.
+
+.DESCRIPTION
+Creates a direct collection rule.
+
+.PARAMETER siteProvider
+The name of the site provider.
+
+.PARAMETER siteCode
+The 3-character site code.
+
+.PARAMETER resourceId
+Resource ID of the computer that is part of the rule.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc145537.aspx
+#>
+Function New-SCCMCollectionRuleDirect {
+    [CmdletBinding()]
+    param (
+        [string]$siteProvider,
+        [string]$siteCode,
+        [ValidateScript( { $_ -gt 0 } )]
+        [parameter(Mandatory=$true, Position=0)]
+        [int]$resourceId
+    ) 
+    
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
+
+    $rule = ([WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_CollectionRuleDirect")).CreateInstance()
+    if($rule) {
+        $rule.ResourceClassName = "SMS_R_System"
+        $rule.ResourceID = $resourceId       
+    }
+    return $rule
 }
 
 <#
