@@ -40,7 +40,8 @@
                             <PropertyName>SMBIOSGUID</PropertyName>
                         </ListItem>
                         <ListItem>
-                            <PropertyName>Obsolete</PropertyName>
+                            <Label>Obsolete</Label>
+                            <ScriptBlock>if ($_.Obsolete -eq 0) {"No"} else {"Yes"}</ScriptBlock>
                         </ListItem>
                         <ListItem>
                             <PropertyName>LastLogonUserName</PropertyName>
@@ -63,9 +64,9 @@
                     <Width>25</Width>
                 </TableColumnHeader>
                 <TableColumnHeader>
-                    <Label>CreationDate</Label>
+                    <Label>ResourceID</Label>
                     <Alignment>Right</Alignment>
-                    <Width>25</Width>
+                    <Width>20</Width>
                 </TableColumnHeader>
                 <TableColumnHeader>
                     <Label>ClientVersion</Label>
@@ -73,14 +74,14 @@
                     <Width>20</Width>
                 </TableColumnHeader>
                 <TableColumnHeader>
-                    <Label>ResourceID</Label>
-                    <Alignment>Right</Alignment>
-                    <Width>20</Width>
-                </TableColumnHeader>
-                <TableColumnHeader>
                     <Label>Obsolete</Label>
                     <Alignment>Right</Alignment>
                     <Width>15</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
+                    <Label>CreationDate</Label>
+                    <Alignment>Right</Alignment>
+                    <Width>25</Width>
                 </TableColumnHeader>
             </TableHeaders>
             <TableRowEntries>
@@ -90,16 +91,16 @@
                             <PropertyName>Name</PropertyName>
                         </TableColumnItem>
                         <TableColumnItem>
-                            <ScriptBlock>$_.CreationDate | Convert-SCCMDateToDate</ScriptBlock>
+                            <PropertyName>ResourceID</PropertyName>
                         </TableColumnItem>
                         <TableColumnItem>
                             <PropertyName>ClientVersion</PropertyName>
                         </TableColumnItem>
                         <TableColumnItem>
-                            <PropertyName>ResourceID</PropertyName>
+                            <ScriptBlock>if ($_.Obsolete -eq 0) {"No"} else {"Yes"}</ScriptBlock>
                         </TableColumnItem>
                         <TableColumnItem>
-                            <PropertyName>Obsolete</PropertyName>
+                            <ScriptBlock>$_.CreationDate | Convert-SCCMDateToDate</ScriptBlock>
                         </TableColumnItem>
                     </TableColumnItems>
                 </TableRowEntry>
@@ -121,10 +122,10 @@
                 <ListEntry>
                     <ListItems>
                         <ListItem>
-                            <PropertyName>Name</PropertyName>
+                            <PropertyName>CollectionID</PropertyName>
                         </ListItem>
                         <ListItem>
-                            <PropertyName>CollectionID</PropertyName>
+                            <PropertyName>Name</PropertyName>
                         </ListItem>
                         <ListItem>
                             <Label>LastMemberChangeTime</Label>
@@ -155,13 +156,12 @@
         <TableControl>
             <TableHeaders>
                 <TableColumnHeader>
-                    <Label>Name</Label>
-                    <Width>50</Width>
+                    <Label>CollectionID</Label>
+                    <Width>20</Width>
                 </TableColumnHeader>
                 <TableColumnHeader>
-                    <Label>CollectionID</Label>
-                    <Alignment>Right</Alignment>
-                    <Width>20</Width>
+                    <Label>Name</Label>
+                    <Width>50</Width>
                 </TableColumnHeader>
                 <TableColumnHeader>
                     <Label>Comment</Label>
@@ -171,10 +171,10 @@
                 <TableRowEntry>
                     <TableColumnItems>
                         <TableColumnItem>
-                            <PropertyName>Name</PropertyName>
+                            <PropertyName>CollectionID</PropertyName>
                         </TableColumnItem>
                         <TableColumnItem>
-                            <PropertyName>CollectionID</PropertyName>
+                            <PropertyName>Name</PropertyName>
                         </TableColumnItem>
                         <TableColumnItem>
                             <PropertyName>Comment</PropertyName>
@@ -199,6 +199,9 @@
                 <ListEntry>
                     <ListItems>
                         <ListItem>
+                            <PropertyName>PackageID</PropertyName>
+                        </ListItem>
+                        <ListItem>
                             <PropertyName>Name</PropertyName>
                         </ListItem>
                         <ListItem>
@@ -212,9 +215,6 @@
                         </ListItem>
                         <ListItem>
                             <PropertyName>Description</PropertyName>
-                        </ListItem>
-                        <ListItem>
-                            <PropertyName>PackageID</PropertyName>
                         </ListItem>
                     </ListItems>
                 </ListEntry>  
@@ -230,6 +230,10 @@
         <TableControl>
             <TableHeaders>
                 <TableColumnHeader>
+                    <Label>PackageID</Label>
+                    <Width>10</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
                     <Label>Name</Label>
                     <Width>55</Width>
                 </TableColumnHeader>
@@ -238,30 +242,18 @@
                     <Alignment>Right</Alignment>
                     <Width>20</Width>
                 </TableColumnHeader>
-                <TableColumnHeader>
-                    <Label>Manufacturer</Label>
-                    <Width>40</Width>
-                </TableColumnHeader>
-                <TableColumnHeader>
-                    <Label>PackageID</Label>
-                    <Alignment>Right</Alignment>
-                    <Width>10</Width>
-                </TableColumnHeader>
             </TableHeaders>
             <TableRowEntries>
                 <TableRowEntry>
                     <TableColumnItems>
                         <TableColumnItem>
+                            <PropertyName>PackageID</PropertyName>
+                        </TableColumnItem>
+                        <TableColumnItem>
                             <PropertyName>Name</PropertyName>
                         </TableColumnItem>
                         <TableColumnItem>
                             <PropertyName>Version</PropertyName>
-                        </TableColumnItem>
-                        <TableColumnItem>
-                            <PropertyName>Manufacturer</PropertyName>
-                        </TableColumnItem>
-                        <TableColumnItem>
-                            <PropertyName>PackageID</PropertyName>
                         </TableColumnItem>
                     </TableColumnItems>
                 </TableRowEntry>
