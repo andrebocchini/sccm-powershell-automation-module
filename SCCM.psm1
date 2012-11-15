@@ -541,7 +541,7 @@ Returns a collection refresh schedule.  If the collection is set to refresh manu
 The name of the site provider.
 
 .PARAMETER siteCode
-The 3-character site code where the collection is to be created.
+The 3-character site code.
 
 .PARAMETER collectionId
 ID of the collection whose collection is being returned.
@@ -574,6 +574,62 @@ Function Get-SCCMCollectionRefreshSchedule {
             return $collection.RefreshSchedule
         }         
     }
+}
+
+<#
+.SYNOPSIS
+Sets a collection refresh schedule.
+
+.DESCRIPTION
+Sets a collection refresh schedule. 
+
+.PARAMETER siteProvider
+The name of the site provider.
+
+.PARAMETER siteCode
+The 3-character site code.
+
+.PARAMETER collectionId
+ID of the collection whose collection whose schedule is being set.
+
+.PARAMETER refreshType
+Values allowed are 1 for manual refresh, and 2 for scheduled refresh.  If 2 is specified, a schedule must
+be passed as a parameter.
+
+.PARAMETER refreshSchedule
+A schedule token representing the collection refresh schedule.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc145320.aspx
+#>
+Function Set-SCCMCollectionRefreshSchedule {
+    [CmdletBinding()]
+    param (
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)][ValidateLength(8,8)][string]$collectionId,
+        [parameter(Mandatory=$true, Position=1)][ValidateRange(1,2)][int]$refreshType = 1,
+        [parameter(Position=2)][ValidateScript( { !(!$_ -and $refreshType -eq 2) } )]$refreshSchedule
+    )
+    
+    if($refreshType -eq 2) {
+        if(!($PSBoundParameters.refreshSchedule)) {
+            Throw "No refresh schedule specified"
+        }
+    }
+
+    $collection = Get-SCCMCollection -siteProvider $siteProvider -siteCode $siteCode -collectionId $collectionId
+    if(!$collection) {
+        Throw "Unable to retrieve collection with ID $collectionId"
+    } else {
+        $collection.Get() | Out-Null
+    }
+
+    $collection.RefreshType = $refreshType
+    if($refreshType -eq 2) {
+        $collection.RefreshSchedule = $refreshSchedule
+    }
+    $collection.Put() | Out-Null
 }
 
 <#
@@ -3428,5 +3484,6 @@ Export-ModuleMember Save-SCCMProgram
 Export-ModuleMember Set-SCCMAdvertisementAssignedSchedule
 Export-ModuleMember Set-SCCMClientAssignedSite
 Export-ModuleMember Set-SCCMClientCacheSize
+Export-ModuleMember Set-SCCMCollectionRefreshSchedule
 Export-ModuleMember Set-SCCMComputerVariables
 Export-ModuleMember Set-SCCMProgramSupportedPlatforms

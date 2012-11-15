@@ -60,6 +60,7 @@ Site Functions
     Save-SCCMPackage
     Save-SCCMProgram
     Set-SCCMAdvertisementAssignedSchedule
+    Set-SCCMCollectionRefreshSchedule
     Set-SCCMComputerVariables
     Set-SCCMProgramSupportedPlatforms
 
