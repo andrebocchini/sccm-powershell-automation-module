@@ -1,9 +1,11 @@
 About
 =====
 
-This Powershell module contains a collection of functions gathered from an assortment of scripts I use to automate SCCM 2007 management.  I realized that every time I needed to automate something I ended up digging through a pile of old scripts to cut and paste code into a new one, so eventually I decided I needed to aggregate all of the bits of code I had created into a single script.  This module does not encompass a large part of client management functions in SCCM, but it can perform a number of common operations such as creating and deleting new computer records, packages, advertisements and manipulating collection membership rules.  Most of this code came about because of my own need to automate software distribution, but a lot of it can be used for other types of tasks.
+This Powershell module contains a collection of functions gathered from an assortment of scripts I use to automate SCCM software distribution.  After spending way too many hours cutting and pasting from old scripts in order to automate a new task, I decided I needed to aggregate all of the bits of code from my collection of scripts into a reusable kit.  This is the result of that decision.
 
-These are the functions currently present in the module:
+Please conduct your own independent testing before trusting this code in a production environment.  This module has only been tested with SCCM 2007.
+
+These are the available functions:
 
 Site Functions
 
@@ -79,8 +81,6 @@ Utility Functions
 
     Convert-DateToSCCMDate
     Convert-SCCMDateToDate
-   
-This code has only been tested with SCCM 2007.  Please conduct your own independent testing before trusting this code in a production environment.
 
 Installation
 ============
@@ -102,11 +102,6 @@ and copying the following files into it:
     SCCM.psm1
     SCCM.psd1
     SCCM_Formats.ps1xml
-
-After the files are in place, you should be able to run:
-
-    Import-Module SCCM
-    Get-Help SCCM
 
 Usage
 =====
@@ -144,7 +139,7 @@ Here's how this can be accomplished:
                             -packageLanguage $packageLanguage `
                             -packageSource $packageSourcePath
 
-    The package will be created with default settings, but you can customize it further if you wish.  Look at this link for some more information about package flags and settings http://msdn.microsoft.com/en-us/library/cc144959.aspx.  If you do make changes to the package, make sure to use Save-SCCMPackage when you're finished.
+    The package will be created with default settings, but you can customize it further if you wish (usually by setting package flags).  Look at this link for some more information about package flags and settings http://msdn.microsoft.com/en-us/library/cc144959.aspx.  If you do make changes to the package, make sure to use Save-SCCMPackage when you're finished.
 
 2. Create an installation program for the new package
 
@@ -153,7 +148,7 @@ Here's how this can be accomplished:
                             -programName $programName `
                             -programCommandLine $programCommandLine
 
-    The program will be created with default settings, but you can customize it further if you wish.  Look at this link for some more information about program flags and settings http://msdn.microsoft.com/en-us/library/cc144361.aspx. If you do make changes to the program, make sure to use Save-SCCMProgram when you're finished.
+    The program will be created with default settings, but you can customize it further if you wish (usually by setting program flags).  Look at this link for some more information about program flags and settings http://msdn.microsoft.com/en-us/library/cc144361.aspx. If you do make changes to the program, make sure to use Save-SCCMProgram when you're finished.
 
 3. Distribute it to distribution points
     
@@ -185,7 +180,7 @@ Here's how this can be accomplished:
                             -packageId $newPackage.PackageID `
                             -programName $newProgram.ProgramName
 
-    The advertisement will be created with default settings, but you can customize it further if you wish.  Look at this link for some more information about advertisement flags and settings http://msdn.microsoft.com/en-us/library/cc146108.aspx.  If you do make changes to the advertisement, make sure to use Save-SCCMAdvertisement when you're finished.
+    The advertisement will be created with default settings, but you can customize it further if you wish (usually by setting advertisement flags).  Look at this link for some more information about advertisement flags and settings http://msdn.microsoft.com/en-us/library/cc146108.aspx.  If you do make changes to the advertisement, make sure to use Save-SCCMAdvertisement when you're finished.
 
 7. Instruct the test computer to retrieve new machine policies
 
