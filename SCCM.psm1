@@ -3,12 +3,12 @@
 Command line interface for an assortment of SCCM operations.
 
 .DESCRIPTION
-The functions in this module provide a command line and scripting interface for automating management of SCCM 2007 environments.
+The functions in this module provide a command line and scripting interface for automating 
+management of SCCM environments.
 
 .NOTES
 File Name  : SCCM.psm1  
-Author     : Andre Bocchini <andrebocchini@gmail.com>  
-Requires   : PowerShell 3.0
+Author     : Andre Bocchini <andrebocchini@gmail.com>
 
 .LINK
 https://github.com/andrebocchini/SCCM-Powershell-Automation-Module
@@ -132,12 +132,12 @@ Function New-SCCMComputer {
 
     $site = [WMIClass]("\\$siteProvider\ROOT\sms\site_" + $siteCode + ":SMS_Site")
 
-    $methodParameters = $site.psbase.GetMethodParameters("ImportMachineEntry")
+    $methodParameters = $site.GetMethodParameters("ImportMachineEntry")
     $methodParameters.MACAddress = $macAddress
     $methodParameters.NetbiosName = $computerName
     $methodParameters.OverwriteExistingRecord = $false
 
-    $computerCreationResult = $site.psbase.InvokeMethod("ImportMachineEntry", $methodParameters, $null)
+    $computerCreationResult = $site.InvokeMethod("ImportMachineEntry", $methodParameters, $null)
 
     if($computerCreationResult.MachineExists -eq $true) {
         Throw "Computer already exists with name $computerName or MAC $macAddress"
@@ -188,7 +188,11 @@ Function Remove-SCCMComputer {
     }
 
     $computer =  Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System" | where { $_.ResourceID -eq $resourceId }
-    return $computer.psbase.Delete()
+    if($computer) {
+        $computer.Delete() | Out-Null
+    } else {
+        Throw "Unable to retrieve computer with resource ID $resourceId"
+    }
 }
 
 <#
@@ -557,8 +561,8 @@ Function Get-SCCMCollectionRefreshSchedule {
         [parameter(Mandatory=$true, Position=0)][ValidateLength(8,8)][string]$collectionId
     )
 
-    $refreshTypeManual = 1
-    $refreshTypeAuto = 2
+    Set-Variable refreshTypeManual -option Constant -value 1
+    Set-Variable refreshTypeAuto -option Constant -value 2
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
         $siteProvider = Get-SCCMSiteProvider
@@ -612,7 +616,10 @@ Function Set-SCCMCollectionRefreshSchedule {
         [parameter(Position=2)][ValidateScript( { !(!$_ -and $refreshType -eq 2) } )]$refreshSchedule
     )
     
-    if($refreshType -eq 2) {
+    Set-Variable refreshTypeManual -option Constant -value 1
+    Set-Variable refreshTypeAuto -option Constant -value 2
+
+    if($refreshType -eq $refreshTypeAuto) {
         if(!($PSBoundParameters.refreshSchedule)) {
             Throw "No refresh schedule specified"
         }
@@ -626,7 +633,7 @@ Function Set-SCCMCollectionRefreshSchedule {
     }
 
     $collection.RefreshType = $refreshType
-    if($refreshType -eq 2) {
+    if($refreshType -eq $refreshTypeAuto) {
         $collection.RefreshSchedule = $refreshSchedule
     }
     $collection.Put() | Out-Null
@@ -690,7 +697,11 @@ Function Remove-SCCMCollection {
     }
 
     $collection = Get-SCCMCollection -siteProvider $siteProvider -siteCode $siteCode -collectionId $collectionId
-    return $collection.psbase.Delete()
+    if($collection) {
+        $collection.Delete()
+    } else {
+        Throw "Unable to retrieve and delete collection with ID $collectionId"
+    }
 }
 
 <#
@@ -2132,9 +2143,9 @@ Function Remove-SCCMProgram {
 
     $program = Get-SCCMProgram -siteProvider $siteProvider -siteCode $siteCode $packageId $programName
     if($program) {
-        return $program.psbase.Delete()
+        return $program.Delete()
     } else {
-        Throw "Invalid program ID or program name"
+        Throw "Invalid package ID $packageId or program named `"$programName`""
     }
 }
 
