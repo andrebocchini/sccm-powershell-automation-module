@@ -697,7 +697,11 @@ Function Remove-SCCMCollection {
     }
 
     $collection = Get-SCCMCollection -siteProvider $siteProvider -siteCode $siteCode -collectionId $collectionId
-    return $collection.psbase.Delete()
+    if($collection) {
+        $collection.Delete()
+    } else {
+        Throw "Unable to retrieve and delete collection with ID $collectionId"
+    }
 }
 
 <#
