@@ -754,6 +754,9 @@
                 <ListEntry>
                     <ListItems>
                         <ListItem>
+                            <PropertyName>ResourceID</PropertyName>
+                        </ListItem>
+                        <ListItem>
                             <PropertyName>AdvertisementID</PropertyName>
                         </ListItem>
                         <ListItem>
@@ -780,8 +783,14 @@
         <TableControl>
             <TableHeaders>
                 <TableColumnHeader>
+                    <Label>ResourceID</Label>
+                    <Alignment>Right</Alignment>
+                    <Width>12</Width>
+                </TableColumnHeader>
+                <TableColumnHeader>
                     <Label>AdvertisementID</Label>
-                    <Width>25</Width>
+                    <Alignment>Right</Alignment>
+                    <Width>15</Width>
                 </TableColumnHeader>
                 <TableColumnHeader>
                     <Label>LastStateName</Label>
@@ -798,6 +807,9 @@
             <TableRowEntries>
                 <TableRowEntry>
                     <TableColumnItems>
+                        <TableColumnItem>
+                            <PropertyName>ResourceID</PropertyName>
+                        </TableColumnItem>
                         <TableColumnItem>
                             <PropertyName>AdvertisementID</PropertyName>
                         </TableColumnItem>
