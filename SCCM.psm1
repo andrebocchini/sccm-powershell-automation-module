@@ -2143,9 +2143,9 @@ Function Remove-SCCMProgram {
 
     $program = Get-SCCMProgram -siteProvider $siteProvider -siteCode $siteCode $packageId $programName
     if($program) {
-        return $program.psbase.Delete()
+        return $program.Delete()
     } else {
-        Throw "Invalid program ID or program name"
+        Throw "Invalid package ID $packageId or program named `"$programName`""
     }
 }
 
