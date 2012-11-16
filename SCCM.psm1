@@ -561,8 +561,8 @@ Function Get-SCCMCollectionRefreshSchedule {
         [parameter(Mandatory=$true, Position=0)][ValidateLength(8,8)][string]$collectionId
     )
 
-    $refreshTypeManual = 1
-    $refreshTypeAuto = 2
+    Set-Variable refreshTypeManual -option Constant -value 1
+    Set-Variable refreshTypeAuto -option Constant -value 2
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
         $siteProvider = Get-SCCMSiteProvider
@@ -616,7 +616,10 @@ Function Set-SCCMCollectionRefreshSchedule {
         [parameter(Position=2)][ValidateScript( { !(!$_ -and $refreshType -eq 2) } )]$refreshSchedule
     )
     
-    if($refreshType -eq 2) {
+    Set-Variable refreshTypeManual -option Constant -value 1
+    Set-Variable refreshTypeAuto -option Constant -value 2
+
+    if($refreshType -eq $refreshTypeAuto) {
         if(!($PSBoundParameters.refreshSchedule)) {
             Throw "No refresh schedule specified"
         }
@@ -630,7 +633,7 @@ Function Set-SCCMCollectionRefreshSchedule {
     }
 
     $collection.RefreshType = $refreshType
-    if($refreshType -eq 2) {
+    if($refreshType -eq $refreshTypeAuto) {
         $collection.RefreshSchedule = $refreshSchedule
     }
     $collection.Put() | Out-Null
