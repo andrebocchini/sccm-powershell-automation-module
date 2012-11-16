@@ -132,12 +132,12 @@ Function New-SCCMComputer {
 
     $site = [WMIClass]("\\$siteProvider\ROOT\sms\site_" + $siteCode + ":SMS_Site")
 
-    $methodParameters = $site.psbase.GetMethodParameters("ImportMachineEntry")
+    $methodParameters = $site.GetMethodParameters("ImportMachineEntry")
     $methodParameters.MACAddress = $macAddress
     $methodParameters.NetbiosName = $computerName
     $methodParameters.OverwriteExistingRecord = $false
 
-    $computerCreationResult = $site.psbase.InvokeMethod("ImportMachineEntry", $methodParameters, $null)
+    $computerCreationResult = $site.InvokeMethod("ImportMachineEntry", $methodParameters, $null)
 
     if($computerCreationResult.MachineExists -eq $true) {
         Throw "Computer already exists with name $computerName or MAC $macAddress"
@@ -188,7 +188,11 @@ Function Remove-SCCMComputer {
     }
 
     $computer =  Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System" | where { $_.ResourceID -eq $resourceId }
-    return $computer.psbase.Delete()
+    if($computer) {
+        $computer.Delete() | Out-Null
+    } else {
+        Throw "Unable to retrieve computer with resource ID $resourceId"
+    }
 }
 
 <#
