@@ -1503,7 +1503,7 @@ Function New-SCCMMachineSettings {
         $siteCode = Get-SCCMSiteCode
     }
 
-    $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode siteCode -resourceId $resourceId
+    $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -resourceId $resourceId
     if(!$computer) {
         Throw "Unable to retrive computer with resource ID $resourceId"
     }
@@ -1581,6 +1581,54 @@ Function Get-SCCMCollectionSettings {
     }
     return $collectionSettings
 } 
+
+<#
+.SYNOPSIS
+Creates collection settings objects.
+
+.DESCRIPTION
+Creates collection settings objects.
+
+.PARAMETER siteProvider
+Name of the site provider.
+
+.PARAMETER siteCode
+3-character site code.
+
+.PARAMETER resourceId
+The ID of the collection for which settings are to be created.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc145320.aspx
+#>
+Function New-SCCMCollectionSettings {
+    [CmdletBinding()]
+    param (
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, ValueFromPipeline=$true, Position=0)]
+        [ValidateLength(8,8)]
+        [string]$collectionId
+    )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
+
+    $collection = Get-SCCMCollection -siteProvider $siteProvider -siteCode $siteCode -collectionId $collectionId
+    if(!$collection) {
+        Throw "Unable to retrive collection with ID $collectionId"
+    }
+
+    $collectionSettings = ([WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_CollectionSettings")).CreateInstance()
+    if($collectionSettings) {
+        $collectionSettings.CollectionID = $collection.CollectionID
+    }
+    return $collectionSettings
+}
 
 <#
 .SYNOPSIS
