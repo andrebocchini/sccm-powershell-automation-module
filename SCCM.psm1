@@ -1521,7 +1521,7 @@ Function New-SCCMMachineSettings {
         $siteCode = Get-SCCMSiteCode
     }
 
-    $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode siteCode -resourceId $resourceId
+    $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -resourceId $resourceId
     if(!$computer) {
         Throw "Unable to retrive computer with resource ID $resourceId"
     }
