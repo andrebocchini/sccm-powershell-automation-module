@@ -200,9 +200,7 @@ Function Remove-SCCMComputer {
 Returns computers from SCCM.
 
 .DESCRIPTION
-Takes in information about a specific site, along with a computer name or resource ID and will attempt to retrieve an object for the computer.  This function
-intentionally ignores obsolete computers by default, but you can specify a parameter to include them.
-
+Takes in information about a specific site, along with a computer name or resource ID and will attempt to retrieve an object for the computer.  
 When invoked without specifying a computer name or resource ID, this function returns a list of all computers found on the specified SCCM site.
 
 .PARAMETER siteProvider
@@ -217,29 +215,17 @@ The name of the computer to be retrieved.
 .PARAMETER resourceId
 The resource ID of the computer to be retrieved.
 
-.PARAMETER includeObsolete
-This switch defaults to false.  If you want your results to include obsolete computers, set this to true when calling this function.
+.EXAMPLE
+Get-SCCMComputer -siteProvider MYSITEPROVIDER -siteCode SIT -computerName MYCOMPUTER
 
 .EXAMPLE
-Get-SCCMComputer -siteProvider MYSITEPROVIDER -siteCode SIT -computerName MYCOMPUTER -includeObsolete:$true
-
-Description
------------
-Returns any computer whose name matches MYCOMPUTER found on site SIT.
+Get-SCCMComputer -siteProvider MYSITEPROVIDER -siteCode SIT MYCOMPUTER
 
 .EXAMPLE
 Get-SCCMComputer -siteProvider MYSITEPROVIDER -siteCode SIT -resourceId 1111
 
-Description
------------
-Returns any computer whose resource ID matches 1111 found on site site SIT.
-
 .EXAMPLE
 Get-SCCMComputer -siteProvider MYSITEPROVIDER -siteCode SIT
-
-Description
------------
-Returns all computers (excluding obsolete ones) found on site SIT.
 #>
 Function Get-SCCMComputer {
     [CmdletBinding(DefaultParametersetName="default")]
@@ -252,14 +238,13 @@ Function Get-SCCMComputer {
         [parameter(ParameterSetName="default")]
         [parameter(ParameterSetName="id")]
         [string]$siteCode,
-        [parameter(Position=0)]
+        [parameter(Position=0, ValueFromPipeline=$true)]
         [parameter(ParameterSetName="name")]
         [ValidateLength(1,15)]
         [string]$computerName,
         [parameter(ParameterSetName="id")]
         [ValidateScript( { $_ -gt 0 } )]
-        [int]$resourceId,
-        [switch]$includeObsolete=$false
+        [int]$resourceId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -270,23 +255,11 @@ Function Get-SCCMComputer {
     }
 
     if($computerName) {
-        $computerList = Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System" | where { $_.Name -like $computerName }
+        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System" | where { $_.Name -like $computerName }
     } elseif($resourceId) {
-        $computerList = Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System" | where { $_.ResourceID -eq $resourceId }
+        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System" | where { $_.ResourceID -eq $resourceId }
     } else {
         return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System"
-    }
-
-    if(!$includeObsolete) {
-        $listWithoutObsoleteComputers = @()
-        foreach($computer in $computerList) {
-            if($computer.Obsolete -ne 1) {
-                $listWithoutObsoleteComputers += $computer
-            }
-        }
-        return $listWithoutObsoleteComputers
-    } else {
-        return $computerList
     }
 }
 
