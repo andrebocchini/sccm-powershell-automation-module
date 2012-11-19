@@ -728,7 +728,7 @@ Function Get-SCCMCollection {
         [parameter(ParameterSetName="default")]
         [parameter(ParameterSetName="id")]
         [string]$siteCode,
-        [parameter(ParameterSetName="name", Position=0)]
+        [parameter(ParameterSetName="name", Position=0, ValueFromPipeline=$true)]
         [string]$collectionName,
         [parameter(ParameterSetName="id", Position=1)]
         [string]$collectionId
@@ -1044,7 +1044,7 @@ Function Get-SCCMAdvertisement {
         [parameter(ParameterSetName="default")]
         [parameter(ParameterSetName="id")]
         [string]$siteCode,
-        [parameter(Position=0)]
+        [parameter(Position=0, ValueFromPipeline=$true)]
         [parameter(ParameterSetName="name")]
         [ValidateNotNull()]
         [string]$advertisementName,
@@ -1964,8 +1964,7 @@ Function Get-SCCMPackage {
         [parameter(ParameterSetName="default")]
         [parameter(ParameterSetName="id")]
         [string]$siteCode,
-        [parameter(Position=0)]
-        [parameter(ParameterSetName="name")]
+        [parameter(ParameterSetName="name", Position=0, ValueFromPipeline=$true)]
         [ValidateNotNull()]
         [string]$packageName,
         [parameter(ParameterSetName="id")]
