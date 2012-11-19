@@ -1154,7 +1154,7 @@ http://msdn.microsoft.com/en-us/library/cc145924.aspx
 Function Get-SCCMAdvertisementAssignedSchedule {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)]
+        [parameter(Mandatory=$true, ValueFromPipeline=$true)]
         [ValidateNotNullOrEmpty()]
         $advertisement
     )    
