@@ -1449,8 +1449,17 @@ Function Get-SCCMMachineSettings {
     param (
         [string]$siteProvider,
         [string]$siteCode,
-        [parameter(Mandatory=$true)]$resourceId
+        [parameter(Mandatory=$true, ValueFromPipeline=$true, Position=0)]
+        [ValidateScript( { $_ -gt 0 } )]
+        [int]$resourceId
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     $machineSettings = Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_MachineSettings" | where {$_.ResourceID -eq $resourceId}
     if($machineSettings) {
@@ -1529,6 +1538,49 @@ Function Save-SCCMMachineSettings {
 
     $machineSettings.Put() | Out-Null
 }
+
+<#
+.SYNOPSIS
+Retrieves collection settings.
+
+.DESCRIPTION
+Retrieves collection settings.
+
+.PARAMETER siteProvider
+Name of the site provider.
+
+.PARAMETER siteCode
+3-character site code.
+
+.PARAMETER resourceId
+The ID of the collection whose settings are to be retrieved.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc145320.aspx
+#>
+Function Get-SCCMCollectionSettings {
+    [CmdletBinding()]
+    param (
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, ValueFromPipeline=$true, Position=0)]
+        [ValidateLength(8,8)]
+        [string]$collectionId
+    )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
+
+    $collectionSettings = Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_CollectionSettings" | where {$_.CollectionID -eq $collectionId}
+    if($collectionSettings) {
+        $collectionSettings.Get() | Out-Null
+    }
+    return $collectionSettings
+} 
 
 <#
 .SYNOPSIS
@@ -2371,7 +2423,7 @@ Function Get-SCCMMaintenanceWindows {
         $siteCode = Get-SCCMSiteCode
     }
 
-    $collectionSettings = GET-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_CollectionSettings" | Where { $_.CollectionID -eq $collectionId }
+    $collectionSettings = Get-SCCMCollectionSettings -siteProvider $siteProvider -siteCode $siteCode -collectionId $collectionId
     if($collectionSettings) {
         $collectionSettings.Get()
         return $collectionSettings.ServiceWindows
