@@ -36,6 +36,7 @@ Site Functions
     Move-SCCMFolder
     Move-SCCMPackageToFolder
     New-SCCMAdvertisement
+    New-SCCMCollectionVariable
     New-SCCMComputer
     New-SCCMComputerVariable
     New-SCCMFolder
@@ -64,6 +65,7 @@ Site Functions
     Save-SCCMProgram
     Set-SCCMAdvertisementAssignedSchedule
     Set-SCCMCollectionRefreshSchedule
+    Set-SCCMCollectionVariables
     Set-SCCMComputerVariables
     Set-SCCMProgramSupportedPlatforms
 
