@@ -21,6 +21,7 @@ Site Functions
     Get-SCCMCollectionMembers
     Get-SCCMCollectionRefreshSchedule
     Get-SCCMCollectionsForComputer
+    Get-SCCMCollectionVariables
     Get-SCCMComputer
     Get-SCCMComputerVariables
     Get-SCCMDistributionPoints
@@ -35,6 +36,7 @@ Site Functions
     Move-SCCMFolder
     Move-SCCMPackageToFolder
     New-SCCMAdvertisement
+    New-SCCMCollectionVariable
     New-SCCMComputer
     New-SCCMComputerVariable
     New-SCCMFolder
@@ -63,6 +65,7 @@ Site Functions
     Save-SCCMProgram
     Set-SCCMAdvertisementAssignedSchedule
     Set-SCCMCollectionRefreshSchedule
+    Set-SCCMCollectionVariables
     Set-SCCMComputerVariables
     Set-SCCMProgramSupportedPlatforms
 

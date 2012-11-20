@@ -200,9 +200,7 @@ Function Remove-SCCMComputer {
 Returns computers from SCCM.
 
 .DESCRIPTION
-Takes in information about a specific site, along with a computer name or resource ID and will attempt to retrieve an object for the computer.  This function
-intentionally ignores obsolete computers by default, but you can specify a parameter to include them.
-
+Takes in information about a specific site, along with a computer name or resource ID and will attempt to retrieve an object for the computer.  
 When invoked without specifying a computer name or resource ID, this function returns a list of all computers found on the specified SCCM site.
 
 .PARAMETER siteProvider
@@ -217,29 +215,17 @@ The name of the computer to be retrieved.
 .PARAMETER resourceId
 The resource ID of the computer to be retrieved.
 
-.PARAMETER includeObsolete
-This switch defaults to false.  If you want your results to include obsolete computers, set this to true when calling this function.
+.EXAMPLE
+Get-SCCMComputer -siteProvider MYSITEPROVIDER -siteCode SIT -computerName MYCOMPUTER
 
 .EXAMPLE
-Get-SCCMComputer -siteProvider MYSITEPROVIDER -siteCode SIT -computerName MYCOMPUTER -includeObsolete:$true
-
-Description
------------
-Returns any computer whose name matches MYCOMPUTER found on site SIT.
+Get-SCCMComputer -siteProvider MYSITEPROVIDER -siteCode SIT MYCOMPUTER
 
 .EXAMPLE
 Get-SCCMComputer -siteProvider MYSITEPROVIDER -siteCode SIT -resourceId 1111
 
-Description
------------
-Returns any computer whose resource ID matches 1111 found on site site SIT.
-
 .EXAMPLE
 Get-SCCMComputer -siteProvider MYSITEPROVIDER -siteCode SIT
-
-Description
------------
-Returns all computers (excluding obsolete ones) found on site SIT.
 #>
 Function Get-SCCMComputer {
     [CmdletBinding(DefaultParametersetName="default")]
@@ -252,14 +238,13 @@ Function Get-SCCMComputer {
         [parameter(ParameterSetName="default")]
         [parameter(ParameterSetName="id")]
         [string]$siteCode,
-        [parameter(Position=0)]
+        [parameter(Position=0, ValueFromPipeline=$true)]
         [parameter(ParameterSetName="name")]
         [ValidateLength(1,15)]
         [string]$computerName,
         [parameter(ParameterSetName="id")]
         [ValidateScript( { $_ -gt 0 } )]
-        [int]$resourceId,
-        [switch]$includeObsolete=$false
+        [int]$resourceId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -270,23 +255,11 @@ Function Get-SCCMComputer {
     }
 
     if($computerName) {
-        $computerList = Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System" | where { $_.Name -like $computerName }
+        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System" | where { $_.Name -like $computerName }
     } elseif($resourceId) {
-        $computerList = Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System" | where { $_.ResourceID -eq $resourceId }
+        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System" | where { $_.ResourceID -eq $resourceId }
     } else {
         return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System"
-    }
-
-    if(!$includeObsolete) {
-        $listWithoutObsoleteComputers = @()
-        foreach($computer in $computerList) {
-            if($computer.Obsolete -ne 1) {
-                $listWithoutObsoleteComputers += $computer
-            }
-        }
-        return $listWithoutObsoleteComputers
-    } else {
-        return $computerList
     }
 }
 
@@ -755,7 +728,7 @@ Function Get-SCCMCollection {
         [parameter(ParameterSetName="default")]
         [parameter(ParameterSetName="id")]
         [string]$siteCode,
-        [parameter(ParameterSetName="name", Position=0)]
+        [parameter(ParameterSetName="name", Position=0, ValueFromPipeline=$true)]
         [string]$collectionName,
         [parameter(ParameterSetName="id", Position=1)]
         [string]$collectionId
@@ -1071,7 +1044,7 @@ Function Get-SCCMAdvertisement {
         [parameter(ParameterSetName="default")]
         [parameter(ParameterSetName="id")]
         [string]$siteCode,
-        [parameter(Position=0)]
+        [parameter(Position=0, ValueFromPipeline=$true)]
         [parameter(ParameterSetName="name")]
         [ValidateNotNull()]
         [string]$advertisementName,
@@ -1181,7 +1154,7 @@ http://msdn.microsoft.com/en-us/library/cc145924.aspx
 Function Get-SCCMAdvertisementAssignedSchedule {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)]
+        [parameter(Mandatory=$true, ValueFromPipeline=$true)]
         [ValidateNotNullOrEmpty()]
         $advertisement
     )    
@@ -1476,8 +1449,17 @@ Function Get-SCCMMachineSettings {
     param (
         [string]$siteProvider,
         [string]$siteCode,
-        [parameter(Mandatory=$true)]$resourceId
+        [parameter(Mandatory=$true, ValueFromPipeline=$true, Position=0)]
+        [ValidateScript( { $_ -gt 0 } )]
+        [int]$resourceId
     )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
 
     $machineSettings = Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_MachineSettings" | where {$_.ResourceID -eq $resourceId}
     if($machineSettings) {
@@ -1555,6 +1537,271 @@ Function Save-SCCMMachineSettings {
     )
 
     $machineSettings.Put() | Out-Null
+}
+
+<#
+.SYNOPSIS
+Retrieves collection settings.
+
+.DESCRIPTION
+Retrieves collection settings.
+
+.PARAMETER siteProvider
+Name of the site provider.
+
+.PARAMETER siteCode
+3-character site code.
+
+.PARAMETER resourceId
+The ID of the collection whose settings are to be retrieved.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc145320.aspx
+#>
+Function Get-SCCMCollectionSettings {
+    [CmdletBinding()]
+    param (
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, ValueFromPipeline=$true, Position=0)]
+        [ValidateLength(8,8)]
+        [string]$collectionId
+    )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
+
+    $collectionSettings = Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_CollectionSettings" | where {$_.CollectionID -eq $collectionId}
+    if($collectionSettings) {
+        $collectionSettings.Get() | Out-Null
+    }
+    return $collectionSettings
+} 
+
+<#
+.SYNOPSIS
+Creates collection settings objects.
+
+.DESCRIPTION
+Creates collection settings objects.
+
+.PARAMETER siteProvider
+Name of the site provider.
+
+.PARAMETER siteCode
+3-character site code.
+
+.PARAMETER resourceId
+The ID of the collection for which settings are to be created.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc145320.aspx
+#>
+Function New-SCCMCollectionSettings {
+    [CmdletBinding()]
+    param (
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, ValueFromPipeline=$true, Position=0)]
+        [ValidateLength(8,8)]
+        [string]$collectionId
+    )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
+
+    $collection = Get-SCCMCollection -siteProvider $siteProvider -siteCode $siteCode -collectionId $collectionId
+    if(!$collection) {
+        Throw "Unable to retrive collection with ID $collectionId"
+    }
+
+    $collectionSettings = ([WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_CollectionSettings")).CreateInstance()
+    if($collectionSettings) {
+        $collectionSettings.CollectionID = $collection.CollectionID
+    }
+    return $collectionSettings
+}
+
+<#
+.SYNOPSIS
+Sets variables on an SCCM collection.
+
+.DESCRIPTION
+Takes in information about a specific site, along with a collection ID and an array of variables, and assigns those variables to the collection.
+
+.PARAMETER siteProvider
+Name of the site provider.
+
+.PARAMETER siteCode
+3-character site code.
+
+.PARAMETER resourceId
+ID of the target collection.
+
+.PARAMETER variableList
+An array of variables to be assigned to the collection.  If you pass it an empty array, it will clear all variables on the collection.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc145320.aspx
+#>
+Function Set-SCCMCollectionVariables {
+    [CmdletBinding()]
+    param (
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, ValueFromPipeline=$true, Position=0)]
+        [ValidateLength(8,8)]
+        [string]$collectionId,
+        [parameter(Mandatory=$true, Position=1)][ValidateNotNull()]$variableList
+    )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
+
+    $collection = Get-SCCMCollection -siteProvider $siteProvider -siteCode $siteCode -collectionId $collectionId
+    if(!$collection) {
+        Throw "Unable to retrieve collection with ID $collectionId"
+    }
+
+    $collectionSettings = Get-SCCMCollectionSettings -siteProvider $siteProvider -siteCode $siteCode -collectionId $collectionId
+    if(!$collectionSettings) {
+        $collectionSettings = New-SCCMCollectionSettings -siteProvider $siteProvider -siteCode $siteCode -collectionId $collectionId
+    }
+    $collectionSettings.CollectionVariables = $variableList
+    Save-SCCMCollectionSettings $collectionSettings
+}
+
+<#
+.SYNOPSIS
+Returns an array of all collection variables for a specific collection.
+
+.DESCRIPTION
+Returns an array of all collection variables for a specific collection.
+
+.PARAMETER siteProvider
+Name of the site provider.
+
+.PARAMETER siteCode
+3-character site code.
+
+.PARAMETER collectionId
+ID of the target collection.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc146201.aspx
+#>
+Function Get-SCCMCollectionVariables {
+    [CmdletBinding()]
+    param (
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, ValueFromPipeline=$true, Position=0)]
+        [ValidateLength(8,8)]
+        [string]$collectionId
+    )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
+
+    $collection = Get-SCCMCollection -siteProvider $siteProvider -siteCode $siteCode -collectionId $collectionId
+    if(!$collection) {
+        Throw "Unable to retrieve collection with ID $collectionId"
+    }
+
+    $collectionSettings = Get-SCCMCollectionSettings -siteProvider $siteProvider -siteCode $siteCode -collectionId $collectionId
+    if($collectionSettings) {
+        return $collectionSettings.CollectionVariables
+    }
+
+}
+
+<#
+.SYNOPSIS
+Creates a new comllection variable.
+
+.DESCRIPTION
+Creates a new collection variable.
+
+.PARAMETER siteProvider
+Name of the site provider.
+
+.PARAMETER siteCode
+3-character site code.
+
+.PARAMETER variableName
+Name of the variable to be created.
+
+.PARAMETER variableValue
+Value to be assigned to the variable.
+
+.PARAMETER isMasked
+A masked variable has its text display replaced with asterisks.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc146201.aspx
+#>
+Function New-SCCMCollectionVariable {
+    [CmdletBinding()]
+    param (
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true)][string]$variableName,
+        [parameter(Mandatory=$true)][string]$variableValue,
+        [parameter(Mandatory=$true)][bool]$isMasked
+    )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
+
+    $collectionVariable = ([WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_CollectionVariable")).CreateInstance()
+    if($collectionVariable) {
+        $collectionVariable.IsMasked = $isMasked
+        $collectionVariable.Name = $variableName
+        $collectionVariable.Value = $variableValue
+    }
+    return $collectionVariable
+}
+
+<#
+.SYNOPSIS
+Saves an object containing a collection's machine settings back into the database.
+
+.DESCRIPTION
+Saves an object containing a collection's machine settings back into the database.
+
+.PARAMETER collectionSettings
+The object to be saved back into the database.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc145320.aspx
+#>
+Function Save-SCCMCollectionSettings {
+    [CmdletBinding()]
+    param (        
+        [parameter(Mandatory=$true)]$collectionSettings
+    )
+
+    $collectionSettings.Put() | Out-Null
 }
 
 <#
@@ -1991,8 +2238,7 @@ Function Get-SCCMPackage {
         [parameter(ParameterSetName="default")]
         [parameter(ParameterSetName="id")]
         [string]$siteCode,
-        [parameter(Position=0)]
-        [parameter(ParameterSetName="name")]
+        [parameter(ParameterSetName="name", Position=0, ValueFromPipeline=$true)]
         [ValidateNotNull()]
         [string]$packageName,
         [parameter(ParameterSetName="id")]
@@ -2399,7 +2645,7 @@ Function Get-SCCMMaintenanceWindows {
         $siteCode = Get-SCCMSiteCode
     }
 
-    $collectionSettings = GET-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_CollectionSettings" | Where { $_.CollectionID -eq $collectionId }
+    $collectionSettings = Get-SCCMCollectionSettings -siteProvider $siteProvider -siteCode $siteCode -collectionId $collectionId
     if($collectionSettings) {
         $collectionSettings.Get()
         return $collectionSettings.ServiceWindows
@@ -3451,6 +3697,7 @@ Export-ModuleMember Get-SCCMCollection -Alias "gscol"
 Export-ModuleMember Get-SCCMCollectionMembers
 Export-ModuleMember Get-SCCMCollectionRefreshSchedule
 Export-ModuleMember Get-SCCMCollectionsForComputer
+Export-ModuleMember Get-SCCMCollectionVariables
 Export-ModuleMember Get-SCCMComputer -Alias "gsc"
 Export-ModuleMember Get-SCCMComputerVariables
 Export-ModuleMember Get-SCCMDistributionPoints -Alias "gsdist"
@@ -3467,6 +3714,7 @@ Export-ModuleMember Move-SCCMAdvertisementToFolder
 Export-ModuleMember Move-SCCMFolder
 Export-ModuleMember Move-SCCMPackageToFolder
 Export-ModuleMember New-SCCMAdvertisement
+Export-ModuleMember New-SCCMCollectionVariable
 Export-ModuleMember New-SCCMComputer
 Export-ModuleMember New-SCCMComputerVariable
 Export-ModuleMember New-SCCMFolder
@@ -3496,5 +3744,6 @@ Export-ModuleMember Set-SCCMAdvertisementAssignedSchedule
 Export-ModuleMember Set-SCCMClientAssignedSite
 Export-ModuleMember Set-SCCMClientCacheSize
 Export-ModuleMember Set-SCCMCollectionRefreshSchedule
+Export-ModuleMember Set-SCCMCollectionVariables
 Export-ModuleMember Set-SCCMComputerVariables
 Export-ModuleMember Set-SCCMProgramSupportedPlatforms
