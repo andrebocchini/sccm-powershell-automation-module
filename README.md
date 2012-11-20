@@ -21,6 +21,7 @@ Site Functions
     Get-SCCMCollectionMembers
     Get-SCCMCollectionRefreshSchedule
     Get-SCCMCollectionsForComputer
+    Get-SCCMCollectionVariables
     Get-SCCMComputer
     Get-SCCMComputerVariables
     Get-SCCMDistributionPoints

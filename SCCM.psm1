@@ -1632,6 +1632,76 @@ Function New-SCCMCollectionSettings {
 
 <#
 .SYNOPSIS
+Returns an array of all collection variables for a specific collection.
+
+.DESCRIPTION
+Returns an array of all collection variables for a specific collection.
+
+.PARAMETER siteProvider
+Name of the site provider.
+
+.PARAMETER siteCode
+3-character site code.
+
+.PARAMETER collectionId
+ID of the target collection.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc146201.aspx
+#>
+Function Get-SCCMCollectionVariables {
+    [CmdletBinding()]
+    param (
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, ValueFromPipeline=$true, Position=0)]
+        [ValidateLength(8,8)]
+        [string]$collectionId
+    )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
+
+    $collection = Get-SCCMCollection -siteProvider $siteProvider -siteCode $siteCode -collectionId $collectionId
+    if(!$collection) {
+        Throw "Unable to retrieve collection with ID $collectionId"
+    }
+
+    $collectionSettings = Get-SCCMCollectionSettings -siteProvider $siteProvider -siteCode $siteCode -collectionId $collectionId
+    if($collectionSettings) {
+        return $collectionSettings.CollectionVariables
+    }
+
+}
+
+<#
+.SYNOPSIS
+Saves an object containing a collection's machine settings back into the database.
+
+.DESCRIPTION
+Saves an object containing a collection's machine settings back into the database.
+
+.PARAMETER collectionSettings
+The object to be saved back into the database.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc145320.aspx
+#>
+Function Save-SCCMCollectionSettings {
+    [CmdletBinding()]
+    param (        
+        [parameter(Mandatory=$true)]$collectionSettings
+    )
+
+    $collectionSettings.Put() | Out-Null
+}
+
+<#
+.SYNOPSIS
 Allows triggering of SCCM client actions.
 
 .DESCRIPTION
@@ -3523,6 +3593,7 @@ Export-ModuleMember Get-SCCMCollection -Alias "gscol"
 Export-ModuleMember Get-SCCMCollectionMembers
 Export-ModuleMember Get-SCCMCollectionRefreshSchedule
 Export-ModuleMember Get-SCCMCollectionsForComputer
+Export-ModuleMember Get-SCCMCollectionVariables
 Export-ModuleMember Get-SCCMComputer -Alias "gsc"
 Export-ModuleMember Get-SCCMComputerVariables
 Export-ModuleMember Get-SCCMDistributionPoints -Alias "gsdist"

@@ -585,13 +585,15 @@
 
 <!-- End CCM_SoftwareDistribution Views -->
 
-<!-- Begin SMS_MachineVariable Views -->
+<!-- Begin SMS_MachineVariable and SMS_CollectionVariable Views -->
 
     <View>
         <Name>System.Management.ManagementObject#SMS_MachineVariable</Name>
         <ViewSelectedBy>
             <TypeName>System.Management.ManagementObject#SMS_MachineVariable</TypeName>
             <TypeName>System.Management.ManagementBaseObject#SMS_MachineVariable</TypeName>
+            <TypeName>System.Management.ManagementObject#SMS_CollectionVariable</TypeName>
+            <TypeName>System.Management.ManagementBaseObject#SMS_CollectionVariable</TypeName>
         </ViewSelectedBy>
         <TableControl>
             <TableHeaders>
@@ -631,6 +633,8 @@
         <ViewSelectedBy>
             <TypeName>System.Management.ManagementObject#SMS_MachineVariable</TypeName>
             <TypeName>System.Management.ManagementBaseObject#SMS_MachineVariable</TypeName>
+            <TypeName>System.Management.ManagementObject#SMS_CollectionVariable</TypeName>
+            <TypeName>System.Management.ManagementBaseObject#SMS_CollectionVariable</TypeName>
         </ViewSelectedBy>
         <ListControl>
             <ListEntries>
@@ -651,7 +655,7 @@
         </ListControl>
     </View>
 
-<!-- End SMS_MachineVariable Views -->
+<!-- End SMS_MachineVariable and SMS_CollectionVariable Views -->
 
 <!-- Begin SMS_MachineSettings Views -->
 
