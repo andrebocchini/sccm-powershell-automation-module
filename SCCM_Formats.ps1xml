@@ -41,7 +41,7 @@
                         </ListItem>
                         <ListItem>
                             <Label>Obsolete</Label>
-                            <ScriptBlock>if ($_.Obsolete -eq 0) {"No"} else {"Yes"}</ScriptBlock>
+                            <ScriptBlock>if ($_.Obsolete -eq 0) {"No"} elseif ($_.Obsolete -eq 1) {"Yes"} else { "" }</ScriptBlock>
                         </ListItem>
                         <ListItem>
                             <PropertyName>LastLogonUserName</PropertyName>
@@ -97,7 +97,7 @@
                             <PropertyName>ClientVersion</PropertyName>
                         </TableColumnItem>
                         <TableColumnItem>
-                            <ScriptBlock>if ($_.Obsolete -eq 0) {"No"} else {"Yes"}</ScriptBlock>
+                            <ScriptBlock>if ($_.Obsolete -eq 0) {"No"} elseif ($_.Obsolete -eq 1) {"Yes"} else { "" }</ScriptBlock>
                         </TableColumnItem>
                         <TableColumnItem>
                             <ScriptBlock>$_.CreationDate | Convert-SCCMDateToDate</ScriptBlock>
