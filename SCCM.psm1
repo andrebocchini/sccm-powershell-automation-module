@@ -19,8 +19,8 @@ https://github.com/andrebocchini/SCCM-Powershell-Automation-Module
 Attempts to discover the local computer's site provider.
 
 .DESCRIPTION
-This function is not exported and is private to this module.  When a user does not specify a site provider for a function that requires that information,
-we call this code to try to determine who the provider is automatically.  If we cannot find it, we throw an exception.
+When a user does not specify a site provider for a function that requires that information, we call this 
+code to try to determine who the provider is automatically.  If we cannot find it, we throw an exception.
 #>
 Function Get-SCCMSiteProvider {
     $ErrorActionPreference = "Stop"
@@ -54,8 +54,8 @@ Function Get-SCCMSiteProvider {
 Attempts to discover the local computer's site code.
 
 .DESCRIPTION
-This function is not exported and is private to this module.  When a user does not specify a site code for a function that requires that information,
-we call this code to try to determine what the code is automatically.  If we cannot find it, we throw an exception.
+When a user does not specify a site code for a function that requires that information, we call this code 
+to try to determine what the code is automatically.  If we cannot find it, we throw an exception.
 #>
 Function Get-SCCMSiteCode {
     $ErrorActionPreference = "Stop"
@@ -474,6 +474,23 @@ Function New-SCCMRecurWeeklyScheduleToken {
     } else {
         Throw "Unable to create a new weekly recurring interval schedule token"
     }        
+}
+
+<#
+.SYNOPSIS
+Utility function to convert DMTF date strings into something readable and usable by PowerShell.
+
+.DESCRIPTION
+This function exists for convenience so users of the module do not have to try to figure out, if they are not familiar with it, ways
+to convert DMTF date strings into something readable.
+#>
+Function Convert-SCCMDateToDate {
+    [CmdletBinding()]
+    param (
+        [parameter(Mandatory=$true, ValueFromPipeline=$true)][string]$date
+    )
+
+    [System.Management.ManagementDateTimeconverter]::ToDateTime($date);
 }
 
 <#
