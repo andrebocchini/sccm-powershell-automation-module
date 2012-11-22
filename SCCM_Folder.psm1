@@ -376,20 +376,3 @@ Function Move-SCCMAdvertisementToFolder {
         Throw "There was a problem moving advertisement with ID $advertisementId to folder with ID $folderNodeId"
     }
 }
-
-<#
-.SYNOPSIS
-Utility function to convert DMTF date strings into something readable and usable by PowerShell.
-
-.DESCRIPTION
-This function exists for convenience so users of the module do not have to try to figure out, if they are not familiar with it, ways
-to convert DMTF date strings into something readable.
-#>
-Function Convert-SCCMDateToDate {
-    [CmdletBinding()]
-    param (
-        [parameter(Mandatory=$true, ValueFromPipeline=$true)][string]$date
-    )
-
-    [System.Management.ManagementDateTimeconverter]::ToDateTime($date);
-}
