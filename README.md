@@ -124,7 +124,9 @@ If the import is successful, you should be able to use all of the module's expor
 Examples
 ========
 
-Here are a couple of examples of things you can automate with this module.  Take, for example, a simple workflow where an SCCM admin has to perform the following tasks:
+Here's one example of something you can do with this module.  [Visit the Wiki](https://github.com/andrebocchini/SCCM-Powershell-Automation-Module/wiki) to see a list with a few more examples.  
+
+A workflow for automated test package creation:
 
 1. Create a new package
 2. Create an installation program for the new package
