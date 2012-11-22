@@ -40,6 +40,7 @@ Site Functions
     New-SCCMComputer
     New-SCCMComputerVariable
     New-SCCMFolder
+    New-SCCMMaintenanceWindow
     New-SCCMNonRecurringScheduleToken
     New-SCCMPackage
     New-SCCMProgram
@@ -64,6 +65,7 @@ Site Functions
     Save-SCCMPackage
     Save-SCCMProgram
     Set-SCCMAdvertisementAssignedSchedule
+    Set-SCCMCollectionMaintenanceWindows
     Set-SCCMCollectionRefreshSchedule
     Set-SCCMCollectionVariables
     Set-SCCMComputerVariables

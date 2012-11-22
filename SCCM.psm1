@@ -34,8 +34,7 @@ Function Get-SCCMSiteProvider {
         }     
 
         # Now we ask the management point for the site provider
-        if($currentManagementPoint) {
-            
+        if($currentManagementPoint) {      
             $providerLocations = Get-WMIObject -ComputerName $currentManagementPoint -Namespace "root\sms" -Query "Select * From SMS_ProviderLocation"
             foreach($location in $providerLocations) {
                 if($location.ProviderForLocalSite) { 
@@ -2699,6 +2698,150 @@ Function Get-SCCMMaintenanceWindowSchedules {
 
 <#
 .SYNOPSIS
+Creates a new maintenance window object.
+
+.DESCRIPTION
+Creates a new maintenance window object.
+
+.PARAMETER siteProvider
+The name of the site provider.
+
+.PARAMETER siteCode
+The 3-character site code.
+
+.PARAMETER windowName
+A descriptive name for the maintenance window.
+
+.PARAMETER windowDescription
+A description for the maintenance window.
+
+.PARAMETER windowSchedules
+Schedule token object representing the maintenance window schedule.
+
+.PARAMETER windowRecurrenceType
+An integer indicating the recurrence type of the window.  Allowed values are:
+
+1 NONE
+2 DAILY
+3 WEEKLY
+4 MONTHLYBYWEEKDAY
+5 MONTHLYBYDATE
+
+If you define a recurrence type that does not match the type of schedule tokens pased to this function,
+you will encounter erros when you attempt to assign this maintenance window to a collection.  For example,
+if you choose recurrence type 1, you can only use non recurring schedule tokens.
+
+.PARAMETER windowIsEnabled
+A boolean value indicating whether this maintenance window is enabled.
+
+.PARAMETER windowType
+Allowed values are:
+
+1 GENERAL. General maintenance window. 
+5 OSD. Operating system deployment task sequence maintenance window.
+ 
+.PARAMETER startTime
+The date and time when this window will become available.d
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc143300.aspx
+#>
+Function New-SCCMMaintenanceWindow {
+    [CmdletBinding()]
+    param (
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)][ValidateNotNull()][string]$windowName,
+        [parameter(Position=1)][string]$windowDescription,
+        [parameter(Mandatory=$true, Position=2)][ValidateNotNull()]$windowSchedules,
+        [parameter(Mandatory=$true, Position=3)][ValidateRange(1,5)][int]$windowRecurrenceType,
+        [parameter(Mandatory=$true, Position=4)][boolean]$windowsIsEnabled,
+        [parameter(Mandatory=$true, Position=5)][ValidateScript( { ($_ -eq 1) -or ($_ -eq 5) } )][int]$windowType,
+        [parameter(Mandatory=$true, Position=6)]$startTime
+    )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }    
+
+    # We have to convert the schedule tokens to schedule strings
+    if($windowSchedules) {
+        $scheduleMethod = [WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_ScheduleMethods")
+        $result = $scheduleMethod.WriteToString($windowSchedules)
+        $windowScheduleStrings = $result.StringData
+    }
+
+    $maintenanceWindow = ([WMIClass]("\\$siteProvider\root\sms\site_" + "$siteCode" + ":SMS_ServiceWindow")).CreateInstance()
+    if($maintenanceWindow) {
+        $maintenanceWindow.Name = $windowName
+        $maintenanceWindow.Description = $windowDescription
+        $maintenanceWindow.ServiceWindowSchedules = $windowScheduleStrings
+        $maintenanceWindow.RecurrenceType = $windowRecurrenceType
+        $maintenanceWindow.IsEnabled = $windowIsEnabled
+        $maintenanceWindow.ServiceWindowType = $windowType
+        $maintenanceWindow.StartTime = Convert-DateToSCCMDate $startTime        
+    }
+    return $maintenanceWindow
+}
+
+<#
+.SYNOPSIS
+Assigns an array of maintenance window objects to a collection.
+
+.DESCRIPTION
+Assigns an array of maintenance window objects to a collection.
+
+.PARAMETER siteProvider
+The name of the site provider.
+
+.PARAMETER siteCode
+The 3-character site code.
+
+.PARAMETER collectionId
+The ID of the collection that will received the maintenance windows.
+
+.PARAMETER maintenanceWindows
+An array of maintenance window objects.  If this is an empty array, all maintenance windows will be removed from
+the collection.
+
+.LINK
+http://msdn.microsoft.com/en-us/library/cc143300.aspx
+#>
+Function Set-SCCMCollectionMaintenanceWindows {
+    [CmdletBinding()]
+    param (
+        [string]$siteProvider,
+        [string]$siteCode,
+        [parameter(Mandatory=$true, Position=0)][ValidateLength(8,8)][string]$collectionId,
+        [parameter(Mandatory=$true, Position=1)][AllowEmptyCollection()][ValidateNotNull()][array]$maintenanceWindows
+    )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
+
+    $collectionSettings = Get-SCCMCollectionSettings -siteProvider $siteProvider -siteCode $siteCode -collectionId $collectionId
+    if(!$collectionSettings) {
+        # If the collection has never had any settings, we have to create some fresh ones.
+        $collectionSettings = New-SCCMCollectionSettings -siteProvider $siteProvider -siteCode $siteCode -collectionId $collectionId
+    }
+
+    if($collectionSettings) {
+        $collectionSettings.ServiceWindows = $maintenanceWindows
+        Save-SCCMCollectionSettings $collectionSettings
+    } else {
+        Throw "Unable to retrieve collection settings from collection with ID $collectionId"
+    }
+}
+
+<#
+.SYNOPSIS
 Gets a list of supported platforms for programs for the specified site.
 
 .DESCRIPTION
@@ -3718,6 +3861,7 @@ Export-ModuleMember New-SCCMCollectionVariable
 Export-ModuleMember New-SCCMComputer
 Export-ModuleMember New-SCCMComputerVariable
 Export-ModuleMember New-SCCMFolder
+Export-ModuleMember New-SCCMMaintenanceWindow
 Export-ModuleMember New-SCCMNonRecurringScheduleToken
 Export-ModuleMember New-SCCMPackage
 Export-ModuleMember New-SCCMProgram
@@ -3743,6 +3887,7 @@ Export-ModuleMember Save-SCCMProgram
 Export-ModuleMember Set-SCCMAdvertisementAssignedSchedule
 Export-ModuleMember Set-SCCMClientAssignedSite
 Export-ModuleMember Set-SCCMClientCacheSize
+Export-ModuleMember Set-SCCMCollectionMaintenanceWindows
 Export-ModuleMember Set-SCCMCollectionRefreshSchedule
 Export-ModuleMember Set-SCCMCollectionVariables
 Export-ModuleMember Set-SCCMComputerVariables
