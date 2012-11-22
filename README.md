@@ -31,6 +31,8 @@ Site Functions
     Get-SCCMPackage
     Get-SCCMProgram
     Get-SCCMProgramSupportedPlatforms
+    Get-SCCMSiteCode
+    Get-SCCMSiteProvider
     Get-SCCMSupportedPlatforms
     Move-SCCMAdvertisementToFolder
     Move-SCCMFolder
