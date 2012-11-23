@@ -25,5 +25,9 @@ try {
     Write-Host ">>> `tGet-Help SCCM"
     Write-Host ">>>"
 } catch {
-    Write-Host ">>> SCCM module failed to install to $modulePath" -Foreground red 
+    Write-Host ">>> There was a problem when trying to install to:" -Foreground red
+    Write-Host ">>> `t$modulePath" -Foreground red
+    Write-Host ">>>"
+    Write-Host ">>> You might need to perform the installation manually."
+    Write-Host '>>>'
 }
