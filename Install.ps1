@@ -16,7 +16,7 @@ try {
     Copy-Item -Path ".\SCCM_Formats.ps1xml" -Destination $modulePath -Force
 
     Write-Host ">>> SCCM module successfully installed to:" -Foreground green
-    Write-Host ">>> `t$modulePath\n" -Foreground green
+    Write-Host ">>> `t$modulePath" -Foreground green
     Write-Host ">>>"
     Write-Host ">>> Make sure that $modulePath is part of your PSModulePath"
     Write-Host ">>> then try running:"
