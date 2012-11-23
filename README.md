@@ -5,9 +5,9 @@ This Powershell module contains a collection of functions gathered from an assor
 
 Please conduct your own independent testing before trusting this code in a production environment.  This module has only been tested with SCCM 2007.
 
-These are the available functions:
+These are the available commands:
 
-Site Functions
+Site Commands
 
     Add-SCCMComputerToCollection
     Add-SCCMPackageToDistributionPoint
@@ -73,7 +73,7 @@ Site Functions
     Set-SCCMComputerVariables
     Set-SCCMProgramSupportedPlatforms
 
-Client Functions
+Client Commands
 
     Get-SCCMClientAdvertisementScheduleId
     Get-SCCMClientAssignedSite
@@ -84,7 +84,7 @@ Client Functions
     Set-SCCMClientAssignedSite
     Set-SCCMClientCacheSize
 
-Utility Functions
+Utility Commands
 
     Convert-DateToSCCMDate
     Convert-SCCMDateToDate
