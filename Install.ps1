@@ -1,4 +1,4 @@
-$modulePath = $ENV:userprofile + "\Documents\WindowsPowershell\Modules\SCCM"
+$modulePath = ([Environment]::GetFolderPath([Environment+SpecialFolder]::MyDocuments)) + "\WindowsPowershell\Modules\SCCM"
 
 if((Test-Path $modulePath) -ne $true) {
     New-Item $modulePath -ItemType directory > $null
