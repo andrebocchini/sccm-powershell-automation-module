@@ -110,6 +110,7 @@ and copying the following files into it:
     SCCM.psd1
     SCCM_Advertisement.psm1
     SCCM_Client.psm1
+    SCCM_Collection.psm1
     SCCM_Computer.psm1
     SCCM_Folder.psm1
     SCCM_Formats.ps1xml
