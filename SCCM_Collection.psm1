@@ -21,14 +21,18 @@ ID of the collection where the computer is to be added.
 Function Add-SCCMComputerToCollection {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [ValidateScript( { $_ -gt 0 } )]
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
         [parameter(Mandatory=$true, Position=0)]
-        [int]$resourceId,
-        [ValidateLength(8,8)]
+        [ValidateScript( { $_ -gt 0 } )]
+        [int]
+        $resourceId,
         [parameter(Mandatory=$true, Position=1)]
-        [string]$collectionId
+        [ValidateLength(8,8)]
+        [string]
+        $collectionId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -92,15 +96,18 @@ ID of the collection where the computer is a member.
 Function Remove-SCCMComputerFromCollection {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
         [parameter(Mandatory=$true, Position=0)]
         [ValidateScript( { $_ -gt 0 } )]
-        [int]$resourceId,
-        [ValidateLength(8,8)]
+        [int]
+        $resourceId,
         [parameter(Mandatory=$true, Position=1)]
-        [string]$collectionId
+        [ValidateLength(8,8)]
+        [string]
+        $collectionId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -151,11 +158,14 @@ http://msdn.microsoft.com/en-us/library/cc145537.aspx
 Function New-SCCMCollectionRuleDirect {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [ValidateScript( { $_ -gt 0 } )]
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
         [parameter(Mandatory=$true, Position=0)]
-        [int]$resourceId
+        [ValidateScript( { $_ -gt 0 } )]
+        [int]
+        $resourceId
     ) 
     
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -201,11 +211,20 @@ New-SCCMStaticCollection -siteProvider MYSITEPROVIDER -siteCode SIT -collectionN
 Function New-SCCMStaticCollection {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)][string]$collectionName,
-        [parameter(Mandatory=$true, Position=1)][string]$parentCollectionId,
-        [string]$collectionComment
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateNotNull()]
+        [string]
+        $collectionName,
+        [parameter(Mandatory=$true, Position=1)]
+        [ValidateLength(8,8)]
+        [string]
+        $parentCollectionId,
+        [string]
+        $collectionComment
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -264,9 +283,14 @@ http://msdn.microsoft.com/en-us/library/cc145320.aspx
 Function Get-SCCMCollectionRefreshSchedule {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)][ValidateLength(8,8)][string]$collectionId
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateLength(8,8)]
+        [string]
+        $collectionId
     )
 
     Set-Variable refreshTypeManual -option Constant -value 1
@@ -317,11 +341,21 @@ http://msdn.microsoft.com/en-us/library/cc145320.aspx
 Function Set-SCCMCollectionRefreshSchedule {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)][ValidateLength(8,8)][string]$collectionId,
-        [parameter(Mandatory=$true, Position=1)][ValidateRange(1,2)][int]$refreshType = 1,
-        [parameter(Position=2)][ValidateScript( { !(!$_ -and $refreshType -eq 2) } )]$refreshSchedule
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateLength(8,8)]
+        [string]
+        $collectionId,
+        [parameter(Mandatory=$true, Position=1)]
+        [ValidateRange(1,2)]
+        [int]
+        $refreshType = 1,
+        [parameter(Position=2)]
+        [ValidateScript( { !(!$_ -and $refreshType -eq 2) } )]
+        $refreshSchedule
     )
     
     Set-Variable refreshTypeManual -option Constant -value 1
@@ -360,7 +394,9 @@ The collection object to be put back into the database.
 Function Save-SCCMCollection {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)]$collection
+        [parameter(Mandatory=$true)]
+        [ValidateNotNull()]
+        $collection
     )
 
     $collection.Put() | Out-Null
@@ -392,9 +428,14 @@ Deletes the collection with id MYID from site SIT on MYSITEPROVIDER.
 Function Remove-SCCMCollection {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true, Position=1)][string]$collectionId
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=1)]
+        [ValidateLength(8,8)]
+        [string]
+        $collectionId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -458,15 +499,20 @@ Function Get-SCCMCollection {
         [parameter(ParameterSetName="name")]
         [parameter(ParameterSetName="default")]
         [parameter(ParameterSetName="id")]
-        [string]$siteProvider,
+        [string]
+        $siteProvider,
         [parameter(ParameterSetName="name")]
         [parameter(ParameterSetName="default")]
         [parameter(ParameterSetName="id")]
-        [string]$siteCode,
+        [string]
+        $siteCode,
         [parameter(ParameterSetName="name", Position=0, ValueFromPipeline=$true)]
-        [string]$collectionName,
+        [string]
+        $collectionName,
         [parameter(ParameterSetName="id", Position=1)]
-        [string]$collectionId
+        [ValidateLength(8,8)]
+        [string]
+        $collectionId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -514,9 +560,14 @@ Retrieves all members of collection SIT00012 and lists only their names
 Function Get-SCCMCollectionMembers {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)][string]$collectionId
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateLength(8,8)]
+        [string]
+        $collectionId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -548,9 +599,14 @@ Resource ID for the computer whose list of collections are being retrieved.
 Function Get-SCCMCollectionsForComputer {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)][int]$resourceId
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateScript( { $_ -gt 0 } )]
+        [int]
+        $resourceId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -609,11 +665,14 @@ http://msdn.microsoft.com/en-us/library/cc145320.aspx
 Function Get-SCCMCollectionSettings {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
         [parameter(Mandatory=$true, ValueFromPipeline=$true, Position=0)]
         [ValidateLength(8,8)]
-        [string]$collectionId
+        [string]
+        $collectionId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -652,11 +711,14 @@ http://msdn.microsoft.com/en-us/library/cc145320.aspx
 Function New-SCCMCollectionSettings {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
         [parameter(Mandatory=$true, ValueFromPipeline=$true, Position=0)]
         [ValidateLength(8,8)]
-        [string]$collectionId
+        [string]
+        $collectionId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -703,12 +765,17 @@ http://msdn.microsoft.com/en-us/library/cc145320.aspx
 Function Set-SCCMCollectionVariables {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
         [parameter(Mandatory=$true, ValueFromPipeline=$true, Position=0)]
         [ValidateLength(8,8)]
-        [string]$collectionId,
-        [parameter(Mandatory=$true, Position=1)][ValidateNotNull()]$variableList
+        [string]
+        $collectionId,
+        [parameter(Mandatory=$true, Position=1)]
+        [ValidateNotNull()]
+        $variableList
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -753,11 +820,14 @@ http://msdn.microsoft.com/en-us/library/cc146201.aspx
 Function Get-SCCMCollectionVariables {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
         [parameter(Mandatory=$true, ValueFromPipeline=$true, Position=0)]
         [ValidateLength(8,8)]
-        [string]$collectionId
+        [string]
+        $collectionId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -807,11 +877,21 @@ http://msdn.microsoft.com/en-us/library/cc146201.aspx
 Function New-SCCMCollectionVariable {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true)][string]$variableName,
-        [parameter(Mandatory=$true)][string]$variableValue,
-        [parameter(Mandatory=$true)][bool]$isMasked
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateNotNull()]
+        [string]
+        $variableName,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateNotNull()]
+        [string]
+        $variableValue,
+        [parameter(Mandatory=$true, Position=0)]
+        [bool]
+        $isMasked
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -846,7 +926,9 @@ http://msdn.microsoft.com/en-us/library/cc145320.aspx
 Function Save-SCCMCollectionSettings {
     [CmdletBinding()]
     param (        
-        [parameter(Mandatory=$true)]$collectionSettings
+        [parameter(Mandatory=$true)]
+        [ValidateNotNull()]
+        $collectionSettings
     )
 
     $collectionSettings.Put() | Out-Null
@@ -874,9 +956,14 @@ http://msdn.microsoft.com/en-us/library/cc143300.aspx
 Function Get-SCCMMaintenanceWindows {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)][ValidateNotNull()][string]$collectionId
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateLength(8,8)]
+        [string]
+        $collectionId
     )    
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -915,9 +1002,13 @@ http://msdn.microsoft.com/en-us/library/cc145924.aspx
 Function Get-SCCMMaintenanceWindowSchedules {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)][ValidateNotNull()]$maintenanceWindow
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateNotNull()]
+        $maintenanceWindow
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -991,15 +1082,33 @@ http://msdn.microsoft.com/en-us/library/cc143300.aspx
 Function New-SCCMMaintenanceWindow {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)][ValidateNotNull()][string]$windowName,
-        [parameter(Position=1)][string]$windowDescription,
-        [parameter(Mandatory=$true, Position=2)][ValidateNotNull()]$windowSchedules,
-        [parameter(Mandatory=$true, Position=3)][ValidateRange(1,5)][int]$windowRecurrenceType,
-        [parameter(Mandatory=$true, Position=4)][boolean]$windowsIsEnabled,
-        [parameter(Mandatory=$true, Position=5)][ValidateScript( { ($_ -eq 1) -or ($_ -eq 5) } )][int]$windowType,
-        [parameter(Mandatory=$true, Position=6)]$startTime
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateNotNull()]
+        [string]
+        $windowName,
+        [parameter(Position=1)]
+        [string]
+        $windowDescription,
+        [parameter(Mandatory=$true, Position=2)]
+        [ValidateNotNull()]
+        $windowSchedules,
+        [parameter(Mandatory=$true, Position=3)]
+        [ValidateRange(1,5)]
+        [int]
+        $windowRecurrenceType,
+        [parameter(Mandatory=$true, Position=4)]
+        [boolean]
+        $windowsIsEnabled,
+        [parameter(Mandatory=$true, Position=5)]
+        [ValidateScript( { ($_ -eq 1) -or ($_ -eq 5) } )]
+        [int]
+        $windowType,
+        [parameter(Mandatory=$true, Position=6)]
+        $startTime
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -1055,10 +1164,19 @@ http://msdn.microsoft.com/en-us/library/cc143300.aspx
 Function Set-SCCMCollectionMaintenanceWindows {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)][ValidateLength(8,8)][string]$collectionId,
-        [parameter(Mandatory=$true, Position=1)][AllowEmptyCollection()][ValidateNotNull()][array]$maintenanceWindows
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateLength(8,8)]
+        [string]
+        $collectionId,
+        [parameter(Mandatory=$true, Position=1)]
+        [AllowEmptyCollection()]
+        [ValidateNotNull()]
+        [array]
+        $maintenanceWindows
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
