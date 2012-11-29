@@ -27,17 +27,21 @@ Function Get-SCCMFolder {
         [parameter(ParameterSetName="name")]
         [parameter(ParameterSetName="default")]
         [parameter(ParameterSetName="id")]
-        [string]$siteProvider,
+        [string]
+        $siteProvider,
         [parameter(ParameterSetName="name")]
         [parameter(ParameterSetName="default")]
         [parameter(ParameterSetName="id")]
-        [string]$siteCode,
+        [string]
+        $siteCode,
         [parameter(Position=0)]
         [parameter(ParameterSetName="name")]
-        [string]$folderName,
+        [string]
+        $folderName,
         [parameter(ParameterSetName="id")]
         [ValidateScript( { $_ -gt 0 } )]
-        [int]$folderNodeId
+        [int]
+        $folderNodeId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -85,11 +89,22 @@ http://msdn.microsoft.com/en-us/library/cc145264.aspx
 Function New-SCCMFolder {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)][ValidateNotNull()][string]$folderName,
-        [parameter(Mandatory=$true, Position=1)][ValidateRange(2,3)][int]$folderType,
-        [parameter(Mandatory=$true, Position=2)][ValidateScript( { $_ -ge 0 } )][int]$parentFolderNodeId=0
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateNotNull()]
+        [string]
+        $folderName,
+        [parameter(Mandatory=$true, Position=1)]
+        [ValidateRange(2,3)]
+        [int]
+        $folderType,
+        [parameter(Mandatory=$true, Position=2)]
+        [ValidateScript( { $_ -ge 0 } )]
+        [int]
+        $parentFolderNodeId=0
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -134,7 +149,9 @@ The folder object to be put back into the database.
 Function Save-SCCMFolder {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)]$folder
+        [parameter(Mandatory=$true)]
+        [ValidateNotNull()]
+        $folder
     )
 
     $folder.Put() | Out-Null
@@ -163,9 +180,15 @@ http://msdn.microsoft.com/en-us/library/cc145264.aspx
 Function Remove-SCCMFolder {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)][ValidateScript( { $_ -gt 0 } )][ValidateNotNull()][int]$folderNodeId
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateScript( { $_ -gt 0 } )]
+        [ValidateNotNull()]
+        [int]
+        $folderNodeId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -206,10 +229,19 @@ http://msdn.microsoft.com/en-us/library/cc145264.aspx
 Function Move-SCCMFolder {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)][ValidateScript( { $_ -gt 0 } )][ValidateNotNull()][int]$folderNodeId,
-        [parameter(Mandatory=$true, Position=1)][ValidateScript( { $_ -ge 0 } )][ValidateNotNull()][int]$newParentFolderNodeId
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateScript( { $_ -gt 0 } )]
+        [ValidateNotNull()]
+        [int]
+        $folderNodeId,
+        [parameter(Mandatory=$true, Position=1)]
+        [ValidateScript( { $_ -ge 0 } )]
+        [ValidateNotNull()][int]
+        $newParentFolderNodeId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -269,11 +301,23 @@ http://msdn.microsoft.com/en-us/library/cc145264.aspx
 Function Move-ObjectToContainer {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)][ValidateLength(8,8)][string]$instanceKey,
-        [parameter(Mandatory=$true, Position=1)][ValidateScript( { $_ -ge 0 } )][ValidateNotNull()][int]$targetContainerNodeId,
-        [parameter(Mandatory=$true, Position=3)][ValidateRange(2,3)][int]$objectType
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateLength(8,8)]
+        [string]
+        $instanceKey,
+        [parameter(Mandatory=$true, Position=1)]
+        [ValidateScript( { $_ -ge 0 } )]
+        [ValidateNotNull()]
+        [int]
+        $targetContainerNodeId,
+        [parameter(Mandatory=$true, Position=3)]
+        [ValidateRange(2,3)]
+        [int]
+        $objectType
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -317,10 +361,19 @@ The folder to which the package is to be moved.  If this value is 0, the package
 Function Move-SCCMPackageToFolder {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)][ValidateLength(8,8)][string]$packageId,
-        [parameter(Mandatory=$true, Position=1)][ValidateScript( { $_ -ge 0 } )][ValidateNotNull()][int]$targetFolderNodeId
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateLength(8,8)]
+        [string]
+        $packageId,
+        [parameter(Mandatory=$true, Position=1)]
+        [ValidateScript( { $_ -ge 0 } )]
+        [ValidateNotNull()]
+        [int]
+        $targetFolderNodeId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -358,10 +411,19 @@ The folder to which the advertisement is to be moved.  If this value is 0, the a
 Function Move-SCCMAdvertisementToFolder {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)][ValidateLength(8,8)][string]$advertisementId,
-        [parameter(Mandatory=$true, Position=1)][ValidateScript( { $_ -ge 0 } )][ValidateNotNull()][int]$targetFolderNodeId
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateLength(8,8)]
+        [string]
+        $advertisementId,
+        [parameter(Mandatory=$true, Position=1)]
+        [ValidateScript( { $_ -ge 0 } )]
+        [ValidateNotNull()]
+        [int]
+        $targetFolderNodeId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
