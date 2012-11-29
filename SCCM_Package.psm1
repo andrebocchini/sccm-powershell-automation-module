@@ -42,14 +42,26 @@ http://msdn.microsoft.com/en-us/library/cc144959.aspx
 Function New-SCCMPackage {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true)][string]$packageName,
-        [parameter(Mandatory=$true)][string]$packageDescription,
-        [parameter(Mandatory=$true)][string]$packageVersion,
-        [parameter(Mandatory=$true)][string]$packageManufacturer,
-        [parameter(Mandatory=$true)][string]$packageLanguage,
-        [string]$packageSource   
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [string]
+        $packageName,
+        [parameter(Mandatory=$true, Position=1)]
+        [string]
+        $packageDescription,
+        [parameter(Mandatory=$true, Position=2)]
+        [string]
+        $packageVersion,
+        [parameter(Mandatory=$true, Position=3)]
+        [string]
+        $packageManufacturer,
+        [string]
+        $packageLanguage = "",
+        [string]
+        $packageSource   
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -75,8 +87,7 @@ Function New-SCCMPackage {
 
     if($packageCreationResult) {
         $newPackageIdTokens = $($packageCreationResult.RelativePath).Split("=")
-        $newPackageId = $($newPackageIdTokens[1]).TrimStart("`"")
-        $newPackageId = $($newPackageId).TrimEnd("`"")
+        $newPackageId = $($newPackageIdTokens[1]).Replace("`"", "")
 
         return Get-SCCMPackage -siteProvider $siteProvider -siteCode $siteCode -packageId $newPackageId
     } else {
@@ -100,7 +111,9 @@ The package object to be put back into the database.
 Function Save-SCCMPackage {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)]$package
+        [parameter(Mandatory=$true)]
+        [ValidateNotNull()]
+        $package
     )
 
     $package.Put() | Out-Null
@@ -132,9 +145,14 @@ Deletes the package with ID MYID from SIT on MYSITEPROVIDER
 Function Remove-SCCMPackage {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)][string]$packageId
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateLength(8,8)]
+        [string]
+        $packageId
     )    
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -146,7 +164,7 @@ Function Remove-SCCMPackage {
 
     $package = Get-SCCMPackage -siteProvider $siteProvider -siteCode $siteCode -packageId $packageId
     if($package) {
-        $package.psbase.Delete() | Out-Null
+        $package.Delete() | Out-Null
     } else {
         Throw "Invalid package with ID $packageId"
     }
@@ -191,16 +209,22 @@ Function Get-SCCMPackage {
         [parameter(ParameterSetName="name")]
         [parameter(ParameterSetName="default")]
         [parameter(ParameterSetName="id")]
-        [string]$siteProvider,
+        [string]
+        $siteProvider,
         [parameter(ParameterSetName="name")]
         [parameter(ParameterSetName="default")]
         [parameter(ParameterSetName="id")]
-        [string]$siteCode,
+        [string]
+        $siteCode,
         [parameter(ParameterSetName="name", Position=0, ValueFromPipeline=$true)]
         [ValidateNotNull()]
-        [string]$packageName,
+        [string]
+        $packageName,
         [parameter(ParameterSetName="id")]
-        [parameter(Position=1)][string]$packageId
+        [parameter(Position=1)]
+        [ValidateLength(8,8)]
+        [string]
+        $packageId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -254,11 +278,22 @@ http://msdn.microsoft.com/en-us/library/cc144361.aspx
 Function New-SCCMProgram {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true)][string]$packageId,
-        [parameter(Mandatory=$true)][string]$programName,
-        [parameter(Mandatory=$true)][string]$programCommandLine
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [string]
+        [ValidateLength(8,8)]
+        $packageId,
+        [parameter(Mandatory=$true, Position=1)]
+        [ValidateNotNull()]
+        [string]
+        $programName,
+        [parameter(Mandatory=$true, Position=2)]
+        [ValidateNotNull()]
+        [string]        
+        $programCommandLine
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -279,7 +314,7 @@ Function New-SCCMProgram {
             $newProgramId = $($programCreationResult.RelativePath).TrimStart('SMS_Program.PackageID=')
             $newProgramId = $newProgramId.Substring(1,8)
 
-            return Get-SCCMProgram -siteProvider $siteProvider -siteCode $siteCode $packageId $programName
+            return Get-SCCMProgram -siteProvider $siteProvider -siteCode $siteCode -packageId $packageId -programName $programName
         } else {
             Throw "Program creation failed"
         }
@@ -304,7 +339,9 @@ The program object to be put back into the database.
 Function Save-SCCMProgram {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)]$program
+        [parameter(Mandatory=$true)]
+        [ValidateNotNull()]
+        $program
     )
 
     $program.Put() | Out-Null
@@ -332,10 +369,18 @@ Name of the program to be deleted.
 Function Remove-SCCMProgram {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)][string]$packageId,
-        [parameter(Mandatory=$true, Position=1)][string]$programName
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateLength(8,8)]
+        [string]
+        $packageId,
+        [parameter(Mandatory=$true, Position=1)]
+        [ValidateNotNull()]
+        [string]
+        $programName
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -398,10 +443,17 @@ Retrieve all programs from site SIT on MYSITEPROVIDER and filter out only their 
 Function Get-SCCMProgram {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Position=0)][string]$packageId,
-        [parameter(Position=1)][string]$programName
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Position=0)]
+        [ValidateLength(8,8)]
+        [string]
+        $packageId,
+        [parameter(Position=1)]
+        [string]
+        $programName
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -453,10 +505,16 @@ This will add the package SIT00000 to every distribution point on the site SIT.
 Function Add-SCCMPackageToDistributionPoint {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)][string]$packageId,
-        [parameter(Mandatory=$true, Position=1)]$distributionPointList
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateLength(8,8)]        
+        [string]
+        $packageId,
+        [parameter(Mandatory=$true, Position=1)]
+        $distributionPointList
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -473,7 +531,7 @@ Function Add-SCCMPackageToDistributionPoint {
             $newDistributionPoint.PackageID = $packageId
             $newDistributionPoint.SiteCode = $distributionPoint.SiteCode
             $newDistributionPoint.SiteName = $distributionPoint.SiteCode
-            $newDistributionPoint.psbase.Put() | Out-Null
+            $newDistributionPoint.Put() | Out-Null
         }
     } else {
         Throw "Invalid package ID $packageId"
@@ -511,10 +569,16 @@ This will remove the package SIT00000 from every distribution point on the site 
 Function Remove-SCCMPackageFromDistributionPoint {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)][string]$packageId,
-        [parameter(Mandatory=$true, Position=1)]$distributionPointList
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateLength(8,8)]
+        [string]
+        $packageId,
+        [parameter(Mandatory=$true, Position=1)]
+        $distributionPointList
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -528,7 +592,7 @@ Function Remove-SCCMPackageFromDistributionPoint {
         foreach($distributionPoint in $distributionPointList) {
             $distributionPointToBeDeleted = Get-WmiObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_DistributionPoint" | Where { ($_.ServerNALPath -eq $distributionPoint.NALPath) -and ($_.PackageID -eq $packageId) }
             if($distributionPointToBeDeleted) {
-                $distributionPointToBeDeleted.psbase.Delete()
+                $distributionPointToBeDeleted.Delete()
             }
         }
     } else {
@@ -555,8 +619,10 @@ Get-SCCMDistributionPoints -siteProvider MYSITEPROVIDER -siteCode SIT
 Function Get-SCCMDistributionPoints {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode
     )    
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -596,8 +662,10 @@ http://msdn.microsoft.com/en-us/library/cc144734.aspx
 Function Get-SCCMSupportedPlatforms {
     [CmdletBinding()]
     param(
-        [string]$siteProvider,
-        [string]$siteCode
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -645,12 +713,26 @@ http://msdn.microsoft.com/en-us/library/cc146485.aspx
 Function New-SCCMSupportedPlatform {
     [CmdletBinding()]
     param(
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true)][string]$name,
-        [parameter(Mandatory=$true)][string]$maxVersion,
-        [parameter(Mandatory=$true)][string]$minVersion,
-        [parameter(Mandatory=$true)][string]$platform
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateNotNull()]
+        [string]
+        $name,
+        [parameter(Mandatory=$true, Position=1)]
+        [ValidateNotNull()]
+        [string]
+        $maxVersion,
+        [parameter(Mandatory=$true, Position=2)]
+        [ValidateNotNull()]
+        [string]
+        $minVersion,
+        [parameter(Mandatory=$true, Position=3)]
+        [ValidateNotNull()]
+        [string]
+        $platform
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -690,7 +772,9 @@ http://msdn.microsoft.com/en-us/library/cc146485.aspx
 Function Get-SCCMProgramSupportedPlatforms {
     [CmdletBinding()]
     param(
-        [parameter(Mandatory=$true)]$program
+        [parameter(Mandatory=$true)]
+        [ValidateNotNull()]
+        $program
     )
 
     # SupportedOperatingSystems is a lazy property, so we have to explicitly retrieve it with Get()
@@ -720,8 +804,11 @@ http://msdn.microsoft.com/en-us/library/cc146485.aspx
 Function Set-SCCMProgramSupportedPlatforms {
     [CmdletBinding()]
     param(
-        [parameter(Mandatory=$true, Position=0)]$program,
-        [parameter(Mandatory=$true, Position=1)]$platformList
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateNotNull()]
+        $program,
+        [parameter(Mandatory=$true, Position=1)]
+        $platformList
     )
 
     $program.Get() | Out-Null

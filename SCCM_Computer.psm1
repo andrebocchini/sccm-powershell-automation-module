@@ -24,15 +24,19 @@ New-SCCMComputer -siteProvider MYSITEPROVIDER -siteCode SIT -computerName MYCOMP
 Function New-SCCMComputer {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
         [parameter(Mandatory=$true, Position=0)]
         [ValidateLength(1,15)]
         [ValidateNotNullOrEmpty()]
-        [string]$computerName,
+        [string]
+        $computerName,
         [parameter(Mandatory=$true, Position=1)]
         [ValidatePattern('^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$')]
-        [string]$macAddress
+        [string]
+        $macAddress
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -86,10 +90,14 @@ Removes the computer with resource ID 1293 from the specified site.
 Function Remove-SCCMComputer {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
         [ValidateScript( { $_ -gt 0 } )]
-        [parameter(Mandatory=$true, Position=0)][int]$resourceId
+        [int]
+        $resourceId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -145,18 +153,22 @@ Function Get-SCCMComputer {
         [parameter(ParameterSetName="name")]
         [parameter(ParameterSetName="default")]
         [parameter(ParameterSetName="id")]
-        [string]$siteProvider,
+        [string]
+        $siteProvider,
         [parameter(ParameterSetName="name")]
         [parameter(ParameterSetName="default")]
         [parameter(ParameterSetName="id")]
-        [string]$siteCode,
+        [string]
+        $siteCode,
         [parameter(Position=0, ValueFromPipeline=$true)]
         [parameter(ParameterSetName="name")]
         [ValidateLength(1,15)]
-        [string]$computerName,
+        [string]
+        $computerName,
         [parameter(ParameterSetName="id")]
         [ValidateScript( { $_ -gt 0 } )]
-        [int]$resourceId
+        [int]
+        $resourceId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -197,10 +209,18 @@ The resource ID of the computer.
 Function Get-SCCMAdvertisementStatusForComputer {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)][string]$advertisementId,
-        [parameter(Mandatory=$true, Position=1)][int]$resourceId
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateLength(8,8)]
+        [string]
+        $advertisementId,
+        [parameter(Mandatory=$true, Position=1)]
+        [ValidateScript( { $_ -gt 0 } )]
+        [int]
+        $resourceId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -238,10 +258,17 @@ http://msdn.microsoft.com/en-us/library/cc143033.aspx
 Function Set-SCCMComputerVariables {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)][int]$resourceId,
-        [parameter(Mandatory=$true, Position=1)][ValidateNotNull()]$variableList
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateScript( { $_ -gt 0 } )]
+        [int]
+        $resourceId,
+        [parameter(Mandatory=$true, Position=1)]
+        [ValidateNotNull()]
+        $variableList
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -286,9 +313,14 @@ http://msdn.microsoft.com/en-us/library/cc143033.aspx
 Function Get-SCCMComputerVariables {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)][int]$resourceId
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateScript( { $_ -gt 0 } )]
+        [int]
+        $resourceId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -337,11 +369,21 @@ http://msdn.microsoft.com/en-us/library/cc143033.aspx
 Function New-SCCMComputerVariable {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true)][string]$variableName,
-        [parameter(Mandatory=$true)][string]$variableValue,
-        [parameter(Mandatory=$true)][bool]$isMasked
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateNotNull()]
+        [string]
+        $variableName,
+        [parameter(Mandatory=$true, Position=1)]
+        [ValidateNotNull()]
+        [string]
+        $variableValue,
+        [parameter(Mandatory=$true, Position=2)]
+        [bool]
+        $isMasked
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -382,11 +424,14 @@ http://msdn.microsoft.com/en-us/library/cc145852.aspx
 Function Get-SCCMMachineSettings {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
         [parameter(Mandatory=$true, ValueFromPipeline=$true, Position=0)]
         [ValidateScript( { $_ -gt 0 } )]
-        [int]$resourceId
+        [int]
+        $resourceId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -426,9 +471,14 @@ http://msdn.microsoft.com/en-us/library/cc145852.aspx
 Function New-SCCMMachineSettings {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)]$resourceId
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateScript( { $_ -gt 0 } )]
+        [int]
+        $resourceId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -468,7 +518,9 @@ http://msdn.microsoft.com/en-us/library/cc145852.aspx
 Function Save-SCCMMachineSettings {
     [CmdletBinding()]
     param (        
-        [parameter(Mandatory=$true)]$machineSettings
+        [parameter(Mandatory=$true)]
+        [ValidateNotNull()]
+        $machineSettings
     )
 
     $machineSettings.Put() | Out-Null
