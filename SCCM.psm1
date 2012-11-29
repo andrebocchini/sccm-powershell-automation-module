@@ -131,16 +131,40 @@ http://msdn.microsoft.com/en-us/library/cc146489.aspx
 Function New-SCCMRecurIntervalScheduleToken {
     [CmdletBinding()]
     param(
-        [string]$siteProvider,
-        [string]$siteCode,
-        [ValidateScript( { $_ -gt 0 } )][parameter(Position=0)][int]$dayDuration = 0,
-        [ValidateRange(0,31)][parameter(Position=1)][int]$daySpan = 0,
-        [ValidateRange(0,23)][parameter(Position=2)][int]$hourDuration = 0,
-        [ValidateRange(0,23)][parameter(Position=3)][int]$hourSpan = 0,
-        [parameter(Position=4)][boolean]$isGmt = 0,
-        [ValidateRange(0,59)][parameter(Position=5)][int]$minuteDuration = 0,
-        [ValidateRange(0,59)][parameter(Position=6)][int]$minuteSpan = 0,
-        [parameter(Mandatory=$true, Position=7)][DateTime]$startTime
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Position=0)]
+        [ValidateScript( { $_ -gt 0 } )]
+        [int]
+        $dayDuration = 0,
+        [parameter(Position=1)]
+        [ValidateRange(0,31)]
+        [int]
+        $daySpan = 0,
+        [parameter(Position=2)]
+        [ValidateRange(0,23)]
+        [int]
+        $hourDuration = 0,
+        [parameter(Position=3)]
+        [ValidateRange(0,23)]
+        [int]
+        $hourSpan = 0,
+        [parameter(Position=4)]
+        [boolean]
+        $isGmt = 0,
+        [parameter(Position=5)]
+        [ValidateRange(0,59)]
+        [int]
+        $minuteDuration = 0,
+        [parameter(Position=6)]
+        [ValidateRange(0,59)]
+        [int]
+        $minuteSpan = 0,
+        [parameter(Mandatory=$true, Position=7)]
+        [DateTime]
+        $startTime
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -204,13 +228,28 @@ http://msdn.microsoft.com/en-us/library/cc143487.aspx
 Function New-SCCMNonRecurringScheduleToken {
     [CmdletBinding()]
     param(
-        [string]$siteProvider,
-        [string]$siteCode,
-        [ValidateScript( { $_ -gt 0 } )][parameter(Position=0)][int]$dayDuration = 0,
-        [ValidateRange(0,23)][parameter(Position=1)][int]$hourDuration = 0,
-        [parameter(Position=2)][boolean]$isGmt = 0,
-        [ValidateRange(0,59)][parameter(Position=3)][int]$minuteDuration = 0,
-        [parameter(Mandatory=$true, Position=4)][DateTime]$startTime
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Position=0)]
+        [ValidateScript( { $_ -gt 0 } )]
+        [int]
+        $dayDuration = 0,
+        [parameter(Position=1)]
+        [ValidateRange(0,23)]
+        [int]
+        $hourDuration = 0,
+        [parameter(Position=2)]
+        [boolean]
+        $isGmt = 0,
+        [parameter(Position=3)]
+        [ValidateRange(0,59)]
+        [int]
+        $minuteDuration = 0,
+        [parameter(Mandatory=$true, Position=4)]
+        [DateTime]
+        $startTime
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -277,15 +316,36 @@ http://msdn.microsoft.com/en-us/library/cc146724.aspx
 Function New-SCCMRecurMonthlyByDateScheduleToken {
     [CmdletBinding()]
     param(
-        [string]$siteProvider,
-        [string]$siteCode,
-        [ValidateScript( { $_ -gt 0 } )][parameter(Position=0)][int]$dayDuration = 0,
-        [ValidateRange(1,12)][parameter(Position=1)][int]$forNumberofMonths = 0,
-        [ValidateRange(0,23)][parameter(Position=2)][int]$hourDuration = 0,
-        [parameter(Position=3)][boolean]$isGmt = 0,
-        [ValidateRange(0,59)][parameter(Position=4)][int]$minuteDuration = 0,
-        [ValidateRange(0,31)][parameter(Position=5)][int]$monthDay = 0,
-        [parameter(Mandatory=$true, Position=6)][DateTime]$startTime
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Position=0)]
+        [ValidateScript( { $_ -gt 0 } )]
+        [int]
+        $dayDuration = 0,
+        [parameter(Position=1)]
+        [ValidateRange(1,12)]
+        [int]
+        $forNumberofMonths = 0,
+        [parameter(Position=2)]
+        [ValidateRange(0,23)]
+        [int]
+        $hourDuration = 0,
+        [parameter(Position=3)]
+        [boolean]
+        $isGmt = 0,
+        [parameter(Position=4)]
+        [ValidateRange(0,59)]
+        [int]
+        $minuteDuration = 0,
+        [parameter(Position=5)]
+        [ValidateRange(0,31)]
+        [int]
+        $monthDay = 0,
+        [parameter(Mandatory=$true, Position=6)]
+        [DateTime]
+        $startTime
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -363,16 +423,40 @@ http://msdn.microsoft.com/en-us/library/cc146724.aspx
 Function New-SCCMRecurMonthlyByWeekdayScheduleToken {
     [CmdletBinding()]
     param(
-        [string]$siteProvider,
-        [string]$siteCode,
-        [ValidateRange(1,7)][parameter(Position=0)][int]$day = 0,
-        [ValidateScript( { $_ -gt 0 } )][parameter(Position=1)][int]$dayDuration = 0,
-        [ValidateRange(1,12)][parameter(Position=2)][int]$forNumberofMonths = 0,
-        [ValidateRange(0,23)][parameter(Position=3)][int]$hourDuration = 0,
-        [parameter(Position=4)][boolean]$isGmt = 0,
-        [ValidateRange(0,59)][parameter(Position=5)][int]$minuteDuration = 0,
-        [parameter(Mandatory=$true, Position=6)][DateTime]$startTime,
-        [ValidateRange(0,4)][parameter(Position=7)][int]$weekOrder = 0
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Position=0)]
+        [ValidateRange(1,7)]
+        [int]
+        $day = 0,
+        [parameter(Position=1)]
+        [ValidateScript( { $_ -gt 0 } )]
+        [int]
+        $dayDuration = 0,
+        [parameter(Position=2)]
+        [ValidateRange(1,12)]
+        [int]
+        $forNumberofMonths = 0,
+        [parameter(Position=3)]
+        [ValidateRange(0,23)]
+        [int]
+        $hourDuration = 0,
+        [parameter(Position=4)]
+        [boolean]
+        $isGmt = 0,
+        [parameter(Position=5)]
+        [ValidateRange(0,59)]
+        [int]
+        $minuteDuration = 0,
+        [parameter(Mandatory=$true, Position=6)]
+        [DateTime]
+        $startTime,
+        [parameter(Position=7)]
+        [ValidateRange(0,4)]
+        [int]
+        $weekOrder = 0
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -442,15 +526,36 @@ http://msdn.microsoft.com/en-us/library/cc146724.aspx
 Function New-SCCMRecurWeeklyScheduleToken {
     [CmdletBinding()]
     param(
-        [string]$siteProvider,
-        [string]$siteCode,
-        [ValidateRange(1,7)][parameter(Position=0)][int]$day = 0,
-        [ValidateScript( { $_ -gt 0 } )][parameter(Position=1)][int]$dayDuration = 0,
-        [ValidateRange(1,4)][parameter(Position=2)][int]$forNumberofWeeks = 0,
-        [ValidateRange(0,23)][parameter(Position=3)][int]$hourDuration = 0,
-        [parameter(Position=4)][boolean]$isGmt = 0,
-        [ValidateRange(0,59)][parameter(Position=5)][int]$minuteDuration = 0,
-        [parameter(Mandatory=$true, Position=6)][DateTime]$startTime
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Position=0)]
+        [ValidateRange(1,7)]
+        [int]
+        $day = 0,
+        [parameter(Position=1)]
+        [ValidateScript( { $_ -gt 0 } )]
+        [int]
+        $dayDuration = 0,
+        [parameter(Position=2)]
+        [ValidateRange(1,4)]
+        [int]
+        $forNumberofWeeks = 0,
+        [parameter(Position=3)]
+        [ValidateRange(0,23)]
+        [int]
+        $hourDuration = 0,
+        [parameter(Position=4)]
+        [boolean]
+        $isGmt = 0,
+        [parameter(Position=5)]
+        [ValidateRange(0,59)]
+        [int]
+        $minuteDuration = 0,
+        [parameter(Mandatory=$true, Position=6)]
+        [DateTime]
+        $startTime
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -487,7 +592,9 @@ to convert DMTF date strings into something readable.
 Function Convert-SCCMDateToDate {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true, ValueFromPipeline=$true)][string]$date
+        [parameter(Mandatory=$true, ValueFromPipeline=$true)]
+        [string]
+        $date
     )
 
     [System.Management.ManagementDateTimeconverter]::ToDateTime($date);
@@ -514,7 +621,9 @@ This will convert the current date and time into a DMTF date string that SCCM un
 Function Convert-DateToSCCMDate {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true, ValueFromPipeline=$true)][string]$date
+        [parameter(Mandatory=$true, ValueFromPipeline=$true)]
+        [string]
+        $date
     )
 
     [System.Management.ManagementDateTimeconverter]::ToDMTFDateTime($date)
