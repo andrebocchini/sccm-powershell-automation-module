@@ -33,8 +33,14 @@ OOBSDiscovery
 Function Invoke-SCCMClientAction {           
     [CmdletBinding()]             
     param(             
-        [parameter(Mandatory=$true, Position=0)][string]$computerName, 
-        [Parameter(Mandatory=$true, Position=1)][string]$scheduleId    
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateNotNull()]
+        [string]
+        $computerName, 
+        [Parameter(Mandatory=$true, Position=1)]
+        [ValidateNotNull()]
+        [string]
+        $scheduleId    
     )             
 
     $scheduleIdList = @{
@@ -74,8 +80,14 @@ Takes in a computer name and an scheduled message id, and attempts to trigger it
 Function Invoke-SCCMClientSchedule {           
     [CmdletBinding()]             
     param(             
-        [parameter(Mandatory=$true, Position=0)][string]$computerName, 
-        [Parameter(Mandatory=$true, Position=1)][string]$scheduleId    
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateNotNull()]
+        [string]
+        $computerName, 
+        [Parameter(Mandatory=$true, Position=1)]
+        [ValidateNotNull()]
+        [string]
+        $scheduleId    
     ) 
 
     $sccmClient = [WMIclass]"\\$computerName\root\ccm:SMS_Client" 
@@ -105,7 +117,10 @@ http://msdn.microsoft.com/en-us/library/cc145304.aspx
 Function Get-SCCMClientSoftwareDistributionHistory {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$computerName
+        [parameter(Mandatory=$true)]
+        [ValidateNotNull()]
+        [string]
+        $computerName
     )
 
     return Get-WMIObject -Computer $computerName -Namespace "root\CCM\Policy\Machine\ActualConfig" -Query "Select * from CCM_SoftwareDistribution"
@@ -122,8 +137,14 @@ Useful when trying to trigger and advertisement on demand.
 Function Get-SCCMClientAdvertisementScheduleId {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true, Position=0)][string]$computerName,
-        [parameter(Mandatory=$true, Position=1)][string]$advertisementId
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateNotNull()]
+        [string]
+        $computerName,
+        [parameter(Mandatory=$true, Position=1)]
+        [ValidateLength(8,8)]
+        [string]
+        $advertisementId
     )
 
     $scheduledMessages = Get-WMIObject -Computer $computerName -Namespace "root\CCM\Policy\Machine\ActualConfig" -Query "Select * from CCM_Scheduler_ScheduledMessage"  
@@ -145,7 +166,10 @@ Takes in a computer name and contacts the client to determine its assigned site 
 Function Get-SCCMClientAssignedSite {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$computerName
+        [parameter(Mandatory=$true)]
+        [ValidateNotNull()]
+        [string]
+        $computerName
     )
 
     $sccmClient = [WMIclass]"\\$computerName\root\ccm:SMS_Client" 
@@ -162,8 +186,14 @@ Takes in a computer name and contacts the client to set its assigned site code.
 Function Set-SCCMClientAssignedSite {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true, Position=0)][string]$computerName,
-        [parameter(Mandatory=$true, Position=1)][string]$siteCode
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateNotNull()]
+        [string]
+        $computerName,
+        [parameter(Mandatory=$true, Position=1)]
+        [ValidateLength(3,3)]
+        [string]
+        $siteCode
     )
 
     $sccmClient = [WMIclass]"\\$computerName\root\ccm:SMS_Client" 
@@ -190,7 +220,10 @@ Returns the client computer's cache size in MB.
 Function Get-SCCMClientCacheSize {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)][string]$computerName
+        [parameter(Mandatory=$true)]
+        [ValidateNotNull()]
+        [string]
+        $computerName
     )
 
     $cacheConfig = Get-WMIObject -Computer $computerName -Namespace "root\CCM\SoftMgmtAgent" -Query "Select * From CacheConfig"  
@@ -221,15 +254,17 @@ Sets the client computer's cache size to 1000MB.
 Function Set-SCCMClientCacheSize {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true, Position=0)][string]$computerName,
-        [parameter(Mandatory=$true, Position=1)][int]$cacheSize
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateNotNull()]
+        [string]
+        $computerName,
+        [parameter(Mandatory=$true, Position=1)]
+        [ValidateScript( { $_ -gt 0 } )]
+        [int]
+        $cacheSize
     )
 
-    if($cacheSize -gt 0) {
-        $cacheConfig = Get-WMIObject -Computer $computerName -Namespace "root\CCM\SoftMgmtAgent" -Query "Select * From CacheConfig"  
-        $cacheConfig.Size = $cacheSize
-        $cacheConfig.Put()
-    } else {
-        Throw "Cache size needs to be greater than 0"
-    }
+    $cacheConfig = Get-WMIObject -Computer $computerName -Namespace "root\CCM\SoftMgmtAgent" -Query "Select * From CacheConfig"  
+    $cacheConfig.Size = $cacheSize
+    $cacheConfig.Put() | Out-Null
 }

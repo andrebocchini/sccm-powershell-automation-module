@@ -153,7 +153,7 @@ Function Remove-SCCMAdvertisement {
 
     $advertisement = Get-SCCMAdvertisement -siteProvider $siteProvider -siteCode $siteCode -advertisementId $advertisementId
     if($advertisement) {
-        $advertisement.psbase.Delete()
+        $advertisement.Delete()
     } else {
         Throw "Invalid advertisement with ID $advertisementId"
     }
