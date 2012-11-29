@@ -34,12 +34,26 @@ http://msdn.microsoft.com/en-us/library/cc146108.aspx
 Function New-SCCMAdvertisement {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true)][string]$advertisementName,
-        [parameter(Mandatory=$true)][string]$collectionId,
-        [parameter(Mandatory=$true)][string]$packageId,
-        [parameter(Mandatory=$true)][string]$programName
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateNotNull()]
+        [string]
+        $advertisementName,
+        [parameter(Mandatory=$true, Position=1)]
+        [ValidateLength(8,8)]
+        [string]
+        $collectionId,
+        [parameter(Mandatory=$true, Position=2)]
+        [ValidateLength(8,8)]
+        [string]
+        $packageId,
+        [parameter(Mandatory=$true, Position=3)]
+        [ValidateNotNull()]
+        [string]
+        $programName
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -93,7 +107,9 @@ The advertisement object to be put back into the database.
 Function Save-SCCMAdvertisement {
     [CmdletBinding()]
     param (
-        [parameter(Mandatory=$true)]$advertisement
+        [parameter(Mandatory=$true)]
+        [ValidateNotNull()]
+        $advertisement
     )
 
     $advertisement.Put() | Out-Null
@@ -118,9 +134,14 @@ The ID of the advertisement to be deleted.
 Function Remove-SCCMAdvertisement {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)][string]$advertisementId
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateLength(8,8)]
+        [string]
+        $advertisementId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -185,19 +206,23 @@ Function Get-SCCMAdvertisement {
         [parameter(ParameterSetName="name")]
         [parameter(ParameterSetName="default")]
         [parameter(ParameterSetName="id")]
-        [string]$siteProvider,
+        [string]
+        $siteProvider,
         [parameter(ParameterSetName="name")]
         [parameter(ParameterSetName="default")]
         [parameter(ParameterSetName="id")]
-        [string]$siteCode,
-        [parameter(Position=0, ValueFromPipeline=$true)]
-        [parameter(ParameterSetName="name")]
+        [string]
+        $siteCode,
+        [parameter(ParameterSetName="name", Position=0, ValueFromPipeline=$true)]
         [ValidateNotNull()]
-        [string]$advertisementName,
+        [string]
+        $advertisementName,
         [parameter(Position=1)]
         [parameter(ParameterSetName="id")]
+        [ValidateLength(8,8)]
         [ValidateNotNull()]
-        [string]$advertisementId
+        [string]
+        $advertisementId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -226,9 +251,14 @@ Takes in information about a specific site, along with a collection ID and retur
 Function Get-SCCMAdvertisementsForCollection {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)][string]$collectionId
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateLength(8,8)]
+        [string]
+        $collectionId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -260,9 +290,14 @@ Resource ID of the computers whose advertisements are being retrieved.
 Function Get-SCCMAdvertisementsForComputer {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)][int]$resourceId
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateScript( { $_ -gt 0 } )]
+        [int]
+        $resourceId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
@@ -301,7 +336,7 @@ Function Get-SCCMAdvertisementAssignedSchedule {
     [CmdletBinding()]
     param (
         [parameter(Mandatory=$true, ValueFromPipeline=$true)]
-        [ValidateNotNullOrEmpty()]
+        [ValidateNotNull()]
         $advertisement
     )    
 
@@ -371,9 +406,14 @@ Retrieve all advertisements from site SIT on MYSITEPROVIDER for package with ID 
 Function Get-SCCMAdvertisementsForPackage {
     [CmdletBinding()]
     param (
-        [string]$siteProvider,
-        [string]$siteCode,
-        [parameter(Mandatory=$true, Position=0)][string]$packageId
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateLength(8,8)]
+        [string]
+        $packageId
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
