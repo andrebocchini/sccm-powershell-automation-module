@@ -11,6 +11,7 @@ Site Commands
 
     Add-SCCMComputerToCollection
     Add-SCCMPackageToDistributionPoint
+    Clear-SCCMLastPxeAdvertisement
     Get-SCCMAdvertisement
     Get-SCCMAdvertisementAssignedSchedule
     Get-SCCMAdvertisementsForCollection

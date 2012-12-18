@@ -639,6 +639,7 @@ Set-Alias -Name "gspg" -Value Get-SCCMProgram
 
 Export-ModuleMember Add-SCCMComputerToCollection
 Export-ModuleMember Add-SCCMPackageToDistributionPoint
+Export-ModuleMember Clear-SCCMLastPxeAdvertisement
 Export-ModuleMember Convert-DateToSCCMDate
 Export-ModuleMember Convert-SCCMDateToDate
 Export-ModuleMember Get-SCCMAdvertisement -Alias "gsa"

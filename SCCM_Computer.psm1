@@ -525,3 +525,54 @@ Function Save-SCCMMachineSettings {
 
     $machineSettings.Put() | Out-Null
 }
+
+<#
+.SYNOPSIS
+Clears the last PXE advertisement for a computer.
+
+.DESCRIPTION
+Clears the last PXE advertisement for a computer.
+
+.PARAMETER siteProvider
+Name of the site provider.
+
+.PARAMETER siteCode
+3-character site code.
+
+.PARAMETER resourceId
+The resource ID of the target computer.
+#>
+Function Clear-SCCMLastPxeAdvertisement {
+    [CmdletBinding()]
+    param (
+        [string]
+        $siteProvider,
+        [string]
+        $siteCode,
+        [parameter(Mandatory=$true, Position=0)]
+        [ValidateScript( { $_ -gt 0 } )]
+        [int]
+        $resourceId
+    )
+
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
+        $siteProvider = Get-SCCMSiteProvider
+    }
+    if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
+        $siteCode = Get-SCCMSiteCode
+    }
+
+    $computer = Get-SCCMComputer -siteProvider $siteProvider -siteCode $siteCode -resourceId $resourceId
+    if(!$computer) {
+        Throw "Unable to retrive computer with resource ID $resourceId"
+    }
+
+    $resource = [WMIClass]("\\$siteProvider\root\sms\site_" + $siteCode + ":SMS_Collection")
+    $methodParameters = $resource.GetMethodParameters("ClearLastNBSAdvForMachines")
+    $methodParameters.ResourceIDs = $resourceId
+
+    $result = $resource.InvokeMethod("ClearLastNBSAdvForMachines", $methodParameters, $null)
+    if($result.StatusCode -ne 0) {
+        Throw "Error clearing last PXE advertisement for computer with resource ID $resourceId"
+    }
+}
