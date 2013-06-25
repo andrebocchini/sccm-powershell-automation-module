@@ -523,9 +523,9 @@ Function Get-SCCMCollection {
     }
 
     if($collectionName) {
-        return Get-WMIObject -Computer $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * from SMS_Collection" | Where { $_.Name -like $collectionName } 
+        return Get-WMIObject -Computer $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * from SMS_Collection WHERE Name like '$collectionName%'"
     } elseif($collectionId) {
-        return Get-WMIObject -Computer $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * from SMS_Collection" | Where { $_.CollectionID -eq $collectionId }
+        return Get-WMIObject -Computer $siteProvider -Namespace "root\sms\site_$siteCode" -class SMS_Collection -filter "CollectionID='$collectionId'"
     } else {
         return Get-WMIObject -Computer $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * from SMS_Collection"
     }
@@ -577,7 +577,7 @@ Function Get-SCCMCollectionMembers {
         $siteCode = Get-SCCMSiteCode
     }
 
-    return Get-WMIObject -Computer $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_CollectionMember_a" | Where { $_.CollectionID -eq $collectionId }
+    return Get-WMIObject -Computer $siteProvider -Namespace "root\sms\site_$siteCode" -class "SMS_CollectionMember_a" -filter "CollectionID='$collectionId'"
 }
 
 <#
@@ -682,7 +682,7 @@ Function Get-SCCMCollectionSettings {
         $siteCode = Get-SCCMSiteCode
     }
 
-    $collectionSettings = Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_CollectionSettings" | where {$_.CollectionID -eq $collectionId}
+    $collectionSettings = Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_CollectionSettings" -filter "CollectionID='$collectionId'"
     if($collectionSettings) {
         $collectionSettings.Get() | Out-Null
     }
