@@ -107,7 +107,7 @@ Function Remove-SCCMComputer {
         $siteCode = Get-SCCMSiteCode
     }
 
-    $computer =  Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System" | where { $_.ResourceID -eq $resourceId }
+    $computer =  Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System" | Where-Object { $_.ResourceID -eq $resourceId }
     if($computer) {
         $computer.Delete() | Out-Null
     } else {
@@ -177,14 +177,16 @@ Function Get-SCCMComputer {
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteCode)) {
         $siteCode = Get-SCCMSiteCode
     }
-
-    if($computerName) {
-        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System" | where { $_.Name -like $computerName }
+    
+	if($computerName) {
+        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -class "SMS_R_System" -filter "Name LIKE `"%$ComputerName%`""
     } elseif($resourceId) {
-        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System" | where { $_.ResourceID -eq $resourceId }
+        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System" -filter "ResourceID=$resourceId"
     } else {
         return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_R_System"
     }
+	
+	
 }
 
 <#
@@ -441,7 +443,7 @@ Function Get-SCCMMachineSettings {
         $siteCode = Get-SCCMSiteCode
     }
 
-    $machineSettings = Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_MachineSettings" | where {$_.ResourceID -eq $resourceId}
+    $machineSettings = Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_MachineSettings" -filter "ResourceID=$resourceId"
     if($machineSettings) {
         $machineSettings.Get() | Out-Null
     }
