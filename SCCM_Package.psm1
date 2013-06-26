@@ -235,9 +235,9 @@ Function Get-SCCMPackage {
     }
 
     if($packageName) {
-        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_Package" | where { ($_.Name -like $packageName) }
+        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "SELECT * FROM SMS_Package WHERE Name like '$packageName%'"
     } elseif($packageId) {
-        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_Package" | where { ($_.PackageID -eq $packageId) }
+        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_Package" -filter "PackageID='$packageId'"
     } else { 
         return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_Package"
     }
@@ -464,9 +464,9 @@ Function Get-SCCMProgram {
     }
 
     if($packageId -and $programName) {
-        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_Program" | where { ($_.PackageID -eq $packageId) -and ($_.ProgramName -eq $programName) }
+        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "SELECT * FROM SMS_Program WHERE PackageID='$packageId' AND ProgramName='$programName'"
     } elseif($packageId -and !$programName) {
-        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_Program" | where { ($_.PackageID -eq $packageId) }
+        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_Program" -Filter "PackageID='$packageId'"
     } elseif(!$packageId -and $programName) {
         Throw "If a program name is specified, a package ID must also be specified"
     } else { 
@@ -590,7 +590,7 @@ Function Remove-SCCMPackageFromDistributionPoint {
 
     if(Get-SCCMPackage -siteProvider $siteProvider -siteCode $siteCode -packageId $packageId) {
         foreach($distributionPoint in $distributionPointList) {
-            $distributionPointToBeDeleted = Get-WmiObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_DistributionPoint" | Where { ($_.ServerNALPath -eq $distributionPoint.NALPath) -and ($_.PackageID -eq $packageId) }
+            $distributionPointToBeDeleted = Get-WmiObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "SELECT * FROM SMS_DistributionPoint WHERE ServerNALPath='$($distributionPoint.NALPath)' AND PackageID='$packageId'"
             if($distributionPointToBeDeleted) {
                 $distributionPointToBeDeleted.Delete()
             }
@@ -632,7 +632,7 @@ Function Get-SCCMDistributionPoints {
         $siteCode = Get-SCCMSiteCode
     }
 
-    return Get-WmiObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_SystemResourceList" | Where { ($_.RoleName -eq "SMS Distribution Point") -and  ($_.SiteCode -eq $siteCode) }
+    return Get-WmiObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_SystemResourceList WHERE RoleName='SMS Distribution Point' AND SiteCode='$siteCode'"
 }
 
 <#
