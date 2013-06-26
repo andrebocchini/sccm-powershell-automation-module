@@ -328,7 +328,7 @@ Function Move-ObjectToContainer {
     }
 
     $sourceContainerId = 0
-    $sourceContainer = Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_ObjectContainerItem" | Where { $_.InstanceKey -eq $instanceKey }
+    $sourceContainer = Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_ObjectContainerItem" -Filter "InstanceKey='$instanceKey'"
     if($sourceContainer) {
         # The object is in a folder other than the root folder.
         $sourceContainerId = $sourceContainer.ContainerNodeID
