@@ -233,9 +233,9 @@ Function Get-SCCMAdvertisement {
     }
 
     if($advertisementName) {
-        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_Advertisement" | where { $_.AdvertisementName -like $advertisementName }
+        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * from SMS_Advertisement WHERE AdvertisementName like '$advertisementName%'"
     } elseif($advertisementId) {
-        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_Advertisement" | where { $_.AdvertisementID -eq $advertisementId }
+        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_Advertisement" -filter "AdvertisementID='$advertisementId'"
     } else { 
         return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_Advertisement"
     }
@@ -423,5 +423,5 @@ Function Get-SCCMAdvertisementsForPackage {
         $siteCode = Get-SCCMSiteCode
     }
 
-    return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_Advertisement" | where { $_.PackageID -eq $packageId }
+    return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_Advertisement" -Filter "PackageID='$packageId'"
 }
