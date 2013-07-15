@@ -50,18 +50,23 @@ Function New-SCCMPackage {
         [string]
         $packageName,
         [parameter(Mandatory=$true, Position=1)]
+        [AllowEmptyString()]
         [string]
-        $packageDescription,
+        $packageDescription = "",
         [parameter(Mandatory=$true, Position=2)]
+        [AllowEmptyString()]
         [string]
-        $packageVersion,
+        $packageVersion = "",
         [parameter(Mandatory=$true, Position=3)]
+        [AllowEmptyString()]
         [string]
-        $packageManufacturer,
+        $packageManufacturer = "",
+        [AllowEmptyString()]
         [string]
         $packageLanguage = "",
+        [AllowEmptyString()]
         [string]
-        $packageSource   
+        $packageSource = ""   
     )
 
     if(!($PSBoundParameters) -or !($PSBoundParameters.siteProvider)) {
