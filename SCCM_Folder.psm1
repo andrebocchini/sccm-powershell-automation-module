@@ -328,7 +328,7 @@ Function Move-ObjectToContainer {
     }
 
     $sourceContainerId = 0
-    $sourceContainer = Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_ObjectContainerItem" -Filter "InstanceKey='$instanceKey'"
+    $sourceContainer = Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_ObjectContainerItem Where InstanceKey='$instanceKey'"
     if($sourceContainer) {
         # The object is in a folder other than the root folder.
         $sourceContainerId = $sourceContainer.ContainerNodeID
@@ -385,7 +385,7 @@ Function Move-SCCMPackageToFolder {
 
     $result = Move-ObjectToContainer -siteProvider $siteProvider -siteCode $siteCode -instanceKey $packageId -targetContainerNodeId $targetFolderNodeId -objectType 2
     if($result -ne 0) {
-        Throw "There was a problem moving package with ID $packageId to folder with ID $folderNodeId"
+        Throw "There was a problem moving package with ID $packageId to folder with ID $targetFolderNodeId"
     }
 }
 
