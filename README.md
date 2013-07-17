@@ -57,7 +57,6 @@ Site Commands
     Remove-SCCMCollection
     Remove-SCCMComputer
     Remove-SCCMComputerFromCollection
-    Remove-SCCMComputerVariable
     Remove-SCCMFolder
     Remove-SCCMPackage
     Remove-SCCMPackageFromDistributionPoint
