@@ -117,7 +117,7 @@ Function New-SCCMFolder {
     # We need to find out if there's another folder with that name under the same parent.  If there is, we throw an exception and don't create the folder.
     $allFolders = Get-SCCMFolder -siteProvider $siteProvider -siteCode $siteCode
     foreach($folder in $allFolders) {
-        if( ($folder.Name -eq $folderName) -and ($folder.ParentContainerNodeID -eq $parentFolderNodeId) ) {
+        if( ($folder.Name -eq $folderName) -and ($folder.ParentContainerNodeID -eq $parentFolderNodeId) -and ($folder.ObjectType -eq $folderType) ) {
             Throw "There is already a folder named $folderName under the same parent folder with ID $parentFolderNodeId"
         }
     }
