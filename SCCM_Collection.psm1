@@ -522,10 +522,10 @@ Function Get-SCCMCollection {
         $siteCode = Get-SCCMSiteCode
     }
 
-    if($collectionName) {
-        return Get-WMIObject -Computer $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * from SMS_Collection WHERE Name like '$collectionName%'"
-    } elseif($collectionId) {
-        return Get-WMIObject -Computer $siteProvider -Namespace "root\sms\site_$siteCode" -class SMS_Collection -filter "CollectionID='$collectionId'"
+    if($collectionId) {
+        return Get-WMIObject -Computer $siteProvider -Namespace "root\sms\site_$siteCode" -class SMS_Collection -filter "CollectionID='$collectionId'"        
+    } elseif($collectionName) {
+        return Get-WMIObject -Computer $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * from SMS_Collection WHERE Name like '$collectionName%'"        
     } else {
         return Get-WMIObject -Computer $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * from SMS_Collection"
     }

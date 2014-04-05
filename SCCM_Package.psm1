@@ -239,10 +239,10 @@ Function Get-SCCMPackage {
         $siteCode = Get-SCCMSiteCode
     }
 
-    if($packageName) {
-        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "SELECT * FROM SMS_Package WHERE Name like '$packageName%'"
-    } elseif($packageId) {
+    if($packageId) {
         return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Class "SMS_Package" -filter "PackageID='$packageId'"
+    } elseif($packageName) {        
+        return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "SELECT * FROM SMS_Package WHERE Name like '$packageName%'"
     } else { 
         return Get-WMIObject -ComputerName $siteProvider -Namespace "root\sms\site_$siteCode" -Query "Select * From SMS_Package"
     }
