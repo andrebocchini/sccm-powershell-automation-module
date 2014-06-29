@@ -629,8 +629,12 @@ Function Get-SCCMCollectionsForComputer {
         $computerCollectionIds += $collectionMember.CollectionID
     }
 
-    # Now that we have a list of collection IDs, we want to retrieve and return some rich collection objects
+    # Now that we have a list of collection IDs, we want to retrieve and return some rich collection objects    
+    if ($psversiontable.psversion.major -le 3){
+        $collectionId = $collectionName = $null # It may be set in a parent scope. Not needed in PS >= 3.0    
+    }    
     $allServerCollections = Get-SCCMCollection -siteProvider $siteProvider -siteCode $siteCode
+
     $computerCollections = @()
     foreach($collectionId in $computerCollectionIds) {
         foreach($collection in $allServerCollections) {
